@@ -17,7 +17,6 @@ cd $STAGING_DIR
 LLVM_URL="https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/llvm-project-11.0.0.tar.xz"
 
 curl -O $LLVM_URL
-curl -O $GCC_URL
 
 rm -rf llvm-project-${LLVM_VER}
 

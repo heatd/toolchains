@@ -1,6 +1,6 @@
 diff -Naur gcc-10.2.0/config.sub gcc-10.2.0-patched/config.sub
 --- gcc-10.2.0/config.sub	2020-07-23 07:35:16.912379792 +0100
-+++ gcc-10.2.0-patched/config.sub	2020-09-24 05:12:15.007219080 +0100
++++ gcc-10.2.0-patched/config.sub	2020-09-24 14:47:46.102254588 +0100
 @@ -1365,7 +1365,7 @@
  	     | powermax* | dnix* | nx6 | nx7 | sei* | dragonfly* \
  	     | skyos* | haiku* | rdos* | toppers* | drops* | es* \
@@ -12,7 +12,7 @@ diff -Naur gcc-10.2.0/config.sub gcc-10.2.0-patched/config.sub
  		;;
 diff -Naur gcc-10.2.0/fixincludes/mkfixinc.sh gcc-10.2.0-patched/fixincludes/mkfixinc.sh
 --- gcc-10.2.0/fixincludes/mkfixinc.sh	2020-07-23 07:35:16.932380013 +0100
-+++ gcc-10.2.0-patched/fixincludes/mkfixinc.sh	2020-09-24 05:12:15.007219080 +0100
++++ gcc-10.2.0-patched/fixincludes/mkfixinc.sh	2020-09-24 14:47:46.102254588 +0100
 @@ -20,7 +20,8 @@
      powerpcle-*-eabisim* | \
      powerpcle-*-eabi* | \
@@ -25,12 +25,12 @@ diff -Naur gcc-10.2.0/fixincludes/mkfixinc.sh gcc-10.2.0-patched/fixincludes/mkf
  	(echo "#! /bin/sh" ; echo "exit 0" ) > ${target}
 diff -Naur gcc-10.2.0/gcc/config/i386/t-onyx gcc-10.2.0-patched/gcc/config/i386/t-onyx
 --- gcc-10.2.0/gcc/config/i386/t-onyx	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-10.2.0-patched/gcc/config/i386/t-onyx	2020-09-24 05:12:15.007219080 +0100
++++ gcc-10.2.0-patched/gcc/config/i386/t-onyx	2020-09-24 16:07:15.113481992 +0100
 @@ -0,0 +1 @@
-+MULTILIB_OPTIONS += mno-red-zone mcmodel=large
++MULTILIB_OPTIONS += mno-red-zone
 diff -Naur gcc-10.2.0/gcc/config/onyx.h gcc-10.2.0-patched/gcc/config/onyx.h
 --- gcc-10.2.0/gcc/config/onyx.h	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-10.2.0-patched/gcc/config/onyx.h	2020-09-24 05:12:15.007219080 +0100
++++ gcc-10.2.0-patched/gcc/config/onyx.h	2020-09-24 14:47:46.103254588 +0100
 @@ -0,0 +1,42 @@
 +#undef TARGET_OS_CPP_BUILTINS
 +#define TARGET_OS_CPP_BUILTINS() \
@@ -76,7 +76,7 @@ diff -Naur gcc-10.2.0/gcc/config/onyx.h gcc-10.2.0-patched/gcc/config/onyx.h
 +#define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
 diff -Naur gcc-10.2.0/gcc/config/onyx.opt gcc-10.2.0-patched/gcc/config/onyx.opt
 --- gcc-10.2.0/gcc/config/onyx.opt	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-10.2.0-patched/gcc/config/onyx.opt	2020-09-24 05:12:15.007219080 +0100
++++ gcc-10.2.0-patched/gcc/config/onyx.opt	2020-09-24 14:47:46.103254588 +0100
 @@ -0,0 +1,38 @@
 +; Options for systems using onyx.h.
 +
@@ -118,7 +118,7 @@ diff -Naur gcc-10.2.0/gcc/config/onyx.opt gcc-10.2.0-patched/gcc/config/onyx.opt
 +; This comment is to ensure we retain the blank line above.
 diff -Naur gcc-10.2.0/gcc/config.gcc gcc-10.2.0-patched/gcc/config.gcc
 --- gcc-10.2.0/gcc/config.gcc	2020-07-23 07:35:17.316384243 +0100
-+++ gcc-10.2.0-patched/gcc/config.gcc	2020-09-24 05:12:15.008219080 +0100
++++ gcc-10.2.0-patched/gcc/config.gcc	2020-09-24 14:47:46.103254588 +0100
 @@ -836,6 +836,11 @@
    target_has_targetcm=yes
    target_has_targetdm=yes
@@ -146,7 +146,7 @@ diff -Naur gcc-10.2.0/gcc/config.gcc gcc-10.2.0-patched/gcc/config.gcc
  	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-errata.h aarch64/aarch64-elf-raw.h"
 diff -Naur gcc-10.2.0/libgcc/config.host gcc-10.2.0-patched/libgcc/config.host
 --- gcc-10.2.0/libgcc/config.host	2020-07-23 07:35:18.752400064 +0100
-+++ gcc-10.2.0-patched/libgcc/config.host	2020-09-24 05:13:27.743222549 +0100
++++ gcc-10.2.0-patched/libgcc/config.host	2020-09-24 16:00:44.113463348 +0100
 @@ -743,6 +743,11 @@
  	tm_file="${tm_file} i386/elf-lib.h"
  	md_unwind_header=i386/linux-unwind.h
@@ -154,14 +154,1115 @@ diff -Naur gcc-10.2.0/libgcc/config.host gcc-10.2.0-patched/libgcc/config.host
 +x86_64-*-onyx*)
 +	extra_parts="$extra_parts crti.o crtbegin.o crtbeginS.o crtend.o crtendS.o crtn.o"
 +	tmake_file="${tmake_file} i386/t-crtstuff t-crtstuff-pic t-libgcc-pic"
-+	tmake_file="${tmake_file} t-slibgcc"
++	tmake_file="${tmake_file} t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-eh-dw2-dip"
 +	;;
  i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-kopensolaris*-gnu)
  	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
  	tmake_file="${tmake_file} i386/t-crtpc t-crtfm i386/t-crtstuff t-dfprules"
+diff -Naur gcc-10.2.0/libsanitizer/asan/asan_linux.cpp gcc-10.2.0-patched/libsanitizer/asan/asan_linux.cpp
+--- gcc-10.2.0/libsanitizer/asan/asan_linux.cpp	2020-07-23 07:35:19.124404163 +0100
++++ gcc-10.2.0-patched/libsanitizer/asan/asan_linux.cpp	2021-02-28 04:13:38.375356421 +0000
+@@ -13,7 +13,7 @@
+ 
+ #include "sanitizer_common/sanitizer_platform.h"
+ #if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD || \
+-    SANITIZER_SOLARIS
++    SANITIZER_SOLARIS || SANITIZER_ONYX
+ 
+ #include "asan_interceptors.h"
+ #include "asan_internal.h"
+@@ -57,6 +57,11 @@
+ #include <link.h>
+ #endif
+ 
++#if SANITIZER_ONYX
++extern "C" void* _DYNAMIC;
++#endif
++
++
+ // x86-64 FreeBSD 9.2 and older define 'ucontext_t' incorrectly in
+ // 32-bit mode.
+ #if SANITIZER_FREEBSD && (SANITIZER_WORDSIZE == 32) && \
+@@ -257,4 +262,4 @@
+ } // namespace __asan
+ 
+ #endif  // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||
+-        // SANITIZER_SOLARIS
++        // SANITIZER_SOLARIS || SANITIZER_ONYX
+diff -Naur gcc-10.2.0/libsanitizer/asan/asan_malloc_linux.cpp gcc-10.2.0-patched/libsanitizer/asan/asan_malloc_linux.cpp
+--- gcc-10.2.0/libsanitizer/asan/asan_malloc_linux.cpp	2020-07-23 07:35:19.128404206 +0100
++++ gcc-10.2.0-patched/libsanitizer/asan/asan_malloc_linux.cpp	2021-02-28 04:43:23.342407417 +0000
+@@ -15,7 +15,7 @@
+ 
+ #include "sanitizer_common/sanitizer_platform.h"
+ #if SANITIZER_FREEBSD || SANITIZER_FUCHSIA || SANITIZER_LINUX || \
+-    SANITIZER_NETBSD || SANITIZER_RTEMS || SANITIZER_SOLARIS
++    SANITIZER_NETBSD || SANITIZER_RTEMS || SANITIZER_SOLARIS || SANITIZER_ONYX
+ 
+ #include "sanitizer_common/sanitizer_allocator_checks.h"
+ #include "sanitizer_common/sanitizer_errno.h"
+diff -Naur gcc-10.2.0/libsanitizer/builtins/assembly.h gcc-10.2.0-patched/libsanitizer/builtins/assembly.h
+--- gcc-10.2.0/libsanitizer/builtins/assembly.h	2020-07-23 07:35:19.128404206 +0100
++++ gcc-10.2.0-patched/libsanitizer/builtins/assembly.h	2021-02-21 20:14:07.190084057 +0000
+@@ -43,7 +43,7 @@
+ #define CONST_SECTION .section .rodata
+ 
+ #if defined(__GNU__) || defined(__FreeBSD__) || defined(__Fuchsia__) || \
+-    defined(__linux__)
++    defined(__linux__) || defined(__onyx__)
+ #define NO_EXEC_STACK_DIRECTIVE .section .note.GNU-stack,"",%progbits
+ #else
+ #define NO_EXEC_STACK_DIRECTIVE
+diff -Naur gcc-10.2.0/libsanitizer/configure.tgt gcc-10.2.0-patched/libsanitizer/configure.tgt
+--- gcc-10.2.0/libsanitizer/configure.tgt	2020-07-23 07:35:19.128404206 +0100
++++ gcc-10.2.0-patched/libsanitizer/configure.tgt	2021-02-21 19:36:37.866019795 +0000
+@@ -29,6 +29,13 @@
+ 		TSAN_TARGET_DEPENDENT_OBJECTS=tsan_rtl_amd64.lo
+ 	fi
+ 	;;
++  x86_64-*-onyx* | i?86-*-onyx*)
++	if test x$ac_cv_sizeof_void_p = x8; then
++		TSAN_SUPPORTED=yes
++		LSAN_SUPPORTED=yes
++		TSAN_TARGET_DEPENDENT_OBJECTS=tsan_rtl_amd64.lo
++	fi
++	;;
+   powerpc*-*-linux*)
+ 	if test x$ac_cv_sizeof_void_p = x8; then
+ 		TSAN_SUPPORTED=yes
+diff -Naur gcc-10.2.0/libsanitizer/interception/interception.h gcc-10.2.0-patched/libsanitizer/interception/interception.h
+--- gcc-10.2.0/libsanitizer/interception/interception.h	2020-07-23 07:35:19.128404206 +0100
++++ gcc-10.2.0-patched/libsanitizer/interception/interception.h	2021-02-21 20:08:16.532074039 +0000
+@@ -18,7 +18,7 @@
+ 
+ #if !SANITIZER_LINUX && !SANITIZER_FREEBSD && !SANITIZER_MAC && \
+     !SANITIZER_NETBSD && !SANITIZER_OPENBSD && !SANITIZER_WINDOWS && \
+-    !SANITIZER_FUCHSIA && !SANITIZER_RTEMS && !SANITIZER_SOLARIS
++    !SANITIZER_FUCHSIA && !SANITIZER_RTEMS && !SANITIZER_SOLARIS && !SANITIZER_ONYX
+ # error "Interception doesn't work on this operating system."
+ #endif
+ 
+@@ -281,7 +281,7 @@
+ #define INCLUDED_FROM_INTERCEPTION_LIB
+ 
+ #if SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD || \
+-    SANITIZER_OPENBSD || SANITIZER_SOLARIS
++    SANITIZER_OPENBSD || SANITIZER_SOLARIS || SANITIZER_ONYX
+ 
+ # include "interception_linux.h"
+ # define INTERCEPT_FUNCTION(func) INTERCEPT_FUNCTION_LINUX_OR_FREEBSD(func)
+diff -Naur gcc-10.2.0/libsanitizer/interception/interception_linux.cpp gcc-10.2.0-patched/libsanitizer/interception/interception_linux.cpp
+--- gcc-10.2.0/libsanitizer/interception/interception_linux.cpp	2020-07-23 07:35:19.128404206 +0100
++++ gcc-10.2.0-patched/libsanitizer/interception/interception_linux.cpp	2021-02-21 20:09:02.979075366 +0000
+@@ -14,7 +14,7 @@
+ #include "interception.h"
+ 
+ #if SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD || \
+-    SANITIZER_OPENBSD || SANITIZER_SOLARIS
++    SANITIZER_OPENBSD || SANITIZER_SOLARIS || SANITIZER_ONYX
+ 
+ #include <dlfcn.h>   // for dlsym() and dlvsym()
+ 
+@@ -64,7 +64,7 @@
+ }
+ 
+ // Android and Solaris do not have dlvsym
+-#if !SANITIZER_ANDROID && !SANITIZER_SOLARIS && !SANITIZER_OPENBSD
++#if !SANITIZER_ANDROID && !SANITIZER_SOLARIS && !SANITIZER_OPENBSD && !SANITIZER_ONYX
+ static void *GetFuncAddr(const char *name, const char *ver) {
+   return dlvsym(RTLD_NEXT, name, ver);
+ }
+@@ -80,4 +80,4 @@
+ }  // namespace __interception
+ 
+ #endif  // SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD ||
+-        // SANITIZER_OPENBSD || SANITIZER_SOLARIS
++        // SANITIZER_OPENBSD || SANITIZER_SOLARIS || SANITIZER_ONYX
+diff -Naur gcc-10.2.0/libsanitizer/interception/interception_linux.h gcc-10.2.0-patched/libsanitizer/interception/interception_linux.h
+--- gcc-10.2.0/libsanitizer/interception/interception_linux.h	2020-07-23 07:35:19.128404206 +0100
++++ gcc-10.2.0-patched/libsanitizer/interception/interception_linux.h	2021-02-21 20:08:36.241074602 +0000
+@@ -12,7 +12,7 @@
+ //===----------------------------------------------------------------------===//
+ 
+ #if SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD || \
+-    SANITIZER_OPENBSD || SANITIZER_SOLARIS
++    SANITIZER_OPENBSD || SANITIZER_SOLARIS || SANITIZER_ONYX
+ 
+ #if !defined(INCLUDED_FROM_INTERCEPTION_LIB)
+ # error "interception_linux.h should be included from interception library only"
+@@ -36,7 +36,7 @@
+       (::__interception::uptr) & WRAP(func))
+ 
+ // Android,  Solaris and OpenBSD do not have dlvsym
+-#if !SANITIZER_ANDROID && !SANITIZER_SOLARIS && !SANITIZER_OPENBSD
++#if !SANITIZER_ANDROID && !SANITIZER_SOLARIS && !SANITIZER_OPENBSD && !SANITIZER_ONYX
+ #define INTERCEPT_FUNCTION_VER_LINUX_OR_FREEBSD(func, symver) \
+   ::__interception::InterceptFunction(                        \
+       #func, symver,                                          \
+diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_glibc_version.h gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_glibc_version.h
+--- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_glibc_version.h	2020-07-23 07:35:19.140404337 +0100
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_glibc_version.h	2021-02-28 04:31:02.366386247 +0000
+@@ -15,7 +15,7 @@
+ 
+ #include "sanitizer_platform.h"
+ 
+-#if SANITIZER_LINUX || SANITIZER_FUCHSIA
++#if SANITIZER_LINUX || SANITIZER_FUCHSIA || SANITIZER_ONYX
+ #include <features.h>
+ #endif
+ 
+diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_internal_defs.h gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_internal_defs.h
+--- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_internal_defs.h	2020-07-23 07:35:19.140404337 +0100
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_internal_defs.h	2021-02-21 20:04:08.893066964 +0000
+@@ -39,7 +39,7 @@
+ 
+ // TLS is handled differently on different platforms
+ #if SANITIZER_LINUX || SANITIZER_NETBSD || \
+-  SANITIZER_FREEBSD || SANITIZER_OPENBSD
++  SANITIZER_FREEBSD || SANITIZER_OPENBSD || SANITIZER_ONYX
+ # define SANITIZER_TLS_INITIAL_EXEC_ATTRIBUTE \
+     __attribute__((tls_model("initial-exec"))) thread_local
+ #else
+@@ -170,7 +170,7 @@
+ #endif
+ 
+ #if SANITIZER_FREEBSD || SANITIZER_NETBSD || \
+-    SANITIZER_OPENBSD || SANITIZER_MAC || \
++    SANITIZER_OPENBSD || SANITIZER_MAC || SANITIZER_ONYX || \
+     (SANITIZER_SOLARIS && (defined(_LP64) || _FILE_OFFSET_BITS == 64)) || \
+     (SANITIZER_LINUX && defined(__x86_64__))
+ typedef u64 OFF_T;
+diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_linux.cpp gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.cpp
+--- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_linux.cpp	2020-07-23 07:35:19.140404337 +0100
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.cpp	2021-02-28 06:14:19.725563304 +0000
+@@ -14,7 +14,7 @@
+ #include "sanitizer_platform.h"
+ 
+ #if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD || \
+-    SANITIZER_OPENBSD || SANITIZER_SOLARIS
++    SANITIZER_OPENBSD || SANITIZER_SOLARIS || SANITIZER_ONYX
+ 
+ #include "sanitizer_common.h"
+ #include "sanitizer_flags.h"
+@@ -110,13 +110,18 @@
+   long tv_usec;
+ };
+ 
++#endif  // SANITIZER_LINUX
++
++#if SANITIZER_LINUX || SANITIZER_ONYX
++
+ // <linux/futex.h> is broken on some linux distributions.
+ const int FUTEX_WAIT = 0;
+ const int FUTEX_WAKE = 1;
+ const int FUTEX_PRIVATE_FLAG = 128;
+ const int FUTEX_WAIT_PRIVATE = FUTEX_WAIT | FUTEX_PRIVATE_FLAG;
+ const int FUTEX_WAKE_PRIVATE = FUTEX_WAKE | FUTEX_PRIVATE_FLAG;
+-#endif  // SANITIZER_LINUX
++
++#endif // SANITIZER_LINUX || SANITIZER_ONYX
+ 
+ // Are we using 32-bit or 64-bit Linux syscalls?
+ // x32 (which defines __x86_64__) has SANITIZER_WORDSIZE == 32
+@@ -167,7 +172,7 @@
+ #if !SANITIZER_S390 && !SANITIZER_OPENBSD
+ uptr internal_mmap(void *addr, uptr length, int prot, int flags, int fd,
+                    OFF_T offset) {
+-#if SANITIZER_FREEBSD || SANITIZER_LINUX_USES_64BIT_SYSCALLS
++#if SANITIZER_FREEBSD || SANITIZER_ONYX || SANITIZER_LINUX_USES_64BIT_SYSCALLS
+   return internal_syscall(SYSCALL(mmap), (uptr)addr, length, prot, flags, fd,
+                           offset);
+ #else
+@@ -299,7 +304,7 @@
+ #endif
+ 
+ uptr internal_stat(const char *path, void *buf) {
+-#if SANITIZER_FREEBSD || SANITIZER_OPENBSD
++#if SANITIZER_FREEBSD || SANITIZER_OPENBSD || SANITIZER_ONYX
+   return internal_syscall(SYSCALL(fstatat), AT_FDCWD, (uptr)path, (uptr)buf, 0);
+ #elif SANITIZER_USES_CANONICAL_LINUX_SYSCALLS
+   return internal_syscall(SYSCALL(newfstatat), AT_FDCWD, (uptr)path, (uptr)buf,
+@@ -323,7 +328,7 @@
+ }
+ 
+ uptr internal_lstat(const char *path, void *buf) {
+-#if SANITIZER_FREEBSD || SANITIZER_OPENBSD
++#if SANITIZER_FREEBSD || SANITIZER_OPENBSD || SANITIZER_ONYX
+   return internal_syscall(SYSCALL(fstatat), AT_FDCWD, (uptr)path, (uptr)buf,
+                           AT_SYMLINK_NOFOLLOW);
+ #elif SANITIZER_USES_CANONICAL_LINUX_SYSCALLS
+@@ -349,7 +354,7 @@
+ 
+ uptr internal_fstat(fd_t fd, void *buf) {
+ #if SANITIZER_FREEBSD || SANITIZER_OPENBSD || \
+-    SANITIZER_LINUX_USES_64BIT_SYSCALLS
++    SANITIZER_LINUX_USES_64BIT_SYSCALLS || SANITIZER_ONYX
+ #if SANITIZER_MIPS64 && !SANITIZER_OPENBSD
+   // For mips64, fstat syscall fills buffer in the format of kernel_stat
+   struct kernel_stat kbuf;
+@@ -478,7 +483,7 @@
+ }
+ 
+ int TgKill(pid_t pid, tid_t tid, int sig) {
+-#if SANITIZER_LINUX
++#if SANITIZER_LINUX || SANITIZER_ONYX
+   return internal_syscall(SYSCALL(tgkill), pid, tid, sig);
+ #elif SANITIZER_FREEBSD
+   return internal_syscall(SYSCALL(thr_kill2), pid, tid, sig);
+@@ -494,7 +499,7 @@
+ 
+ #if !SANITIZER_SOLARIS && !SANITIZER_NETBSD
+ u64 NanoTime() {
+-#if SANITIZER_FREEBSD || SANITIZER_OPENBSD
++#if SANITIZER_FREEBSD || SANITIZER_OPENBSD || SANITIZER_ONYX
+   timeval tv;
+ #else
+   kernel_timeval tv;
+@@ -514,7 +519,7 @@
+ // should be called first inside __asan_init.
+ const char *GetEnv(const char *name) {
+ #if SANITIZER_FREEBSD || SANITIZER_NETBSD || SANITIZER_OPENBSD || \
+-    SANITIZER_SOLARIS
++    SANITIZER_SOLARIS || SANITIZER_ONYX
+   if (::environ != 0) {
+     uptr NameLen = internal_strlen(name);
+     for (char **Env = ::environ; *Env != 0; Env++) {
+@@ -1100,6 +1105,10 @@
+       (internal_sysctl(Mib, ARRAY_SIZE(Mib), buf, &Size, NULL, 0) != 0);
+   int readlink_error = IsErr ? errno : 0;
+   uptr module_name_len = Size;
++#elif SANITIZER_ONYX
++  // TODO: Add a correct way to get the program name!
++  bool IsErr = true;
++  int readlink_error = EINVAL;
+ #else
+   const char *default_module_name = "/proc/self/exe";
+   uptr module_name_len = internal_readlink(
+diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_linux.h gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.h
+--- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_linux.h	2020-07-23 07:35:19.140404337 +0100
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.h	2021-02-21 20:05:59.386070121 +0000
+@@ -14,7 +14,7 @@
+ 
+ #include "sanitizer_platform.h"
+ #if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||                \
+-    SANITIZER_OPENBSD || SANITIZER_SOLARIS
++    SANITIZER_OPENBSD || SANITIZER_SOLARIS || SANITIZER_ONYX
+ #include "sanitizer_common.h"
+ #include "sanitizer_internal_defs.h"
+ #include "sanitizer_platform_limits_freebsd.h"
+@@ -70,6 +70,10 @@
+ #elif SANITIZER_NETBSD
+ void internal_sigdelset(__sanitizer_sigset_t *set, int signum);
+ uptr internal_clone(int (*fn)(void *), void *child_stack, int flags, void *arg);
++#elif SANITIZER_ONYX
++int internal_sigaction_norestorer(int signum, const void *act, void *oldact);
++// TODO: Add our own clone thingy
++void internal_sigdelset(__sanitizer_sigset_t *set, int signum);
+ #endif  // SANITIZER_LINUX
+ 
+ // This class reads thread IDs from /proc/<pid>/task using only syscalls.
+diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp
+--- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp	2020-07-23 07:35:19.140404337 +0100
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp	2021-02-28 04:53:09.203424155 +0000
+@@ -14,7 +14,7 @@
+ #include "sanitizer_platform.h"
+ 
+ #if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||                \
+-    SANITIZER_OPENBSD || SANITIZER_SOLARIS
++    SANITIZER_OPENBSD || SANITIZER_SOLARIS || SANITIZER_ONYX
+ 
+ #include "sanitizer_allocator_internal.h"
+ #include "sanitizer_atomic.h"
+@@ -263,7 +263,7 @@
+ #if (defined(__x86_64__) || defined(__i386__) || defined(__mips__) ||          \
+      defined(__aarch64__) || defined(__powerpc64__) || defined(__s390__) ||    \
+      defined(__arm__)) &&                                                      \
+-    SANITIZER_LINUX && !SANITIZER_ANDROID
++    (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ // sizeof(struct pthread) from glibc.
+ static atomic_uintptr_t thread_descriptor_size;
+ 
+@@ -428,7 +428,7 @@
+ 
+ #if !SANITIZER_GO
+ static void GetTls(uptr *addr, uptr *size) {
+-#if SANITIZER_LINUX && !SANITIZER_ANDROID
++#if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ # if defined(__x86_64__) || defined(__i386__) || defined(__s390__)
+   *addr = ThreadSelf();
+   *size = GetTlsSize();
+diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform.h gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform.h
+--- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform.h	2020-07-23 07:35:19.140404337 +0100
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform.h	2021-02-21 19:54:49.563050984 +0000
+@@ -15,7 +15,7 @@
+ #if !defined(__linux__) && !defined(__FreeBSD__) && !defined(__NetBSD__) && \
+   !defined(__OpenBSD__) && !defined(__APPLE__) && !defined(_WIN32) && \
+   !defined(__Fuchsia__) && !defined(__rtems__) && \
+-  !(defined(__sun__) && defined(__svr4__))
++  !(defined(__sun__) && defined(__svr4__)) && !defined(__onyx__)
+ # error "This operating system is not supported"
+ #endif
+ 
+@@ -110,9 +110,15 @@
+ # define SANITIZER_RTEMS 0
+ #endif
+ 
++#if defined(__onyx__)
++# define SANITIZER_ONYX 1
++#else
++# define SANITIZER_ONYX 0
++#endif
++
+ #define SANITIZER_POSIX \
+   (SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_MAC || \
+-    SANITIZER_NETBSD || SANITIZER_OPENBSD || SANITIZER_SOLARIS)
++    SANITIZER_NETBSD || SANITIZER_OPENBSD || SANITIZER_SOLARIS || SANITIZER_ONYX)
+ 
+ #if __LP64__ || defined(_WIN64)
+ #  define SANITIZER_WORDSIZE 64
+diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h
+--- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h	2020-07-23 07:35:19.140404337 +0100
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h	2021-02-21 20:22:44.032098823 +0000
+@@ -126,6 +126,12 @@
+ # define SI_LINUX_NOT_FREEBSD 0
+ #endif
+ 
++#if SANITIZER_ONYX
++# define SI_ONYX 1
++#else
++# define SI_ONYX 0
++#endif
++
+ #define SANITIZER_INTERCEPT_STRLEN SI_NOT_FUCHSIA
+ #define SANITIZER_INTERCEPT_STRNLEN (SI_NOT_MAC && SI_NOT_FUCHSIA)
+ #define SANITIZER_INTERCEPT_STRCMP SI_NOT_FUCHSIA
+@@ -159,7 +165,7 @@
+ #define SANITIZER_INTERCEPT_MEMMEM (SI_POSIX && !SI_MAC_DEPLOYMENT_BELOW_10_7)
+ #define SANITIZER_INTERCEPT_MEMCHR SI_NOT_FUCHSIA
+ #define SANITIZER_INTERCEPT_MEMRCHR \
+-  (SI_FREEBSD || SI_LINUX || SI_NETBSD || SI_OPENBSD)
++  (SI_FREEBSD || SI_LINUX || SI_NETBSD || SI_OPENBSD || SI_ONYX)
+ 
+ #define SANITIZER_INTERCEPT_READ SI_POSIX
+ #define SANITIZER_INTERCEPT_PREAD SI_POSIX
+@@ -172,17 +178,17 @@
+ #define SANITIZER_INTERCEPT_FPUTS SI_POSIX
+ #define SANITIZER_INTERCEPT_PUTS SI_POSIX
+ 
+-#define SANITIZER_INTERCEPT_PREAD64 SI_LINUX_NOT_ANDROID || SI_SOLARIS32
+-#define SANITIZER_INTERCEPT_PWRITE64 SI_LINUX_NOT_ANDROID || SI_SOLARIS32
++#define SANITIZER_INTERCEPT_PREAD64 SI_LINUX_NOT_ANDROID || SI_SOLARIS32 || SI_ONYX
++#define SANITIZER_INTERCEPT_PWRITE64 SI_LINUX_NOT_ANDROID || SI_SOLARIS32 || SI_ONYX
+ 
+ #define SANITIZER_INTERCEPT_READV SI_POSIX
+ #define SANITIZER_INTERCEPT_WRITEV SI_POSIX
+ 
+ #define SANITIZER_INTERCEPT_PREADV \
+-  (SI_FREEBSD || SI_NETBSD || SI_OPENBSD || SI_LINUX_NOT_ANDROID)
+-#define SANITIZER_INTERCEPT_PWRITEV SI_LINUX_NOT_ANDROID
+-#define SANITIZER_INTERCEPT_PREADV64 SI_LINUX_NOT_ANDROID
+-#define SANITIZER_INTERCEPT_PWRITEV64 SI_LINUX_NOT_ANDROID
++  (SI_FREEBSD || SI_NETBSD || SI_OPENBSD || SI_LINUX_NOT_ANDROID || SI_ONYX)
++#define SANITIZER_INTERCEPT_PWRITEV SI_LINUX_NOT_ANDROID || SI_ONYX
++#define SANITIZER_INTERCEPT_PREADV64 SI_LINUX_NOT_ANDROID || SI_ONYX
++#define SANITIZER_INTERCEPT_PWRITEV64 SI_LINUX_NOT_ANDROID || SI_ONYX
+ 
+ #define SANITIZER_INTERCEPT_PRCTL   SI_LINUX
+ 
+@@ -207,10 +213,10 @@
+ #define SANITIZER_INTERCEPT_GETPWNAM_AND_FRIENDS SI_POSIX
+ #define SANITIZER_INTERCEPT_GETPWNAM_R_AND_FRIENDS                            \
+   (SI_FREEBSD || SI_NETBSD || SI_OPENBSD || SI_MAC || SI_LINUX_NOT_ANDROID || \
+-  SI_SOLARIS)
++  SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_GETPWENT                                          \
+   (SI_FREEBSD || SI_NETBSD || SI_OPENBSD || SI_MAC || SI_LINUX_NOT_ANDROID || \
+-  SI_SOLARIS)
++  SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_FGETGRENT_R                                       \
+   (SI_FREEBSD || SI_OPENBSD || SI_LINUX_NOT_ANDROID || SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_FGETPWENT SI_LINUX_NOT_ANDROID || SI_SOLARIS
+@@ -219,9 +225,9 @@
+ #define SANITIZER_INTERCEPT_FGETPWENT_R \
+   (SI_FREEBSD || SI_OPENBSD || SI_LINUX_NOT_ANDROID || SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_SETPWENT \
+-  (SI_MAC || SI_LINUX_NOT_ANDROID || SI_SOLARIS)
++  (SI_MAC || SI_LINUX_NOT_ANDROID || SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_CLOCK_GETTIME \
+-  (SI_FREEBSD || SI_NETBSD || SI_OPENBSD || SI_LINUX || SI_SOLARIS)
++  (SI_FREEBSD || SI_NETBSD || SI_OPENBSD || SI_LINUX || SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_GETITIMER SI_POSIX
+ #define SANITIZER_INTERCEPT_TIME SI_POSIX
+ #define SANITIZER_INTERCEPT_GLOB SI_LINUX_NOT_ANDROID || SI_SOLARIS
+@@ -235,29 +241,29 @@
+ #define SANITIZER_INTERCEPT_GETHOSTBYNAME SI_POSIX
+ #define SANITIZER_INTERCEPT_GETHOSTBYNAME2 SI_POSIX && !SI_SOLARIS
+ #define SANITIZER_INTERCEPT_GETHOSTBYNAME_R \
+-  (SI_FREEBSD || SI_LINUX || SI_SOLARIS)
++  (SI_FREEBSD || SI_LINUX || SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_GETHOSTBYNAME2_R \
+-  (SI_FREEBSD || SI_LINUX_NOT_ANDROID)
++  (SI_FREEBSD || SI_LINUX_NOT_ANDROID || SI_ONYX)
+ #define SANITIZER_INTERCEPT_GETHOSTBYADDR_R \
+-  (SI_FREEBSD || SI_LINUX_NOT_ANDROID || SI_SOLARIS)
++  (SI_FREEBSD || SI_LINUX_NOT_ANDROID || SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_GETHOSTENT_R \
+-  (SI_FREEBSD || SI_LINUX_NOT_ANDROID || SI_SOLARIS)
++  (SI_FREEBSD || SI_LINUX_NOT_ANDROID || SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_GETSOCKOPT SI_POSIX
+ #define SANITIZER_INTERCEPT_ACCEPT SI_POSIX
+ #define SANITIZER_INTERCEPT_ACCEPT4 \
+-  (SI_LINUX_NOT_ANDROID || SI_NETBSD || SI_OPENBSD)
++  (SI_LINUX_NOT_ANDROID || SI_NETBSD || SI_OPENBSD || SI_ONYX)
+ #define SANITIZER_INTERCEPT_PACCEPT SI_NETBSD
+ #define SANITIZER_INTERCEPT_MODF SI_POSIX
+ #define SANITIZER_INTERCEPT_RECVMSG SI_POSIX
+ #define SANITIZER_INTERCEPT_SENDMSG SI_POSIX
+-#define SANITIZER_INTERCEPT_RECVMMSG SI_LINUX
+-#define SANITIZER_INTERCEPT_SENDMMSG SI_LINUX
++#define SANITIZER_INTERCEPT_RECVMMSG SI_LINUX || SI_ONYX
++#define SANITIZER_INTERCEPT_SENDMMSG SI_LINUX || SI_ONYX
+ #define SANITIZER_INTERCEPT_GETPEERNAME SI_POSIX
+ #define SANITIZER_INTERCEPT_IOCTL SI_POSIX
+ #define SANITIZER_INTERCEPT_INET_ATON SI_POSIX
+ #define SANITIZER_INTERCEPT_SYSINFO SI_LINUX
+ #define SANITIZER_INTERCEPT_READDIR SI_POSIX
+-#define SANITIZER_INTERCEPT_READDIR64 SI_LINUX_NOT_ANDROID || SI_SOLARIS32
++#define SANITIZER_INTERCEPT_READDIR64 SI_LINUX_NOT_ANDROID || SI_SOLARIS32 || SI_ONYX
+ #if SI_LINUX_NOT_ANDROID && \
+   (defined(__i386) || defined(__x86_64) || defined(__mips64) || \
+     defined(__powerpc64__) || defined(__aarch64__) || defined(__arm__) || \
+@@ -272,7 +278,7 @@
+ #define SANITIZER_INTERCEPT_STRTOIMAX SI_POSIX
+ #define SANITIZER_INTERCEPT_MBSTOWCS SI_POSIX
+ #define SANITIZER_INTERCEPT_MBSNRTOWCS \
+-  (SI_MAC || SI_LINUX_NOT_ANDROID || SI_SOLARIS)
++  (SI_MAC || SI_LINUX_NOT_ANDROID || SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_WCSTOMBS SI_POSIX
+ #define SANITIZER_INTERCEPT_STRXFRM SI_POSIX
+ #define SANITIZER_INTERCEPT___STRXFRM_L SI_LINUX
+@@ -280,17 +286,17 @@
+ #define SANITIZER_INTERCEPT___WCSXFRM_L SI_LINUX
+ #define SANITIZER_INTERCEPT_WCSNRTOMBS                                        \
+   (SI_FREEBSD || SI_NETBSD || SI_OPENBSD || SI_MAC || SI_LINUX_NOT_ANDROID || \
+-  SI_SOLARIS)
++  SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_WCRTOMB                                           \
+   (SI_FREEBSD || SI_NETBSD || SI_OPENBSD || SI_MAC || SI_LINUX_NOT_ANDROID || \
+-  SI_SOLARIS)
++  SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_WCTOMB                                           \
+   (SI_FREEBSD || SI_NETBSD || SI_OPENBSD || SI_MAC || SI_LINUX_NOT_ANDROID || \
+-  SI_SOLARIS)
+-#define SANITIZER_INTERCEPT_TCGETATTR SI_LINUX_NOT_ANDROID || SI_SOLARIS
++  SI_SOLARIS || SI_ONYX)
++#define SANITIZER_INTERCEPT_TCGETATTR SI_LINUX_NOT_ANDROID || SI_SOLARIS || SI_ONYX
+ #define SANITIZER_INTERCEPT_REALPATH SI_POSIX
+ #define SANITIZER_INTERCEPT_CANONICALIZE_FILE_NAME \
+-  (SI_LINUX_NOT_ANDROID || SI_SOLARIS)
++  (SI_LINUX_NOT_ANDROID || SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_CONFSTR                                           \
+   (SI_FREEBSD || SI_NETBSD || SI_OPENBSD || SI_MAC || SI_LINUX_NOT_ANDROID || \
+   SI_SOLARIS)
+@@ -309,10 +315,10 @@
+   (SI_FREEBSD || SI_NETBSD || (SI_MAC && !SI_IOS) || SI_LINUX_NOT_ANDROID || \
+     SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_SIGWAIT SI_POSIX
+-#define SANITIZER_INTERCEPT_SIGWAITINFO SI_LINUX_NOT_ANDROID || SI_SOLARIS
+-#define SANITIZER_INTERCEPT_SIGTIMEDWAIT SI_LINUX_NOT_ANDROID || SI_SOLARIS
++#define SANITIZER_INTERCEPT_SIGWAITINFO SI_LINUX_NOT_ANDROID || SI_SOLARIS || SI_ONYX
++#define SANITIZER_INTERCEPT_SIGTIMEDWAIT SI_LINUX_NOT_ANDROID || SI_SOLARIS || SI_ONYX
+ #define SANITIZER_INTERCEPT_SIGSETOPS \
+-  (SI_FREEBSD || SI_NETBSD || SI_MAC || SI_LINUX_NOT_ANDROID || SI_SOLARIS)
++  (SI_FREEBSD || SI_NETBSD || SI_MAC || SI_LINUX_NOT_ANDROID || SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_SIGPENDING SI_POSIX
+ #define SANITIZER_INTERCEPT_SIGPROCMASK SI_POSIX
+ #define SANITIZER_INTERCEPT_PTHREAD_SIGMASK SI_POSIX
+@@ -362,11 +368,11 @@
+   (SI_LINUX_NOT_ANDROID && !SI_NETBSD && !SI_OPENBSD)
+ #define SANITIZER_INTERCEPT_THR_EXIT SI_FREEBSD
+ #define SANITIZER_INTERCEPT_TMPNAM SI_POSIX
+-#define SANITIZER_INTERCEPT_TMPNAM_R SI_LINUX_NOT_ANDROID || SI_SOLARIS
++#define SANITIZER_INTERCEPT_TMPNAM_R SI_LINUX_NOT_ANDROID || SI_SOLARIS || SI_ONYX
+ #define SANITIZER_INTERCEPT_TTYNAME SI_POSIX
+ #define SANITIZER_INTERCEPT_TTYNAME_R SI_POSIX
+ #define SANITIZER_INTERCEPT_TEMPNAM SI_POSIX
+-#define SANITIZER_INTERCEPT_SINCOS SI_LINUX || SI_SOLARIS
++#define SANITIZER_INTERCEPT_SINCOS SI_LINUX || SI_SOLARIS || SI_ONYX
+ #define SANITIZER_INTERCEPT_REMQUO SI_POSIX
+ #define SANITIZER_INTERCEPT_REMQUOL (SI_POSIX && !SI_NETBSD)
+ #define SANITIZER_INTERCEPT_LGAMMA SI_POSIX
+@@ -386,7 +392,7 @@
+   (SI_FREEBSD || SI_NETBSD || SI_OPENBSD || SI_LINUX_NOT_ANDROID || SI_SOLARIS)
+ 
+ #define SANITIZER_INTERCEPT__EXIT \
+-  (SI_LINUX || SI_FREEBSD || SI_NETBSD || SI_OPENBSD || SI_MAC || SI_SOLARIS)
++  (SI_LINUX || SI_FREEBSD || SI_NETBSD || SI_OPENBSD || SI_MAC || SI_SOLARIS || SI_ONYX)
+ 
+ #define SANITIZER_INTERCEPT_PTHREAD_MUTEX SI_POSIX
+ #define SANITIZER_INTERCEPT___PTHREAD_MUTEX SI_LINUX_NOT_ANDROID
+@@ -529,7 +535,7 @@
+ #define SANITIZER_INTERCEPT_PROTOENT SI_NETBSD
+ #define SANITIZER_INTERCEPT_NETENT SI_NETBSD
+ #define SANITIZER_INTERCEPT_SETVBUF (SI_NETBSD || SI_FREEBSD || \
+-  SI_LINUX || SI_MAC)
++  SI_LINUX || SI_MAC || SI_ONYX)
+ #define SANITIZER_INTERCEPT_GETMNTINFO (SI_NETBSD || SI_FREEBSD || SI_MAC)
+ #define SANITIZER_INTERCEPT_MI_VECTOR_HASH SI_NETBSD
+ #define SANITIZER_INTERCEPT_GETVFSSTAT SI_NETBSD
+diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp
+--- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp	2020-07-23 07:35:19.140404337 +0100
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp	2021-02-28 04:47:09.723413884 +0000
+@@ -13,7 +13,7 @@
+ 
+ #include "sanitizer_platform.h"
+ 
+-#if SANITIZER_LINUX || SANITIZER_MAC
++#if SANITIZER_LINUX || SANITIZER_MAC || SANITIZER_ONYX
+ // Tests in this file assume that off_t-dependent data structures match the
+ // libc ABI. For example, struct dirent here is what readdir() function (as
+ // exported from libc) returns, and not the user-facing "dirent", which
+@@ -57,7 +57,7 @@
+ #include <net/route.h>
+ #endif
+ 
+-#if !SANITIZER_ANDROID
++#if !SANITIZER_ANDROID && !SANITIZER_ONYX
+ #include <fstab.h>
+ #include <sys/mount.h>
+ #include <sys/timeb.h>
+@@ -163,6 +163,16 @@
+ #include <sys/sockio.h>
+ #endif
+ 
++#if SANITIZER_ONYX
++#include <sys/ioctl.h>
++#include <utime.h>
++#include <stdio.h>
++#include <net/ethernet.h>
++#include <netinet/ether.h>
++#include <net/if.h>
++#include <sys/timeb.h>
++#endif
++
+ // Include these after system headers to avoid name clashes and ambiguities.
+ #include "sanitizer_internal_defs.h"
+ #include "sanitizer_platform_limits_posix.h"
+@@ -200,7 +210,7 @@
+   unsigned struct_statfs64_sz = sizeof(struct statfs64);
+ #endif // SANITIZER_MAC && !SANITIZER_IOS
+ 
+-#if !SANITIZER_ANDROID
++#if !SANITIZER_ANDROID && !SANITIZER_ONYX
+   unsigned struct_fstab_sz = sizeof(struct fstab);
+   unsigned struct_statfs_sz = sizeof(struct statfs);
+   unsigned struct_sockaddr_sz = sizeof(struct sockaddr);
+@@ -218,7 +228,7 @@
+   unsigned struct_oldold_utsname_sz = sizeof(struct oldold_utsname);
+ #endif // SANITIZER_LINUX
+ 
+-#if SANITIZER_LINUX
++#if SANITIZER_LINUX || SANITIZER_ONYX
+   unsigned struct_rlimit_sz = sizeof(struct rlimit);
+   unsigned struct_timespec_sz = sizeof(struct timespec);
+   unsigned struct_utimbuf_sz = sizeof(struct utimbuf);
+@@ -471,7 +481,7 @@
+   unsigned struct_ppp_stats_sz = sizeof(struct ppp_stats);
+ #endif // (SANITIZER_LINUX || SANITIZER_FREEBSD) && !SANITIZER_ANDROID
+ 
+-#if !SANITIZER_ANDROID && !SANITIZER_MAC
++#if !SANITIZER_ANDROID && !SANITIZER_MAC && !SANITIZER_ONYX
+   unsigned struct_sioc_sg_req_sz = sizeof(struct sioc_sg_req);
+   unsigned struct_sioc_vif_req_sz = sizeof(struct sioc_vif_req);
+ #endif
+@@ -524,6 +534,7 @@
+   unsigned IOCTL_TIOCSPGRP = TIOCSPGRP;
+   unsigned IOCTL_TIOCSTI = TIOCSTI;
+   unsigned IOCTL_TIOCSWINSZ = TIOCSWINSZ;
++
+ #if SANITIZER_LINUX && !SANITIZER_ANDROID
+   unsigned IOCTL_SIOCGETSGCNT = SIOCGETSGCNT;
+   unsigned IOCTL_SIOCGETVIFCNT = SIOCGETVIFCNT;
+@@ -1157,7 +1168,7 @@
+ CHECK_SIZE_AND_OFFSET(ifaddrs, ifa_name);
+ CHECK_SIZE_AND_OFFSET(ifaddrs, ifa_addr);
+ CHECK_SIZE_AND_OFFSET(ifaddrs, ifa_netmask);
+-#if SANITIZER_LINUX || SANITIZER_FREEBSD
++#if SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_ONYX
+ // Compare against the union, because we can't reach into the union in a
+ // compliant way.
+ #ifdef ifa_dstaddr
+diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h
+--- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h	2020-07-23 07:35:19.140404337 +0100
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h	2021-02-28 04:36:11.895395090 +0000
+@@ -14,7 +14,7 @@
+ #ifndef SANITIZER_PLATFORM_LIMITS_POSIX_H
+ #define SANITIZER_PLATFORM_LIMITS_POSIX_H
+ 
+-#if SANITIZER_LINUX || SANITIZER_MAC
++#if SANITIZER_LINUX || SANITIZER_ONYX || SANITIZER_MAC
+ 
+ #include "sanitizer_internal_defs.h"
+ #include "sanitizer_platform.h"
+@@ -119,7 +119,7 @@
+ const unsigned struct_kexec_segment_sz = 4 * sizeof(unsigned long);
+ #endif  // SANITIZER_LINUX
+ 
+-#if SANITIZER_LINUX
++#if SANITIZER_LINUX || SANITIZER_ONYX
+ 
+ #if defined(__powerpc64__) || defined(__s390__)
+ const unsigned struct___old_kernel_stat_sz = 0;
+@@ -174,11 +174,11 @@
+   int data[4];
+ #elif SANITIZER_ANDROID && !defined(_LP64)
+   int data;
+-#elif SANITIZER_LINUX
++#elif SANITIZER_LINUX || SANITIZER_ONYX
+   uptr data[4];
+ #endif
+ };
+-#endif // SANITIZER_LINUX
++#endif // SANITIZER_LINUX || SANITIZER_ONYX
+ 
+ #if SANITIZER_ANDROID
+ struct __sanitizer_struct_mallinfo {
+@@ -186,7 +186,7 @@
+ };
+ #endif
+ 
+-#if SANITIZER_LINUX && !SANITIZER_ANDROID
++#if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ struct __sanitizer_struct_mallinfo {
+   int v[10];
+ };
+@@ -441,6 +441,42 @@
+   int cmsg_level;
+   int cmsg_type;
+ };
++#elif SANITIZER_ONYX
++
++struct __sanitizer_msghdr {
++	void *msg_name;
++	unsigned int msg_namelen;
++	struct __sanitizer_iovec *msg_iov;
++#if __LONG_MAX > 0x7fffffff && __BYTE_ORDER == __BIG_ENDIAN
++	int __pad1;
++#endif
++	int msg_iovlen;
++#if __LONG_MAX > 0x7fffffff && __BYTE_ORDER == __LITTLE_ENDIAN
++	int __pad1;
++#endif
++	void *msg_control;
++#if __LONG_MAX > 0x7fffffff && __BYTE_ORDER == __BIG_ENDIAN
++	int __pad2;
++#endif
++	unsigned int msg_controllen;
++#if __LONG_MAX > 0x7fffffff && __BYTE_ORDER == __LITTLE_ENDIAN
++	int __pad2;
++#endif
++	int msg_flags;
++};
++
++struct __sanitizer_cmsghdr {
++#if __LONG_MAX > 0x7fffffff && __BYTE_ORDER == __BIG_ENDIAN
++	int __pad1;
++#endif
++	unsigned int cmsg_len;
++#if __LONG_MAX > 0x7fffffff && __BYTE_ORDER == __LITTLE_ENDIAN
++	int __pad1;
++#endif
++	int cmsg_level;
++	int cmsg_type;
++};
++
+ #else
+ struct __sanitizer_msghdr {
+   void *msg_name;
+@@ -458,7 +494,7 @@
+ };
+ #endif
+ 
+-#if SANITIZER_LINUX
++#if SANITIZER_LINUX || SANITIZER_ONYX
+ struct __sanitizer_mmsghdr {
+   __sanitizer_msghdr msg_hdr;
+   unsigned int msg_len;
+@@ -488,7 +524,7 @@
+ };
+ #endif
+ 
+-#if SANITIZER_LINUX && !SANITIZER_ANDROID
++#if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ struct __sanitizer_dirent64 {
+   unsigned long long d_ino;
+   unsigned long long d_off;
+@@ -503,11 +539,11 @@
+ typedef long __sanitizer_clock_t;
+ #endif
+ 
+-#if SANITIZER_LINUX
++#if (SANITIZER_LINUX || SANITIZER_ONYX)
+ typedef int __sanitizer_clockid_t;
+ #endif
+ 
+-#if SANITIZER_LINUX
++#if (SANITIZER_LINUX || SANITIZER_ONYX)
+ #if defined(_LP64) || defined(__x86_64__) || defined(__powerpc__) || \
+     defined(__mips__)
+ typedef unsigned __sanitizer___kernel_uid_t;
+@@ -551,7 +587,7 @@
+ # endif
+ #elif SANITIZER_MAC
+ typedef unsigned __sanitizer_sigset_t;
+-#elif SANITIZER_LINUX
++#elif (SANITIZER_LINUX || SANITIZER_ONYX)
+ struct __sanitizer_sigset_t {
+   // The size is determined by looking at sizeof of real sigset_t on linux.
+   uptr val[128 / sizeof(uptr)];
+@@ -634,7 +670,7 @@
+ #endif
+ #endif
+ #endif
+-#if SANITIZER_LINUX
++#if SANITIZER_LINUX || SANITIZER_ONYX
+   void (*sa_restorer)();
+ #endif
+ #if defined(__mips__) && (SANITIZER_WORDSIZE == 32)
+@@ -684,7 +720,7 @@
+ extern const uptr sig_err;
+ extern const uptr sa_siginfo;
+ 
+-#if SANITIZER_LINUX
++#if (SANITIZER_LINUX || SANITIZER_ONYX)
+ extern int e_tabsz;
+ #endif
+ 
+@@ -692,7 +728,7 @@
+ extern int af_inet6;
+ uptr __sanitizer_in_addr_sz(int af);
+ 
+-#if SANITIZER_LINUX
++#if (SANITIZER_LINUX || SANITIZER_ONYX)
+ struct __sanitizer_dl_phdr_info {
+   uptr dlpi_addr;
+   const char *dlpi_name;
+@@ -741,7 +777,7 @@
+ #endif
+ 
+ #if !SANITIZER_ANDROID
+-# if SANITIZER_LINUX
++# if (SANITIZER_LINUX || SANITIZER_ONYX)
+ struct __sanitizer_glob_t {
+   uptr gl_pathc;
+   char **gl_pathv;
+@@ -754,9 +790,9 @@
+   int (*gl_lstat)(const char *, void *);
+   int (*gl_stat)(const char *, void *);
+ };
+-# endif  // SANITIZER_LINUX
++# endif  // (SANITIZER_LINUX || SANITIZER_ONYX)
+ 
+-# if SANITIZER_LINUX
++# if (SANITIZER_LINUX || SANITIZER_ONYX)
+ extern int glob_nomatch;
+ extern int glob_altdirfunc;
+ # endif
+@@ -770,7 +806,7 @@
+   uptr we_offs;
+ };
+ 
+-#if SANITIZER_LINUX && !SANITIZER_ANDROID
++#if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ struct __sanitizer_FILE {
+   int _flags;
+   char *_IO_read_ptr;
+@@ -794,7 +830,7 @@
+ # define SANITIZER_HAS_STRUCT_FILE 0
+ #endif
+ 
+-#if SANITIZER_LINUX && !SANITIZER_ANDROID &&                               \
++#if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID &&                               \
+     (defined(__i386) || defined(__x86_64) || defined(__mips64) ||          \
+      defined(__powerpc64__) || defined(__aarch64__) || defined(__arm__) || \
+      defined(__s390__))
+@@ -821,7 +857,7 @@
+ extern int ptrace_geteventmsg;
+ #endif
+ 
+-#if SANITIZER_LINUX  && !SANITIZER_ANDROID
++#if (SANITIZER_LINUX || SANITIZER_ONYX)  && !SANITIZER_ANDROID
+ extern unsigned struct_shminfo_sz;
+ extern unsigned struct_shm_info_sz;
+ extern int shmctl_ipc_stat;
+@@ -851,7 +887,7 @@
+ };
+ #endif
+ 
+-#if SANITIZER_LINUX && !SANITIZER_ANDROID
++#if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ struct __sanitizer__obstack_chunk {
+   char *limit;
+   struct __sanitizer__obstack_chunk *prev;
+@@ -928,7 +964,7 @@
+ extern unsigned struct_termios_sz;
+ extern unsigned struct_winsize_sz;
+ 
+-#if SANITIZER_LINUX
++#if (SANITIZER_LINUX || SANITIZER_ONYX)
+ extern unsigned struct_arpreq_sz;
+ extern unsigned struct_cdrom_msf_sz;
+ extern unsigned struct_cdrom_multisession_sz;
+@@ -956,9 +992,9 @@
+ extern unsigned struct_vt_consize_sz;
+ extern unsigned struct_vt_sizes_sz;
+ extern unsigned struct_vt_stat_sz;
+-#endif  // SANITIZER_LINUX
++#endif  // (SANITIZER_LINUX || SANITIZER_ONYX)
+ 
+-#if SANITIZER_LINUX
++#if (SANITIZER_LINUX || SANITIZER_ONYX)
+ extern unsigned struct_copr_buffer_sz;
+ extern unsigned struct_copr_debug_buf_sz;
+ extern unsigned struct_copr_msg_sz;
+@@ -970,9 +1006,9 @@
+ extern unsigned struct_seq_event_rec_sz;
+ extern unsigned struct_synth_info_sz;
+ extern unsigned struct_vt_mode_sz;
+-#endif // SANITIZER_LINUX
++#endif // (SANITIZER_LINUX || SANITIZER_ONYX)
+ 
+-#if SANITIZER_LINUX && !SANITIZER_ANDROID
++#if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ extern unsigned struct_ax25_parms_struct_sz;
+ extern unsigned struct_cyclades_monitor_sz;
+ extern unsigned struct_input_keymap_entry_sz;
+@@ -990,14 +1026,14 @@
+ extern unsigned struct_sockaddr_ax25_sz;
+ extern unsigned struct_unimapdesc_sz;
+ extern unsigned struct_unimapinit_sz;
+-#endif  // SANITIZER_LINUX && !SANITIZER_ANDROID
++#endif  // (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ 
+ extern const unsigned long __sanitizer_bufsiz;
+ 
+-#if SANITIZER_LINUX && !SANITIZER_ANDROID
++#if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ extern unsigned struct_audio_buf_info_sz;
+ extern unsigned struct_ppp_stats_sz;
+-#endif  // (SANITIZER_LINUX || SANITIZER_FREEBSD) && !SANITIZER_ANDROID
++#endif  // ((SANITIZER_LINUX || SANITIZER_ONYX) || SANITIZER_FREEBSD) && !SANITIZER_ANDROID
+ 
+ #if !SANITIZER_ANDROID && !SANITIZER_MAC
+ extern unsigned struct_sioc_sg_req_sz;
+@@ -1054,11 +1090,11 @@
+ extern unsigned IOCTL_TIOCSPGRP;
+ extern unsigned IOCTL_TIOCSTI;
+ extern unsigned IOCTL_TIOCSWINSZ;
+-#if SANITIZER_LINUX && !SANITIZER_ANDROID
++#if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ extern unsigned IOCTL_SIOCGETSGCNT;
+ extern unsigned IOCTL_SIOCGETVIFCNT;
+ #endif
+-#if SANITIZER_LINUX
++#if (SANITIZER_LINUX || SANITIZER_ONYX)
+ extern unsigned IOCTL_EVIOCGABS;
+ extern unsigned IOCTL_EVIOCGBIT;
+ extern unsigned IOCTL_EVIOCGEFFECTS;
+@@ -1316,9 +1352,9 @@
+ extern unsigned IOCTL_VT_RELDISP;
+ extern unsigned IOCTL_VT_SETMODE;
+ extern unsigned IOCTL_VT_WAITACTIVE;
+-#endif  // SANITIZER_LINUX
++#endif  // (SANITIZER_LINUX || SANITIZER_ONYX)
+ 
+-#if SANITIZER_LINUX && !SANITIZER_ANDROID
++#if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ extern unsigned IOCTL_CYGETDEFTHRESH;
+ extern unsigned IOCTL_CYGETDEFTIMEOUT;
+ extern unsigned IOCTL_CYGETMON;
+@@ -1441,6 +1477,6 @@
+ 
+ #define SIGACTION_SYMNAME sigaction
+ 
+-#endif  // SANITIZER_LINUX || SANITIZER_MAC
++#endif  // (SANITIZER_LINUX || SANITIZER_ONYX) || SANITIZER_MAC
+ 
+ #endif
+diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_common.cpp gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_common.cpp
+--- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_common.cpp	2020-07-23 07:35:19.144404383 +0100
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_common.cpp	2021-02-28 04:48:37.753416399 +0000
+@@ -12,7 +12,7 @@
+ #include "sanitizer_platform.h"
+ 
+ #if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||                \
+-    SANITIZER_OPENBSD || SANITIZER_SOLARIS
++    SANITIZER_OPENBSD || SANITIZER_SOLARIS | SANITIZER_ONYX
+ 
+ #include "sanitizer_common.h"
+ #include "sanitizer_placement_new.h"
+diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps.h gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps.h
+--- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps.h	2020-07-23 07:35:19.144404383 +0100
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps.h	2021-02-21 20:03:01.695065044 +0000
+@@ -16,7 +16,7 @@
+ #include "sanitizer_platform.h"
+ 
+ #if SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD ||                \
+-    SANITIZER_OPENBSD || SANITIZER_MAC || SANITIZER_SOLARIS
++    SANITIZER_OPENBSD || SANITIZER_MAC || SANITIZER_SOLARIS || SANITIZER_ONYX
+ 
+ #include "sanitizer_common.h"
+ #include "sanitizer_internal_defs.h"
+diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_linux.cpp gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_linux.cpp
+--- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_linux.cpp	2020-07-23 07:35:19.144404383 +0100
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_linux.cpp	2021-02-28 04:49:50.625418481 +0000
+@@ -10,7 +10,7 @@
+ //===----------------------------------------------------------------------===//
+ 
+ #include "sanitizer_platform.h"
+-#if SANITIZER_LINUX
++#if SANITIZER_LINUX || SANITIZER_ONYX
+ #include "sanitizer_common.h"
+ #include "sanitizer_procmaps.h"
+ 
+diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp
+--- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp	2020-07-23 07:35:19.144404383 +0100
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp	2021-02-28 04:54:55.128427181 +0000
+@@ -12,7 +12,7 @@
+ 
+ #include "sanitizer_platform.h"
+ #if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD || \
+-    SANITIZER_SOLARIS
++    SANITIZER_SOLARIS || SANITIZER_ONYX
+ #include "sanitizer_common.h"
+ #include "sanitizer_stacktrace.h"
+ 
+@@ -177,4 +177,4 @@
+ }  // namespace __sanitizer
+ 
+ #endif  // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||
+-        // SANITIZER_SOLARIS
++        // SANITIZER_SOLARIS || SANITIZER_ONYX
+diff -Naur gcc-10.2.0/libsanitizer/tsan/tsan_interceptors_posix.cpp gcc-10.2.0-patched/libsanitizer/tsan/tsan_interceptors_posix.cpp
+--- gcc-10.2.0/libsanitizer/tsan/tsan_interceptors_posix.cpp	2020-07-23 07:35:19.144404383 +0100
++++ gcc-10.2.0-patched/libsanitizer/tsan/tsan_interceptors_posix.cpp	2021-02-21 20:16:55.746088873 +0000
+@@ -1048,7 +1048,7 @@
+   REAL(pthread_exit)(retval);
+ }
+ 
+-#if SANITIZER_LINUX
++#if SANITIZER_LINUX || SANITIZER_ONYX
+ TSAN_INTERCEPTOR(int, pthread_tryjoin_np, void *th, void **ret) {
+   SCOPED_TSAN_INTERCEPTOR(pthread_tryjoin_np, th, ret);
+   int tid = ThreadTid(thr, pc, (uptr)th);
+@@ -1467,7 +1467,7 @@
+ #endif
+ 
+ TSAN_INTERCEPTOR(int, fstat, int fd, void *buf) {
+-#if SANITIZER_FREEBSD || SANITIZER_MAC || SANITIZER_ANDROID || SANITIZER_NETBSD
++#if SANITIZER_FREEBSD || SANITIZER_MAC || SANITIZER_ANDROID || SANITIZER_NETBSD || SANITIZER_ONYX
+   SCOPED_TSAN_INTERCEPTOR(fstat, fd, buf);
+   if (fd > 0)
+     FdAccess(thr, pc, fd);
+@@ -2669,7 +2669,7 @@
+   TSAN_INTERCEPT(pthread_join);
+   TSAN_INTERCEPT(pthread_detach);
+   TSAN_INTERCEPT(pthread_exit);
+-  #if SANITIZER_LINUX
++  #if SANITIZER_LINUX || SANITIZER_ONYX
+   TSAN_INTERCEPT(pthread_tryjoin_np);
+   TSAN_INTERCEPT(pthread_timedjoin_np);
+   #endif
+diff -Naur gcc-10.2.0/libsanitizer/tsan/tsan_platform_linux.cpp gcc-10.2.0-patched/libsanitizer/tsan/tsan_platform_linux.cpp
+--- gcc-10.2.0/libsanitizer/tsan/tsan_platform_linux.cpp	2020-07-23 07:35:19.144404383 +0100
++++ gcc-10.2.0-patched/libsanitizer/tsan/tsan_platform_linux.cpp	2021-02-21 20:27:03.996106250 +0000
+@@ -13,7 +13,7 @@
+ 
+ 
+ #include "sanitizer_common/sanitizer_platform.h"
+-#if SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD
++#if SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD || SANITIZER_ONYX
+ 
+ #include "sanitizer_common/sanitizer_common.h"
+ #include "sanitizer_common/sanitizer_libc.h"
+@@ -36,7 +36,7 @@
+ #include <string.h>
+ #include <stdarg.h>
+ #include <sys/mman.h>
+-#if SANITIZER_LINUX
++#if SANITIZER_LINUX || SANITIZER_ONYX
+ #include <sys/personality.h>
+ #include <setjmp.h>
+ #endif
+@@ -142,7 +142,7 @@
+       nlive, nthread);
+ }
+ 
+-#if SANITIZER_LINUX
++#if SANITIZER_LINUX || SANITIZER_ONYX
+ void FlushShadowMemoryCallback(
+     const SuspendedThreadsList &suspended_threads_list,
+     void *argument) {
+@@ -151,7 +151,7 @@
+ #endif
+ 
+ void FlushShadowMemory() {
+-#if SANITIZER_LINUX
++#if SANITIZER_LINUX || SANITIZER_ONYX
+   StopTheWorld(FlushShadowMemoryCallback, 0);
+ #endif
+ }
+@@ -350,7 +350,7 @@
+ // Reverse operation of libc stack pointer mangling
+ static uptr UnmangleLongJmpSp(uptr mangled_sp) {
+ #if defined(__x86_64__)
+-# if SANITIZER_LINUX
++# if SANITIZER_LINUX || SANITIZER_ONYX
+   // Reverse of:
+   //   xor  %fs:0x30, %rsi
+   //   rol  $0x11, %rsi
+@@ -389,7 +389,7 @@
+ # define LONG_JMP_SP_ENV_SLOT 2
+ #elif SANITIZER_NETBSD
+ # define LONG_JMP_SP_ENV_SLOT 6
+-#elif SANITIZER_LINUX
++#elif SANITIZER_LINUX || SANITIZER_ONYX
+ # ifdef __aarch64__
+ #  define LONG_JMP_SP_ENV_SLOT 13
+ # elif defined(__mips64)
+diff -Naur gcc-10.2.0/libsanitizer/tsan/tsan_rtl_amd64.S gcc-10.2.0-patched/libsanitizer/tsan/tsan_rtl_amd64.S
+--- gcc-10.2.0/libsanitizer/tsan/tsan_rtl_amd64.S	2020-07-23 07:35:19.148404426 +0100
++++ gcc-10.2.0-patched/libsanitizer/tsan/tsan_rtl_amd64.S	2021-02-21 20:28:23.479108521 +0000
+@@ -192,7 +192,7 @@
+   // obtain SP, store in %rdi, first argument to `void __tsan_setjmp(uptr sp)`
+ #if defined(__FreeBSD__) || defined(__NetBSD__)
+   lea 8(%rsp), %rdi
+-#elif defined(__linux__) || defined(__APPLE__)
++#elif defined(__linux__) || defined(__APPLE__) || defined(__onyx__)
+   lea 16(%rsp), %rdi
+ #else
+ # error "Unknown platform"
+@@ -233,7 +233,7 @@
+   // obtain SP, store in %rdi, first argument to `void __tsan_setjmp(uptr sp)`
+ #if defined(__FreeBSD__) || defined(__NetBSD__)
+   lea 8(%rsp), %rdi
+-#elif defined(__linux__) || defined(__APPLE__)
++#elif defined(__linux__) || defined(__APPLE__) || defined(__onyx__)
+   lea 16(%rsp), %rdi
+ #else
+ # error "Unknown platform"
+@@ -281,7 +281,7 @@
+   // obtain SP, store in %rdi, first argument to `void __tsan_setjmp(uptr sp)`
+ #if defined(__FreeBSD__) || defined(__NetBSD__)
+   lea 24(%rsp), %rdi
+-#elif defined(__linux__) || defined(__APPLE__)
++#elif defined(__linux__) || defined(__APPLE__) || defined(__onyx__)
+   lea 32(%rsp), %rdi
+ #else
+ # error "Unknown platform"
 diff -Naur gcc-10.2.0/libstdc++-v3/configure gcc-10.2.0-patched/libstdc++-v3/configure
 --- gcc-10.2.0/libstdc++-v3/configure	2020-07-23 07:35:19.188404867 +0100
-+++ gcc-10.2.0-patched/libstdc++-v3/configure	2020-09-24 05:12:15.015219081 +0100
++++ gcc-10.2.0-patched/libstdc++-v3/configure	2020-09-24 14:47:46.111254588 +0100
 @@ -6865,6 +6865,10 @@
    lt_cv_deplibs_check_method=pass_all
    ;;
@@ -6258,7 +7359,7 @@ diff -Naur gcc-10.2.0/libstdc++-v3/configure gcc-10.2.0-patched/libstdc++-v3/con
    # If we're not using GNU ld, then there's no point in even trying these
 diff -Naur gcc-10.2.0/libstdc++-v3/crossconfig.m4 gcc-10.2.0-patched/libstdc++-v3/crossconfig.m4
 --- gcc-10.2.0/libstdc++-v3/crossconfig.m4	2020-07-23 07:35:19.188404867 +0100
-+++ gcc-10.2.0-patched/libstdc++-v3/crossconfig.m4	2020-09-24 05:12:15.016219081 +0100
++++ gcc-10.2.0-patched/libstdc++-v3/crossconfig.m4	2020-09-24 14:47:46.112254589 +0100
 @@ -192,6 +192,12 @@
      AC_CHECK_FUNCS(sockatmark)
      AM_ICONV
@@ -6272,4 +7373,26 @@ diff -Naur gcc-10.2.0/libstdc++-v3/crossconfig.m4 gcc-10.2.0-patched/libstdc++-v
    *-mingw32*)
      GLIBCXX_CHECK_LINKER_FEATURES
      GLIBCXX_CHECK_MATH_SUPPORT
-
+diff -Naur gcc-10.2.0/PKGBUILD gcc-10.2.0-patched/PKGBUILD
+--- gcc-10.2.0/PKGBUILD	1970-01-01 01:00:00.000000000 +0100
++++ gcc-10.2.0-patched/PKGBUILD	2021-02-12 19:44:35.684740130 +0000
+@@ -0,0 +1,19 @@
++PKGNAME=gcc
++PKGVER=10.2.0
++
++build() {
++	cd ..
++	mkdir -p gcc-build
++	cd gcc-build
++	export CC_FOR_TARGET=x86_64-onyx-gcc
++	export CXX_FOR_TARGET=x86_64-onyx-g++
++	export LD_FOR_TARGET=x86_64-onyx-ld
++	../${PKGNAME}-${PKGVER}/configure --host=x86_64-onyx --prefix=/usr --with-sysroot= --with-build-sysroot=/home/pfalcato/Onyx/sysroot --enable-languages=c,c++ --disable-nls --enable-threads=posix --enable-libstdcxx-threads --enable-symvers=gnu --enable-default-pie --enable-lto --enable-default-ssp --enable-shared
++	$MAKE all-gcc all-target-libgcc all-target-libstdc++-v3
++}
++
++package() {
++	cd ../gcc-build
++	DESTDIR=$PKGDIR $MAKE install-gcc install-target-libgcc install-target-libstdc++-v3
++	cd ..
++}

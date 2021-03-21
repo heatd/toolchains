@@ -307,13 +307,14 @@ diff -Naur llvm-project-11.0.0/clang/cmake/caches/Onyx-stage2.cmake llvm-project
 +  foreach(target i386;x86_64;aarch64;riscv64)
 +    set(ONYX_${target}_COMPILER_FLAGS "--target=${target}-unknown-onyx")
 +    set(ONYX_${target}_SYSROOT "${ONYX_SRCDIR}/sysroot")
++    set(ONYX_${target}_TOOLCHAIN_FILE "${ONYX_SRCDIR}/toolchains/Onyx.cmake")
 +  endforeach()
 +
 +  foreach(target i386;x86_64)
 +    # Set the per-target builtins options.
 +    list(APPEND BUILTIN_TARGETS "${target}-unknown-onyx")
 +    set(BUILTINS_${target}-unknown-onyx_CMAKE_SYSTEM_NAME Onyx CACHE STRING "")
-+    set(BUILTINS_${target}-unknown-onyx_CMAKE_TOOLCHAIN_FILE ${ONYX_SRCDIR}/toolchains/Onyx.cmake CACHE STRING "")
++    set(BUILTINS_${target}-unknown-onyx_CMAKE_TOOLCHAIN_FILE ${ONYX_${target}_TOOLCHAIN_FILE} CACHE STRING "")
 +    set(BUILTINS_${target}-unknown-onyx_CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "")
 +    set(BUILTINS_${target}-unknown-onyx_CMAKE_ASM_FLAGS ${ONYX_${target}_COMPILER_FLAGS} CACHE STRING "")
 +    set(BUILTINS_${target}-unknown-onyx_CMAKE_C_FLAGS ${ONYX_${target}_COMPILER_FLAGS} CACHE STRING "")
@@ -328,7 +329,7 @@ diff -Naur llvm-project-11.0.0/clang/cmake/caches/Onyx-stage2.cmake llvm-project
 +    # Set the per-target runtimes options.
 +    list(APPEND RUNTIME_TARGETS "${target}-unknown-onyx")
 +    set(RUNTIMES_${target}-unknown-onyx_CMAKE_SYSTEM_NAME Onyx CACHE STRING "")
-+    set(RUNTIMES_${target}-unknown-onyx_CMAKE_TOOLCHAIN_FILE ${ONYX_SRCDIR}/toolchains/Onyx.cmake CACHE STRING "")
++    set(RUNTIMES_${target}-unknown-onyx_CMAKE_TOOLCHAIN_FILE ${ONYX_${target}_TOOLCHAIN_FILE} CACHE STRING "")
 +    set(RUNTIMES_${target}-unknown-onyx_CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "")
 +    set(RUNTIMES_${target}-unknown-onyx_CMAKE_BUILD_WITH_INSTALL_RPATH ON CACHE BOOL "")
 +    set(RUNTIMES_${target}-unknown-onyx_CMAKE_ASM_FLAGS ${ONYX_${target}_COMPILER_FLAGS} CACHE STRING "")

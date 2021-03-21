@@ -156,7 +156,7 @@ diff -Naur llvm-project-11.0.0/clang/cmake/caches/Onyx.cmake llvm-project-11.0.0
 diff -Naur llvm-project-11.0.0/clang/cmake/caches/Onyx-stage2.cmake llvm-project-11.0.0-patched/clang/cmake/caches/Onyx-stage2.cmake
 --- llvm-project-11.0.0/clang/cmake/caches/Onyx-stage2.cmake	1970-01-01 01:00:00.000000000 +0100
 +++ llvm-project-11.0.0-patched/clang/cmake/caches/Onyx-stage2.cmake	2021-02-11 23:08:17.277673848 +0000
-@@ -0,0 +1,271 @@
+@@ -0,0 +1,272 @@
 +# This file sets up a CMakeCache for the second stage of a Onyx toolchain build.
 +
 +set(LLVM_TARGETS_TO_BUILD X86 CACHE STRING "")

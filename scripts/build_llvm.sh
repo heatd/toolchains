@@ -28,7 +28,7 @@ cd build
 # Don't build the linux target on other systems, since we don't provide a sysroot for linux
 LINUX_OPTIONS=""
 
-if [ uname -s = "Linux" ]
+if [ uname -s = "Linux" ]; then
 	LINUX_OPTIONS="-DLINUX_x86_64-unknown-linux-gnu_SYSROOT=/"
 fi
 

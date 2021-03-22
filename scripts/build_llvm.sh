@@ -25,12 +25,19 @@ LLVM_SRCDIR=$PWD/llvm-project-${LLVM_VER}
 mkdir build
 cd build
 
+# Don't build the linux target on other systems, since we don't provide a sysroot for linux
+LINUX_OPTIONS=""
+
+if [ uname -s = "Linux" ]
+	LINUX_OPTIONS="-DLINUX_x86_64-unknown-linux-gnu_SYSROOT=/"
+fi
+
 cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_LINK_LLVM_DYLIB=ON \
 -DCLANG_LINK_CLANG_DYLIB=ON -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_LTO=OFF \
 -DCMAKE_C_COMPILER=clang \
 -DCMAKE_CXX_COMPILER=clang++ \
 -DCMAKE_ASM_COMPILER=clang \
--DLINUX_x86_64-unknown-linux-gnu_SYSROOT=/ \
+$LINUX_OPTIONS \
 -DONYX_SRCDIR=$ONYX_SRCDIR \
 -DCMAKE_INSTALL_PREFIX= \
 -DCMAKE_MODULE_PATH=${ONYX_SRCDIR}/toolchains/cmake \

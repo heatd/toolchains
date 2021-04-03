@@ -32,14 +32,23 @@ if [ uname -s = "Linux" ]; then
 	LINUX_OPTIONS="-DLINUX_x86_64-unknown-linux-gnu_SYSROOT=/"
 fi
 
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_LINK_LLVM_DYLIB=ON \
--DCLANG_LINK_CLANG_DYLIB=ON -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_LTO=OFF \
+using_lto="1"
+
+if [ "$using_lto" = "1" ]; then
+	LLVM_EXTRA="-DLLVM_ENABLE_LTO=ON -DLLVM_PARALLEL_LINK_JOBS=1"
+else
+	LLVM_EXTRA="-DLLVM_ENABLE_LTO=OFF"
+fi
+
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
+-DLLVM_ENABLE_RTTI=ON  \
 -DCMAKE_C_COMPILER=clang \
 -DCMAKE_CXX_COMPILER=clang++ \
 -DCMAKE_ASM_COMPILER=clang \
-$LINUX_OPTIONS \
+${LINUX_OPTIONS} \
 -DONYX_SRCDIR=$ONYX_SRCDIR \
 -DCMAKE_INSTALL_PREFIX= \
+ ${LLVM_EXTRA} \
 -DCMAKE_MODULE_PATH=${ONYX_SRCDIR}/toolchains/cmake \
 -C ${LLVM_SRCDIR}/clang/cmake/caches/Onyx-stage2.cmake ${LLVM_SRCDIR}/llvm
 

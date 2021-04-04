@@ -33,9 +33,7 @@ if [ "$system_name" = "Linux" ]; then
 	LINUX_OPTIONS="-DLINUX_x86_64-unknown-linux-gnu_SYSROOT=/"
 fi
 
-using_lto="1"
-
-if [ "$using_lto" = "1" ]; then
+if [ "$USING_LTO" = "1" ]; then
 	LLVM_EXTRA="-DLLVM_ENABLE_LTO=ON -DLLVM_PARALLEL_LINK_JOBS=1"
 else
 	LLVM_EXTRA="-DLLVM_ENABLE_LTO=OFF"

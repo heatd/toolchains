@@ -7,7 +7,7 @@ if [ "$#" -ne "2" ]; then
 	exit 1
 fi
 
-LLVM_VER="11.0.0"
+LLVM_VER="12.0.0"
 
 ONYX_SRCDIR=$PWD
 
@@ -22,7 +22,8 @@ cd $staging_dir
 
 LLVM_SRCDIR=$PWD/llvm-project-${LLVM_VER}
 
-mkdir build
+rm -rf build
+mkdir -p build
 cd build
 
 # Don't build the linux target on other systems, since we don't provide a sysroot for linux

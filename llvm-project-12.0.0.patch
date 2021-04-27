@@ -2771,3 +2771,33 @@ diff -Naur llvm-project-12.0.0/llvm/lib/Transforms/Instrumentation/AddressSaniti
        if (IsKasan)
          Mapping.Offset = kLinuxKasan_ShadowOffset64;
        else
+diff -Naur llvm-project-12.0.0/llvm/lib/Target/X86/X86ISelLowering.cpp llvm-project-12.0.0-patched/llvm/lib/Target/X86/X86ISelLowering.cpp
+--- llvm-project-12.0.0/llvm/lib/Target/X86/X86ISelLowering.cpp	2021-04-06 17:38:18.000000000 +0100
++++ llvm-project-12.0.0-patched/llvm/lib/Target/X86/X86ISelLowering.cpp	2021-04-27 12:14:04.067152436 +0100
+@@ -2487,7 +2487,7 @@
+ }
+ 
+ static bool hasStackGuardSlotTLS(const Triple &TargetTriple) {
+-  return TargetTriple.isOSGlibc() || TargetTriple.isOSFuchsia() ||
++  return TargetTriple.isOSGlibc() || TargetTriple.isOSFuchsia() || TargetTriple.isOSOnyx() ||
+          (TargetTriple.isAndroid() && !TargetTriple.isAndroidVersionLT(17));
+ }
+ 
+@@ -2499,7 +2499,7 @@
+ }
+ 
+ Value *X86TargetLowering::getIRStackGuard(IRBuilder<> &IRB) const {
+-  // glibc, bionic, and Fuchsia have a special slot for the stack guard in
++  // glibc, bionic, Onyx and Fuchsia have a special slot for the stack guard in
+   // tcbhead_t; use it instead of the usual global variable (see
+   // sysdeps/{i386,x86_64}/nptl/tls.h)
+   if (hasStackGuardSlotTLS(Subtarget.getTargetTriple())) {
+@@ -2548,7 +2548,7 @@
+ 
+   auto GuardMode = getTargetMachine().Options.StackProtectorGuard;
+ 
+-  // glibc, bionic, and Fuchsia have a special slot for the stack guard.
++  // glibc, bionic, Onyx and Fuchsia have a special slot for the stack guard.
+   if ((GuardMode == llvm::StackProtectorGuards::TLS ||
+        GuardMode == llvm::StackProtectorGuards::None)
+       && hasStackGuardSlotTLS(Subtarget.getTargetTriple()))

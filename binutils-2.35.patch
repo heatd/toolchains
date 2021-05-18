@@ -1,6 +1,6 @@
 diff -Naur binutils-2.35/bfd/config.bfd binutils-2.35-patched/bfd/config.bfd
 --- binutils-2.35/bfd/config.bfd	2020-07-24 10:12:19.000000000 +0100
-+++ binutils-2.35-patched/bfd/config.bfd	2020-09-24 04:59:17.964182028 +0100
++++ binutils-2.35-patched/bfd/config.bfd	2021-05-17 23:44:48.231598866 +0100
 @@ -637,7 +637,17 @@
      targ_selvecs=
      targ64_selvecs=x86_64_elf64_vec
@@ -21,7 +21,7 @@ diff -Naur binutils-2.35/bfd/config.bfd binutils-2.35-patched/bfd/config.bfd
      want64=true
 diff -Naur binutils-2.35/config.sub binutils-2.35-patched/config.sub
 --- binutils-2.35/config.sub	2020-07-24 10:12:19.000000000 +0100
-+++ binutils-2.35-patched/config.sub	2020-09-24 04:59:17.964182028 +0100
++++ binutils-2.35-patched/config.sub	2021-05-17 23:44:48.346598869 +0100
 @@ -1364,7 +1364,7 @@
  	     | morphos* | superux* | rtmk* | windiss* \
  	     | powermax* | dnix* | nx6 | nx7 | sei* | dragonfly* \
@@ -33,7 +33,7 @@ diff -Naur binutils-2.35/config.sub binutils-2.35-patched/config.sub
  	# Remember, each alternative MUST END IN *, to match a version number.
 diff -Naur binutils-2.35/configure binutils-2.35-patched/configure
 --- binutils-2.35/configure	2020-07-24 10:17:45.000000000 +0100
-+++ binutils-2.35-patched/configure	2020-09-24 04:59:17.966182028 +0100
++++ binutils-2.35-patched/configure	2021-05-17 23:44:48.460598873 +0100
 @@ -3055,7 +3055,7 @@
        *-*-elf* | *-*-sysv4* | *-*-unixware* | *-*-eabi* | hppa*64*-*-hpux* \
        | *-*-linux* | *-*-gnu* | frv-*-uclinux* | *-*-irix5* | *-*-irix6* \
@@ -45,7 +45,7 @@ diff -Naur binutils-2.35/configure binutils-2.35-patched/configure
              ;;
 diff -Naur binutils-2.35/configure.ac binutils-2.35-patched/configure.ac
 --- binutils-2.35/configure.ac	2020-07-24 10:38:01.000000000 +0100
-+++ binutils-2.35-patched/configure.ac	2020-09-24 04:59:17.967182028 +0100
++++ binutils-2.35-patched/configure.ac	2021-05-17 23:44:48.549598875 +0100
 @@ -336,7 +336,7 @@
        *-*-elf* | *-*-sysv4* | *-*-unixware* | *-*-eabi* | hppa*64*-*-hpux* \
        | *-*-linux* | *-*-gnu* | frv-*-uclinux* | *-*-irix5* | *-*-irix6* \
@@ -57,18 +57,18 @@ diff -Naur binutils-2.35/configure.ac binutils-2.35-patched/configure.ac
              ;;
 diff -Naur binutils-2.35/gas/configure.tgt binutils-2.35-patched/gas/configure.tgt
 --- binutils-2.35/gas/configure.tgt	2020-07-24 10:12:19.000000000 +0100
-+++ binutils-2.35-patched/gas/configure.tgt	2020-09-24 04:59:17.967182028 +0100
++++ binutils-2.35-patched/gas/configure.tgt	2021-05-17 23:51:40.508610645 +0100
 @@ -219,6 +219,7 @@
    i386-*-elfiamcu)			fmt=elf arch=iamcu ;;
    i386-*-elf*)				fmt=elf ;;
    i386-*-fuchsia*)			fmt=elf ;;
-+  i386-*-onyx*)         fmt=elf ;;
++  i386-*-onyx*)         fmt=elf em=linux ;;
    i386-*-bsd*)				fmt=aout em=386bsd ;;
    i386-*-netbsdpe*)			fmt=coff em=pe ;;
    i386-*-netbsd*-gnu* | \
 diff -Naur binutils-2.35/ld/configure.tgt binutils-2.35-patched/ld/configure.tgt
 --- binutils-2.35/ld/configure.tgt	2020-07-24 10:12:20.000000000 +0100
-+++ binutils-2.35-patched/ld/configure.tgt	2020-09-24 04:59:17.967182028 +0100
++++ binutils-2.35-patched/ld/configure.tgt	2021-05-17 23:44:48.552598875 +0100
 @@ -310,6 +310,10 @@
  i[3-7]86-*-rdos*)	targ_emul=elf_i386
  			targ_extra_emuls=elf_iamcu
@@ -82,7 +82,7 @@ diff -Naur binutils-2.35/ld/configure.tgt binutils-2.35-patched/ld/configure.tgt
  			;;
 diff -Naur binutils-2.35/ld/emulparams/elf_i386_onyx.sh binutils-2.35-patched/ld/emulparams/elf_i386_onyx.sh
 --- binutils-2.35/ld/emulparams/elf_i386_onyx.sh	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.35-patched/ld/emulparams/elf_i386_onyx.sh	2020-09-24 04:59:17.967182028 +0100
++++ binutils-2.35-patched/ld/emulparams/elf_i386_onyx.sh	2021-05-17 23:44:48.553598875 +0100
 @@ -0,0 +1,3 @@
 +. ${srcdir}/emulparams/elf_i386.sh
 +GENERATE_SHLIB_SCRIPT=yes
@@ -90,13 +90,13 @@ diff -Naur binutils-2.35/ld/emulparams/elf_i386_onyx.sh binutils-2.35-patched/ld
 \ No newline at end of file
 diff -Naur binutils-2.35/ld/emulparams/elf_x86_64_onyx.sh binutils-2.35-patched/ld/emulparams/elf_x86_64_onyx.sh
 --- binutils-2.35/ld/emulparams/elf_x86_64_onyx.sh	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.35-patched/ld/emulparams/elf_x86_64_onyx.sh	2020-09-24 04:59:17.967182028 +0100
++++ binutils-2.35-patched/ld/emulparams/elf_x86_64_onyx.sh	2021-05-17 23:44:48.554598875 +0100
 @@ -0,0 +1 @@
 +. ${srcdir}/emulparams/elf_x86_64.sh
 \ No newline at end of file
 diff -Naur binutils-2.35/ld/Makefile.am binutils-2.35-patched/ld/Makefile.am
 --- binutils-2.35/ld/Makefile.am	2020-07-24 10:12:20.000000000 +0100
-+++ binutils-2.35-patched/ld/Makefile.am	2020-09-24 04:59:17.968182028 +0100
++++ binutils-2.35-patched/ld/Makefile.am	2021-05-17 23:44:48.555598875 +0100
 @@ -286,6 +286,7 @@
  	eelf_i386_ldso.c \
  	eelf_i386_sol2.c \
@@ -115,7 +115,7 @@ diff -Naur binutils-2.35/ld/Makefile.am binutils-2.35-patched/ld/Makefile.am
  	emmo.c
 diff -Naur binutils-2.35/ld/Makefile.in binutils-2.35-patched/ld/Makefile.in
 --- binutils-2.35/ld/Makefile.in	2020-07-24 10:21:17.000000000 +0100
-+++ binutils-2.35-patched/ld/Makefile.in	2020-09-24 05:00:57.906186794 +0100
++++ binutils-2.35-patched/ld/Makefile.in	2021-05-17 23:44:48.557598875 +0100
 @@ -769,6 +769,7 @@
  	eelf_i386_ldso.c \
  	eelf_i386_sol2.c \
@@ -150,7 +150,7 @@ diff -Naur binutils-2.35/ld/Makefile.in binutils-2.35-patched/ld/Makefile.in
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eh8300elf_linux.Po@am__quote@
 diff -Naur binutils-2.35/PKGBUILD binutils-2.35-patched/PKGBUILD
 --- binutils-2.35/PKGBUILD	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.35-patched/PKGBUILD	2020-09-24 04:59:17.968182028 +0100
++++ binutils-2.35-patched/PKGBUILD	2021-05-17 23:44:48.558598876 +0100
 @@ -0,0 +1,14 @@
 +PKGNAME=binutils
 +PKGVER=2.34

@@ -17,7 +17,7 @@ target_dir=$(realpath $2)
 
 rm -rf $staging_dir
 
-download_and_patch_tools.sh $staging_dir
+toolchains/download_and_patch_tools.sh $staging_dir
 
 cd $staging_dir
 

@@ -24,10 +24,12 @@ cd $staging_dir
 GCC_SRCDIR=$PWD/gcc-${GCC_VER}
 BINUTILS_SRCDIR=$PWD/gcc-${BINUTILS_VER}
 
+disable_gold=0
 
 system=$(uname -s)
 case "${system}" in
-Darwin*)    NPROC_UTIL="sysctl -n hw.logicalcpu";;
+Darwin*)    NPROC_UTIL="sysctl -n hw.logicalcpu"
+            disable_gold=1;;
 *)          NPROC_UTIL="nproc";;
 esac
 
@@ -35,10 +37,17 @@ NR_THREADS=$($NPROC_UTIL)
 
 mkdir -p binutils-build
 
+GOLD_CONFIGURE_OPTIONS="--enable-gold=default"
+
+if [ "$disable_gold" = "1" ]; then
+    # macOS can't build gold 
+    GOLD_CONFIGURE_OPTIONS="--disable-gold"
+fi
+
 cd binutils-build
 ../binutils-${BINUTILS_VER}/configure --target=x86_64-onyx --prefix=$target_dir \
 --with-sysroot=$ONYX_SRCDIR/sysroot \
---disable-werror --disable-nls --enable-gold=default --enable-lto --enable-plugins
+--disable-werror --disable-nls $GOLD_CONFIGURE_OPTIONS --enable-lto --enable-plugins
 make -j $NR_THREADS
 make install -j $NR_THREADS
 cd ..

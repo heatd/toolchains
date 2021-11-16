@@ -81,7 +81,7 @@ target_dir=$(realpath $2)
 # If we're asked to continue, skip the staging dir's removal and the download/patching
 if [ "$just_continue" = "0" ]; then
     rm -rf $staging_dir
-    toolchains/download_and_patch_tools.sh $staging_dir
+    toolchains/scripts/download_patch_gnu.sh $staging_dir
 fi
 
 cd $staging_dir

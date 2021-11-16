@@ -22,7 +22,7 @@ target_dir=$(realpath $2)
 
 rm -rf $staging_dir
 
-toolchains/download_patch_llvm.sh $staging_dir
+toolchains/scripts/download_patch_llvm.sh $staging_dir
 
 cd $staging_dir
 

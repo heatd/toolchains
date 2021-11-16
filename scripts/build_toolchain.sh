@@ -8,7 +8,7 @@
 
 set -e
 
-TEMP=$(getopt -o 'a:cT:ht:' --long 'arch:,continue,threads:,help,toolchain:,use-lto' -n 'build_toolchain' -- "$@")
+TEMP=$(getopt -o 'a:cT:ht:' --long 'arch:,continue,threads:,help,toolchain:,use-lto,strip,no-strip' -n 'build_toolchain' -- "$@")
 
 eval set -- "$TEMP"
 
@@ -22,6 +22,11 @@ NR_THREADS=0
 toolchain="GNU"
 lowercase_toolchain="gnu"
 use_lto="false"
+strip_toolchain="yes"
+
+if [ -z "$STRIP" ]; then
+    STRIP="strip"
+fi
 
 print_help()
 {
@@ -36,6 +41,7 @@ print_help()
     echo "                              If not specified, builds the GNU toolchain."
     echo "  --use-lto                   Compile the toolchain using LTO. Results in a faster toolchain, but a much slower build."
     echo "                              By default, the build does not use LTO."
+    echo "  --strip/--no-strip          Controls the executable and library stripping of the toolchain. Stripping is on by default."
     echo "  -h, --help                  Show this help message."
 }
 
@@ -67,6 +73,16 @@ while true; do
         ;;
         '--use-lto')
             use_lto="true"
+            shift
+            continue
+        ;;
+        "--strip")
+            strip_toolchain="yes"
+            shift
+            continue
+        ;;
+        "--no-strip")
+            strip_toolchain="no"
             shift
             continue
         ;;
@@ -219,4 +235,15 @@ elif [ "$toolchain" = "LLVM" ]; then
 
     ninja
     DESTDIR=$target_dir ninja install
+fi
+
+if [ "$strip_toolchain" = "yes" ]; then
+
+# TODO: This doesn't really work for llvm and leaves some things unstripped
+# This is kind of hacky, adapt llvm to use distribution and install-distribution-stripped
+# Strip bin, libexec, lib
+find "$target_dir/bin" -type f -exec $STRIP {} \; || true
+find "$target_dir/libexec" -type f -exec sh -c '(file {} \; | grep ELF) && $STRIP {}' \; || true
+find "$target_dir/lib" -type f -exec sh -c '(file {} \; | grep ELF) && $STRIP {}' \; || true
+
 fi

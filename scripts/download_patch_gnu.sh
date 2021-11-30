@@ -22,9 +22,13 @@ PATCHES=$PWD/toolchains
 mkdir -p $STAGING_DIR
 cd $STAGING_DIR
 
-BINUTILS_URL="https://mirrors.up.pt/pub/gnu/binutils/binutils-$BINUTILS_VER.tar.xz"
+MIRROR_BASE=$(curl -I -Ls -o /dev/null -w %{url_effective} http://ftpmirror.gnu.org/)
 
-GCC_URL="ftp://ftp.uvsq.fr/pub/gcc/releases/gcc-$GCC_VER/gcc-$GCC_VER.tar.xz"
+echo "ftpmirror.gnu.org picked mirror $MIRROR_BASE"
+
+BINUTILS_URL="${MIRROR_BASE}/binutils/binutils-$BINUTILS_VER.tar.xz"
+
+GCC_URL="${MIRROR_BASE}/gcc/gcc-$GCC_VER/gcc-$GCC_VER.tar.xz"
 
 curl -O $BINUTILS_URL
 curl -O $GCC_URL

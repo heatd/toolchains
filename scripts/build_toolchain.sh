@@ -8,7 +8,7 @@
 
 set -e
 
-TEMP=$(getopt -o 'a:cT:ht:' --long 'arch:,continue,threads:,help,toolchain:,use-lto,strip,no-strip' -n 'build_toolchain' -- "$@")
+TEMP=$(getopt -o 'a:cT:ht:' --long 'arch:,continue,threads:,help,toolchain:,use-lto,strip,no-strip,no-libc' -n 'build_toolchain' -- "$@")
 
 eval set -- "$TEMP"
 
@@ -23,9 +23,10 @@ toolchain="GNU"
 lowercase_toolchain="gnu"
 use_lto="false"
 strip_toolchain="yes"
+enable_libc="yes"
 
 if [ -z "$STRIP" ]; then
-    STRIP="strip"
+    export STRIP="strip"
 fi
 
 print_help()
@@ -42,6 +43,7 @@ print_help()
     echo "  --use-lto                   Compile the toolchain using LTO. Results in a faster toolchain, but a much slower build."
     echo "                              By default, the build does not use LTO."
     echo "  --strip/--no-strip          Controls the executable and library stripping of the toolchain. Stripping is on by default."
+    echo "  --no-libc                   Build the toolchain without the libc. Useful for building toolchains before compiling the C library."
     echo "  -h, --help                  Show this help message."
 }
 
@@ -83,6 +85,11 @@ while true; do
         ;;
         "--no-strip")
             strip_toolchain="no"
+            shift
+            continue
+        ;;
+        "--no-libc")
+            enable_libc="no"
             shift
             continue
         ;;
@@ -181,9 +188,7 @@ if [ "$toolchain" = "GNU" ]; then
     case "${ARCH}" in 
     "riscv64")
         # GNU gold doesn't support riscv
-        # We also don't support multilib due to the need for riscv32 headers
         disable_gold=1
-        target_extra_gcc_options="--disable-multilib"
         ;;
     esac
 
@@ -203,16 +208,31 @@ if [ "$toolchain" = "GNU" ]; then
     make install -j $NR_THREADS
     cd ..
 
+    libc_options="--enable-threads=posix --enable-libstdcxx-threads --enable-shared"
+    extra_make_targets=""
+    extra_install_targets=""
+    compiler_runtimes="libstdc++-v3 libsanitizer"
+
+    if [ "$enable_libc" = "no" ]; then
+        libc_options="--without-headers --with-newlib --disable-shared"
+        compiler_runtimes=""
+    fi
+
+    for runtime in $compiler_runtimes; do
+        extra_make_targets="$extra_make_targets all-target-${runtime}"
+        extra_install_targets="$extra_install_targets install-target-${runtime}"
+    done
+
     mkdir -p gcc-build
     cd gcc-build
     $GCC_SRCDIR/configure --target="$GNU_TARGET" --prefix=$target_dir \
     --with-sysroot=$ONYX_SRCDIR/sysroot --enable-languages=c,c++ --disable-nls \
-    --enable-threads=posix --enable-libstdcxx-threads --enable-symvers=gnu --enable-default-pie \
-    --enable-lto --enable-default-ssp --enable-shared --enable-checking=release \
+    $libc_options --enable-symvers=gnu --enable-default-pie \
+    --enable-lto --enable-default-ssp --enable-checking=release \
     --with-bugurl=https://github.com/heatd/toolchains/issues "$target_extra_gcc_options"
 
-    make all-gcc all-target-libgcc all-target-libstdc++-v3 all-target-libsanitizer -j $NR_THREADS
-    make install-gcc install-target-libgcc install-target-libstdc++-v3 install-target-libsanitizer -j $NR_THREADS
+    make all-gcc all-target-libgcc $extra_make_targets -j $NR_THREADS
+    make install-gcc install-target-libgcc $extra_install_targets -j $NR_THREADS
 elif [ "$toolchain" = "LLVM" ]; then
 
     if [ "$use_lto" = "true" ]; then
@@ -243,7 +263,7 @@ if [ "$strip_toolchain" = "yes" ]; then
 # This is kind of hacky, adapt llvm to use distribution and install-distribution-stripped
 # Strip bin, libexec, lib
 find "$target_dir/bin" -type f -exec $STRIP {} \; || true
-find "$target_dir/libexec" -type f -exec sh -c '(file {} \; | grep ELF) && $STRIP {}' \; || true
-find "$target_dir/lib" -type f -exec sh -c '(file {} \; | grep ELF) && $STRIP {}' \; || true
+find "$target_dir/libexec" -type f -exec sh -c 'file {} | grep ELF' \; -exec $STRIP {} \; || true
+find "$target_dir/lib" -type f -exec sh -c 'file {} | grep ELF' \; -exec $STRIP {} \; || true
 
 fi

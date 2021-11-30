@@ -1,6 +1,6 @@
 diff -Naur gcc-10.2.0/config.sub gcc-10.2.0-patched/config.sub
 --- gcc-10.2.0/config.sub	2020-07-23 07:35:16.912379792 +0100
-+++ gcc-10.2.0-patched/config.sub	2021-11-13 04:36:28.959420671 +0000
++++ gcc-10.2.0-patched/config.sub	2021-11-30 04:56:12.070099135 +0000
 @@ -1365,7 +1365,7 @@
  	     | powermax* | dnix* | nx6 | nx7 | sei* | dragonfly* \
  	     | skyos* | haiku* | rdos* | toppers* | drops* | es* \
@@ -12,7 +12,7 @@ diff -Naur gcc-10.2.0/config.sub gcc-10.2.0-patched/config.sub
  		;;
 diff -Naur gcc-10.2.0/fixincludes/mkfixinc.sh gcc-10.2.0-patched/fixincludes/mkfixinc.sh
 --- gcc-10.2.0/fixincludes/mkfixinc.sh	2020-07-23 07:35:16.932380013 +0100
-+++ gcc-10.2.0-patched/fixincludes/mkfixinc.sh	2021-11-13 04:36:28.959420671 +0000
++++ gcc-10.2.0-patched/fixincludes/mkfixinc.sh	2021-11-30 04:56:12.070099135 +0000
 @@ -20,7 +20,8 @@
      powerpcle-*-eabisim* | \
      powerpcle-*-eabi* | \
@@ -25,20 +25,13 @@ diff -Naur gcc-10.2.0/fixincludes/mkfixinc.sh gcc-10.2.0-patched/fixincludes/mkf
  	(echo "#! /bin/sh" ; echo "exit 0" ) > ${target}
 diff -Naur gcc-10.2.0/gcc/config/i386/onyx64.h gcc-10.2.0-patched/gcc/config/i386/onyx64.h
 --- gcc-10.2.0/gcc/config/i386/onyx64.h	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-10.2.0-patched/gcc/config/i386/onyx64.h	2021-11-13 04:36:28.959420671 +0000
-@@ -0,0 +1,21 @@
-+/* Taken verbatim from gnu-user64.h
-+ * I didn't simplify the expressions below because we might want x32 or 32-bit compatibility
-+ * support some day.
++++ gcc-10.2.0-patched/gcc/config/i386/onyx64.h	2021-11-30 05:32:12.866882295 +0000
+@@ -0,0 +1,35 @@
++/* SSP and Split stack support taken verbatim from gnu-user64.h
 + */
-+
-+#undef TARGET_64BIT
-+#undef TARGET_X32
 +#undef TARGET_THREAD_SSP_OFFSET
 +#undef TARGET_THREAD_SPLIT_STACK_OFFSET
 +
-+#define TARGET_64BIT 1
-+#define TARGET_X32 0
 +
 +#define TARGET_THREAD_SSP_OFFSET \
 +  (TARGET_64BIT ? (TARGET_X32 ? 0x18 : 0x28) : 0x14)
@@ -48,15 +41,42 @@ diff -Naur gcc-10.2.0/gcc/config/i386/onyx64.h gcc-10.2.0-patched/gcc/config/i38
 +   x86_64 glibc/musl provides it in %fs:0x70.  */
 +#define TARGET_THREAD_SPLIT_STACK_OFFSET \
 +  (TARGET_64BIT ? (TARGET_X32 ? 0x40 : 0x70) : 0x30)
++
++#if TARGET_64BIT_DEFAULT
++#define SPEC_32 "m16|m32"
++#if TARGET_BI_ARCH == 2
++#define SPEC_64 "m64"
++#define SPEC_X32 "m16|m32|m64:;"
++#else
++#define SPEC_64 "m16|m32|mx32:;"
++#define SPEC_X32 "mx32"
++#endif
++#else
++#define SPEC_32 "m64|mx32:;"
++#define SPEC_64 "m64"
++#define SPEC_X32 "mx32"
++#endif
++
++#define ONYX_ARCH_SUFFIX  "%{" SPEC_X32 ":x32}%{" SPEC_32 ":i386}%{" SPEC_64 ":x86_64}"
++
++#undef LD_ONYX_PATH
++
++#define LD_ONYX_PATH  "/lib/ld-onyx-" ONYX_ARCH_SUFFIX ".so"
 diff -Naur gcc-10.2.0/gcc/config/i386/t-onyx gcc-10.2.0-patched/gcc/config/i386/t-onyx
 --- gcc-10.2.0/gcc/config/i386/t-onyx	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-10.2.0-patched/gcc/config/i386/t-onyx	2021-11-13 04:36:28.959420671 +0000
-@@ -0,0 +1 @@
++++ gcc-10.2.0-patched/gcc/config/i386/t-onyx	2021-11-30 04:56:12.070099135 +0000
+@@ -0,0 +1,7 @@
 +MULTILIB_OPTIONS += mno-red-zone
++comma=,
++MULTILIB_OPTIONS    += $(subst $(comma),/,$(TM_MULTILIB_CONFIG))
++MULTILIB_DIRNAMES   = $(patsubst m%, %, $(subst /, ,$(MULTILIB_OPTIONS)))
++MULTILIB_OSDIRNAMES = m64=../lib$(call if_multiarch,:x86_64-onyx)
++MULTILIB_OSDIRNAMES+= m32=../lib32$(call if_multiarch,:i386-onyx)
++MULTILIB_OSDIRNAMES+= mx32=../libx32$(call if_multiarch,:x86_64-onyx-x32)
 diff -Naur gcc-10.2.0/gcc/config/onyx.h gcc-10.2.0-patched/gcc/config/onyx.h
 --- gcc-10.2.0/gcc/config/onyx.h	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-10.2.0-patched/gcc/config/onyx.h	2021-11-13 18:15:43.209596972 +0000
-@@ -0,0 +1,42 @@
++++ gcc-10.2.0-patched/gcc/config/onyx.h	2021-11-30 04:59:36.486776825 +0000
+@@ -0,0 +1,48 @@
 +#undef TARGET_OS_CPP_BUILTINS
 +#define TARGET_OS_CPP_BUILTINS() \
 +do{ \
@@ -76,10 +96,14 @@ diff -Naur gcc-10.2.0/gcc/config/onyx.h gcc-10.2.0-patched/gcc/config/onyx.h
 +/* Onyx uses crtend.o and crtn.o as end files. If we're a shared library or pie, use crtendS.o */
 +#define ENDFILE_SPEC "%{shared|" PIE_SPEC ": crtendS.o%s;: crtend.o%s} crtn.o%s"
 +
++// re-define in architecture-specific target files
++#define LD_ONYX_PATH  "/lib/ld-onyx.so"
 +/* Onyx uses /lib/ld-onyx.so as a dynamic linker; also, build shared objects by default */
++#define ONYX_TARGET_LINK_SPEC ""
 +#undef LINK_SPEC
-+#define LINK_SPEC "%{shared: -shared} %{static: -static}" \
-+	"%{!shared: %{!static: %{rdynamic: -export-dynamic} %{!dynamic-linker: -dynamic-linker /lib/ld-onyx.so}}}" \
++#define LINK_SPEC ONYX_TARGET_LINK_SPEC \
++    "%{shared: -shared} %{static: -static}" \
++	"%{!shared: %{!static: %{rdynamic: -export-dynamic} %{!dynamic-linker: -dynamic-linker " LD_ONYX_PATH "}}}" \
 +	" -z combreloc" \
 +	" -z relro" \
 +	" -z now" \
@@ -99,9 +123,11 @@ diff -Naur gcc-10.2.0/gcc/config/onyx.h gcc-10.2.0-patched/gcc/config/onyx.h
 +
 +#undef CPLUSPLUS_CPP_SPEC
 +#define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
++
++#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 diff -Naur gcc-10.2.0/gcc/config/onyx.opt gcc-10.2.0-patched/gcc/config/onyx.opt
 --- gcc-10.2.0/gcc/config/onyx.opt	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-10.2.0-patched/gcc/config/onyx.opt	2021-11-13 04:36:28.959420671 +0000
++++ gcc-10.2.0-patched/gcc/config/onyx.opt	2021-11-30 04:56:12.070099135 +0000
 @@ -0,0 +1,38 @@
 +; Options for systems using onyx.h.
 +
@@ -143,11 +169,9 @@ diff -Naur gcc-10.2.0/gcc/config/onyx.opt gcc-10.2.0-patched/gcc/config/onyx.opt
 +; This comment is to ensure we retain the blank line above.
 diff -Naur gcc-10.2.0/gcc/config/riscv/onyx.h gcc-10.2.0-patched/gcc/config/riscv/onyx.h
 --- gcc-10.2.0/gcc/config/riscv/onyx.h	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-10.2.0-patched/gcc/config/riscv/onyx.h	2021-11-13 18:28:56.582904531 +0000
-@@ -0,0 +1,36 @@
++++ gcc-10.2.0-patched/gcc/config/riscv/onyx.h	2021-11-30 04:56:12.070099135 +0000
+@@ -0,0 +1,32 @@
 +#define ICACHE_FLUSH_FUNC "__riscv_flush_icache"
-+
-+#define CPP_SPEC "%{pthread:-D_REENTRANT}"
 +
 +#define LD_EMUL_SUFFIX \
 +  "%{mabi=lp64d:}" \
@@ -157,23 +181,11 @@ diff -Naur gcc-10.2.0/gcc/config/riscv/onyx.h gcc-10.2.0-patched/gcc/config/risc
 +  "%{mabi=ilp32f:_ilp32f}" \
 +  "%{mabi=ilp32:_ilp32}"
 +
-+#undef LINK_SPEC
-+#define LINK_SPEC "\
-+-melf" XLEN_SPEC "lriscv" LD_EMUL_SUFFIX " \
-+%{mno-relax:--no-relax} \
-+%{shared: -shared} %{static: -static}" \
-+"%{!shared: %{!static: %{rdynamic: -export-dynamic} %{!dynamic-linker: -dynamic-linker /lib/ld-onyx.so}}}" \
-+" -z combreloc" \
-+" -z relro" \
-+" -z now" \
-+" -z text" \
-+" -z noexecstack" \
-+"%{pthread:-lpthread}" \
-+"%{!hash-style: --hash-style=gnu}" \
-+"%{!no-build-id: --build-id}" \
-+"%{!no-eh-frame-hdr: --eh-frame-hdr}"
 +
-+#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
++#undef ONYX_TARGET_LINK_SPEC
++#define ONYX_TARGET_LINK_SPEC \
++"-melf" XLEN_SPEC "lriscv" LD_EMUL_SUFFIX " \
++%{mno-relax:--no-relax} "
 +
 +#define STARTFILE_PREFIX_SPEC 			\
 +   "/lib" XLEN_SPEC "/" ABI_SPEC "/ "		\
@@ -181,9 +193,54 @@ diff -Naur gcc-10.2.0/gcc/config/riscv/onyx.h gcc-10.2.0-patched/gcc/config/risc
 +   "/lib/ "					\
 +   "/usr/lib/ "
 +
++#define MUSL_ABI_SUFFIX \
++  "%{mabi=ilp32:-sf}" \
++  "%{mabi=ilp32f:-sp}" \
++  "%{mabi=ilp32d:}" \
++  "%{mabi=lp64:-sf}" \
++  "%{mabi=lp64f:-sp}" \
++  "%{mabi=lp64d:}"
++
++#undef LD_ONYX_PATH
++#define LD_ONYX_PATH "/lib/ld-onyx-riscv" XLEN_SPEC MUSL_ABI_SUFFIX ".so"
+diff -Naur gcc-10.2.0/gcc/config/riscv/t-onyx gcc-10.2.0-patched/gcc/config/riscv/t-onyx
+--- gcc-10.2.0/gcc/config/riscv/t-onyx	1970-01-01 01:00:00.000000000 +0100
++++ gcc-10.2.0-patched/gcc/config/riscv/t-onyx	2021-11-30 04:56:12.070099135 +0000
+@@ -0,0 +1,3 @@
++# Only XLEN and ABI affect Linux multilib dir names, e.g. /lib32/ilp32d/
++MULTILIB_DIRNAMES := $(patsubst rv32%,lib32,$(patsubst rv64%,lib,$(MULTILIB_DIRNAMES)))
++MULTILIB_OSDIRNAMES := $(patsubst lib%,../lib%,$(MULTILIB_DIRNAMES))
+diff -Naur gcc-10.2.0/gcc/config/riscv/t-onyx-multilib gcc-10.2.0-patched/gcc/config/riscv/t-onyx-multilib
+--- gcc-10.2.0/gcc/config/riscv/t-onyx-multilib	1970-01-01 01:00:00.000000000 +0100
++++ gcc-10.2.0-patched/gcc/config/riscv/t-onyx-multilib	2021-11-30 04:56:12.070099135 +0000
+@@ -0,0 +1,24 @@
++# This file was generated by multilib-generator with the command:
++#  ./multilib-generator rv64imac-lp64-rv64ima,rv64imaf,rv64imafd,rv64imafc,rv64imafdc- rv64imafdc-lp64d-rv64imafd-
++MULTILIB_OPTIONS = march=rv64imac/march=rv64ima/march=rv64imaf/march=rv64imafd/march=rv64imafc/march=rv64imafdc/march=rv64g/march=rv64gc mabi=lp64/mabi=lp64d
++MULTILIB_DIRNAMES = rv64imac \
++rv64ima \
++rv64imaf \
++rv64imafd \
++rv64imafc \
++rv64imafdc \
++rv64g \
++rv64gc lp64 \
++lp64d
++MULTILIB_REQUIRED = march=rv64imac/mabi=lp64 \
++march=rv64imafdc/mabi=lp64d
++MULTILIB_REUSE = march.rv64imac/mabi.lp64=march.rv64ima/mabi.lp64 \
++march.rv64imac/mabi.lp64=march.rv64imaf/mabi.lp64 \
++march.rv64imac/mabi.lp64=march.rv64imafd/mabi.lp64 \
++march.rv64imac/mabi.lp64=march.rv64imafc/mabi.lp64 \
++march.rv64imac/mabi.lp64=march.rv64imafdc/mabi.lp64 \
++march.rv64imac/mabi.lp64=march.rv64g/mabi.lp64 \
++march.rv64imac/mabi.lp64=march.rv64gc/mabi.lp64 \
++march.rv64imafdc/mabi.lp64d=march.rv64imafd/mabi.lp64d \
++march.rv64imafdc/mabi.lp64d=march.rv64gc/mabi.lp64d \
++march.rv64imafdc/mabi.lp64d=march.rv64g/mabi.lp64d
 diff -Naur gcc-10.2.0/gcc/config.gcc gcc-10.2.0-patched/gcc/config.gcc
 --- gcc-10.2.0/gcc/config.gcc	2020-07-23 07:35:17.316384243 +0100
-+++ gcc-10.2.0-patched/gcc/config.gcc	2021-11-13 16:03:01.879855632 +0000
++++ gcc-10.2.0-patched/gcc/config.gcc	2021-11-30 05:18:25.230171003 +0000
 @@ -836,6 +836,11 @@
    target_has_targetcm=yes
    target_has_targetdm=yes
@@ -196,20 +253,36 @@ diff -Naur gcc-10.2.0/gcc/config.gcc gcc-10.2.0-patched/gcc/config.gcc
  *-*-netbsd*)
    tm_p_file="${tm_p_file} netbsd-protos.h"
    tmake_file="t-netbsd t-slibgcc"
-@@ -1033,6 +1038,12 @@
+@@ -1033,6 +1038,28 @@
  esac
  
  case ${target} in
 +x86_64-*-onyx*)
 +	tmake_file="${tmake_file} i386/t-onyx"
 +	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h glibc-stdint.h i386/i386elf.h i386/x86-64.h onyx.h i386/onyx64.h"
++	x86_multilibs="${with_multilib_list}"
++	if test "$x86_multilibs" = "default"; then
++		x86_multilibs="m64"
++	fi
++	x86_multilibs=`echo $x86_multilibs | sed -e 's/,/ /g'`
++	for x86_multilib in ${x86_multilibs}; do
++		case ${x86_multilib} in
++		m32 | m64 | mx32)
++			TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG},${x86_multilib}"
++			;;
++		*)
++			echo "--with-multilib-list=${x86_with_multilib} not supported."
++			exit 1
++		esac
++	done
++	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
 +	extra_options="${extra_options} onyx.opt"
 +	;;
 +
  aarch64*-*-elf | aarch64*-*-fuchsia* | aarch64*-*-rtems*)
  	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h"
  	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-errata.h aarch64/aarch64-elf-raw.h"
-@@ -2441,6 +2452,21 @@
+@@ -2441,6 +2468,21 @@
  	# Force .init_array support.  The configure script cannot always
  	# automatically detect that GAS supports it, yet we require it.
  	gcc_cv_initfini_array=yes
@@ -218,10 +291,10 @@ diff -Naur gcc-10.2.0/gcc/config.gcc gcc-10.2.0-patched/gcc/config.gcc
 +	tm_file="elfos.h onyx.h glibc-stdint.h ${tm_file} riscv/onyx.h"
 +	case "x${enable_multilib}" in
 +	xno) ;;
-+	xyes) tmake_file="${tmake_file} riscv/t-linux-multilib" ;;
++	xyes) tmake_file="${tmake_file} riscv/t-onyx-multilib" ;;
 +	*) echo "Unknown value for enable_multilib"; exit 1
 +	esac
-+	tmake_file="${tmake_file} riscv/t-riscv riscv/t-linux"
++	tmake_file="${tmake_file} riscv/t-riscv riscv/t-onyx"
 +	gnu_ld=yes
 +	gas=yes
 +	extra_options="${extra_options} onyx.opt"
@@ -233,7 +306,7 @@ diff -Naur gcc-10.2.0/gcc/config.gcc gcc-10.2.0-patched/gcc/config.gcc
  	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
 diff -Naur gcc-10.2.0/libgcc/config.host gcc-10.2.0-patched/libgcc/config.host
 --- gcc-10.2.0/libgcc/config.host	2020-07-23 07:35:18.752400064 +0100
-+++ gcc-10.2.0-patched/libgcc/config.host	2021-11-13 18:30:49.706234189 +0000
++++ gcc-10.2.0-patched/libgcc/config.host	2021-11-30 04:56:12.070099135 +0000
 @@ -743,6 +743,11 @@
  	tm_file="${tm_file} i386/elf-lib.h"
  	md_unwind_header=i386/linux-unwind.h
@@ -261,7 +334,7 @@ diff -Naur gcc-10.2.0/libgcc/config.host gcc-10.2.0-patched/libgcc/config.host
  	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
 diff -Naur gcc-10.2.0/libsanitizer/asan/asan_linux.cpp gcc-10.2.0-patched/libsanitizer/asan/asan_linux.cpp
 --- gcc-10.2.0/libsanitizer/asan/asan_linux.cpp	2020-07-23 07:35:19.124404163 +0100
-+++ gcc-10.2.0-patched/libsanitizer/asan/asan_linux.cpp	2021-11-13 04:36:28.962754005 +0000
++++ gcc-10.2.0-patched/libsanitizer/asan/asan_linux.cpp	2021-11-30 04:56:12.070099135 +0000
 @@ -13,7 +13,7 @@
  
  #include "sanitizer_common/sanitizer_platform.h"
@@ -291,7 +364,7 @@ diff -Naur gcc-10.2.0/libsanitizer/asan/asan_linux.cpp gcc-10.2.0-patched/libsan
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
 diff -Naur gcc-10.2.0/libsanitizer/asan/asan_malloc_linux.cpp gcc-10.2.0-patched/libsanitizer/asan/asan_malloc_linux.cpp
 --- gcc-10.2.0/libsanitizer/asan/asan_malloc_linux.cpp	2020-07-23 07:35:19.128404206 +0100
-+++ gcc-10.2.0-patched/libsanitizer/asan/asan_malloc_linux.cpp	2021-11-13 04:36:28.966087338 +0000
++++ gcc-10.2.0-patched/libsanitizer/asan/asan_malloc_linux.cpp	2021-11-30 04:56:12.073432468 +0000
 @@ -15,7 +15,7 @@
  
  #include "sanitizer_common/sanitizer_platform.h"
@@ -303,7 +376,7 @@ diff -Naur gcc-10.2.0/libsanitizer/asan/asan_malloc_linux.cpp gcc-10.2.0-patched
  #include "sanitizer_common/sanitizer_errno.h"
 diff -Naur gcc-10.2.0/libsanitizer/builtins/assembly.h gcc-10.2.0-patched/libsanitizer/builtins/assembly.h
 --- gcc-10.2.0/libsanitizer/builtins/assembly.h	2020-07-23 07:35:19.128404206 +0100
-+++ gcc-10.2.0-patched/libsanitizer/builtins/assembly.h	2021-11-13 04:36:28.966087338 +0000
++++ gcc-10.2.0-patched/libsanitizer/builtins/assembly.h	2021-11-30 04:56:12.073432468 +0000
 @@ -43,7 +43,7 @@
  #define CONST_SECTION .section .rodata
  
@@ -315,7 +388,7 @@ diff -Naur gcc-10.2.0/libsanitizer/builtins/assembly.h gcc-10.2.0-patched/libsan
  #define NO_EXEC_STACK_DIRECTIVE
 diff -Naur gcc-10.2.0/libsanitizer/configure.tgt gcc-10.2.0-patched/libsanitizer/configure.tgt
 --- gcc-10.2.0/libsanitizer/configure.tgt	2020-07-23 07:35:19.128404206 +0100
-+++ gcc-10.2.0-patched/libsanitizer/configure.tgt	2021-11-13 18:37:00.462888810 +0000
++++ gcc-10.2.0-patched/libsanitizer/configure.tgt	2021-11-30 04:56:12.073432468 +0000
 @@ -29,6 +29,15 @@
  		TSAN_TARGET_DEPENDENT_OBJECTS=tsan_rtl_amd64.lo
  	fi
@@ -334,7 +407,7 @@ diff -Naur gcc-10.2.0/libsanitizer/configure.tgt gcc-10.2.0-patched/libsanitizer
  		TSAN_SUPPORTED=yes
 diff -Naur gcc-10.2.0/libsanitizer/interception/interception.h gcc-10.2.0-patched/libsanitizer/interception/interception.h
 --- gcc-10.2.0/libsanitizer/interception/interception.h	2020-07-23 07:35:19.128404206 +0100
-+++ gcc-10.2.0-patched/libsanitizer/interception/interception.h	2021-11-13 04:36:28.966087338 +0000
++++ gcc-10.2.0-patched/libsanitizer/interception/interception.h	2021-11-30 04:56:12.073432468 +0000
 @@ -18,7 +18,7 @@
  
  #if !SANITIZER_LINUX && !SANITIZER_FREEBSD && !SANITIZER_MAC && \
@@ -355,7 +428,7 @@ diff -Naur gcc-10.2.0/libsanitizer/interception/interception.h gcc-10.2.0-patche
  # define INTERCEPT_FUNCTION(func) INTERCEPT_FUNCTION_LINUX_OR_FREEBSD(func)
 diff -Naur gcc-10.2.0/libsanitizer/interception/interception_linux.cpp gcc-10.2.0-patched/libsanitizer/interception/interception_linux.cpp
 --- gcc-10.2.0/libsanitizer/interception/interception_linux.cpp	2020-07-23 07:35:19.128404206 +0100
-+++ gcc-10.2.0-patched/libsanitizer/interception/interception_linux.cpp	2021-11-13 04:36:28.966087338 +0000
++++ gcc-10.2.0-patched/libsanitizer/interception/interception_linux.cpp	2021-11-30 04:56:12.073432468 +0000
 @@ -14,7 +14,7 @@
  #include "interception.h"
  
@@ -382,7 +455,7 @@ diff -Naur gcc-10.2.0/libsanitizer/interception/interception_linux.cpp gcc-10.2.
 +        // SANITIZER_OPENBSD || SANITIZER_SOLARIS || SANITIZER_ONYX
 diff -Naur gcc-10.2.0/libsanitizer/interception/interception_linux.h gcc-10.2.0-patched/libsanitizer/interception/interception_linux.h
 --- gcc-10.2.0/libsanitizer/interception/interception_linux.h	2020-07-23 07:35:19.128404206 +0100
-+++ gcc-10.2.0-patched/libsanitizer/interception/interception_linux.h	2021-11-13 04:36:28.966087338 +0000
++++ gcc-10.2.0-patched/libsanitizer/interception/interception_linux.h	2021-11-30 04:56:12.073432468 +0000
 @@ -12,7 +12,7 @@
  //===----------------------------------------------------------------------===//
  
@@ -403,7 +476,7 @@ diff -Naur gcc-10.2.0/libsanitizer/interception/interception_linux.h gcc-10.2.0-
        #func, symver,                                          \
 diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_glibc_version.h gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_glibc_version.h
 --- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_glibc_version.h	2020-07-23 07:35:19.140404337 +0100
-+++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_glibc_version.h	2021-11-13 04:36:28.966087338 +0000
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_glibc_version.h	2021-11-30 04:56:12.073432468 +0000
 @@ -15,7 +15,7 @@
  
  #include "sanitizer_platform.h"
@@ -415,7 +488,7 @@ diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_glibc_version.h gc
  
 diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_internal_defs.h gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_internal_defs.h
 --- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_internal_defs.h	2020-07-23 07:35:19.140404337 +0100
-+++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_internal_defs.h	2021-11-13 04:36:28.969420672 +0000
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_internal_defs.h	2021-11-30 04:56:12.073432468 +0000
 @@ -39,7 +39,7 @@
  
  // TLS is handled differently on different platforms
@@ -436,7 +509,7 @@ diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_internal_defs.h gc
  typedef u64 OFF_T;
 diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_linux.cpp gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.cpp
 --- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_linux.cpp	2020-07-23 07:35:19.140404337 +0100
-+++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.cpp	2021-11-13 04:36:28.969420672 +0000
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.cpp	2021-11-30 04:56:12.073432468 +0000
 @@ -14,7 +14,7 @@
  #include "sanitizer_platform.h"
  
@@ -544,7 +617,7 @@ diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_linux.cpp gcc-10.2
    uptr module_name_len = internal_readlink(
 diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_linux.h gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.h
 --- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_linux.h	2020-07-23 07:35:19.140404337 +0100
-+++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.h	2021-11-13 04:36:28.969420672 +0000
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.h	2021-11-30 04:56:12.073432468 +0000
 @@ -14,7 +14,7 @@
  
  #include "sanitizer_platform.h"
@@ -567,7 +640,7 @@ diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_linux.h gcc-10.2.0
  // This class reads thread IDs from /proc/<pid>/task using only syscalls.
 diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp
 --- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp	2020-07-23 07:35:19.140404337 +0100
-+++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp	2021-11-13 04:36:28.969420672 +0000
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp	2021-11-30 04:56:12.073432468 +0000
 @@ -14,7 +14,7 @@
  #include "sanitizer_platform.h"
  
@@ -597,7 +670,7 @@ diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp 
    *size = GetTlsSize();
 diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform.h gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform.h
 --- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform.h	2020-07-23 07:35:19.140404337 +0100
-+++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform.h	2021-11-13 04:36:28.969420672 +0000
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform.h	2021-11-30 04:56:12.073432468 +0000
 @@ -15,7 +15,7 @@
  #if !defined(__linux__) && !defined(__FreeBSD__) && !defined(__NetBSD__) && \
    !defined(__OpenBSD__) && !defined(__APPLE__) && !defined(_WIN32) && \
@@ -626,7 +699,7 @@ diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform.h gcc-10.
  #  define SANITIZER_WORDSIZE 64
 diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h
 --- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h	2020-07-23 07:35:19.140404337 +0100
-+++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h	2021-11-13 04:36:28.972754005 +0000
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h	2021-11-30 04:56:12.073432468 +0000
 @@ -126,6 +126,12 @@
  # define SI_LINUX_NOT_FREEBSD 0
  #endif
@@ -816,7 +889,7 @@ diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform_intercept
  #define SANITIZER_INTERCEPT_GETVFSSTAT SI_NETBSD
 diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp
 --- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp	2020-07-23 07:35:19.140404337 +0100
-+++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp	2021-11-13 04:36:28.972754005 +0000
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp	2021-11-30 04:56:12.073432468 +0000
 @@ -13,7 +13,7 @@
  
  #include "sanitizer_platform.h"
@@ -898,7 +971,7 @@ diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_po
  #ifdef ifa_dstaddr
 diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h
 --- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h	2020-07-23 07:35:19.140404337 +0100
-+++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h	2021-11-13 04:36:28.972754005 +0000
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h	2021-11-30 04:56:12.073432468 +0000
 @@ -14,7 +14,7 @@
  #ifndef SANITIZER_PLATFORM_LIMITS_POSIX_H
  #define SANITIZER_PLATFORM_LIMITS_POSIX_H
@@ -1195,7 +1268,7 @@ diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_po
  #endif
 diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_common.cpp gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_common.cpp
 --- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_common.cpp	2020-07-23 07:35:19.144404383 +0100
-+++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_common.cpp	2021-11-13 04:36:28.976087338 +0000
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_common.cpp	2021-11-30 04:56:12.073432468 +0000
 @@ -12,7 +12,7 @@
  #include "sanitizer_platform.h"
  
@@ -1207,7 +1280,7 @@ diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_common.cp
  #include "sanitizer_placement_new.h"
 diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps.h gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps.h
 --- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps.h	2020-07-23 07:35:19.144404383 +0100
-+++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps.h	2021-11-13 04:36:28.976087338 +0000
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps.h	2021-11-30 04:56:12.073432468 +0000
 @@ -16,7 +16,7 @@
  #include "sanitizer_platform.h"
  
@@ -1219,7 +1292,7 @@ diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps.h gcc-10.
  #include "sanitizer_internal_defs.h"
 diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_linux.cpp gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_linux.cpp
 --- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_linux.cpp	2020-07-23 07:35:19.144404383 +0100
-+++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_linux.cpp	2021-11-13 04:36:28.976087338 +0000
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_linux.cpp	2021-11-30 04:56:12.073432468 +0000
 @@ -10,7 +10,7 @@
  //===----------------------------------------------------------------------===//
  
@@ -1231,7 +1304,7 @@ diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_linux.cpp
  
 diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp
 --- gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp	2020-07-23 07:35:19.144404383 +0100
-+++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp	2021-11-13 04:36:28.976087338 +0000
++++ gcc-10.2.0-patched/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp	2021-11-30 04:56:12.073432468 +0000
 @@ -12,7 +12,7 @@
  
  #include "sanitizer_platform.h"
@@ -1249,7 +1322,7 @@ diff -Naur gcc-10.2.0/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcd
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
 diff -Naur gcc-10.2.0/libsanitizer/tsan/tsan_interceptors_posix.cpp gcc-10.2.0-patched/libsanitizer/tsan/tsan_interceptors_posix.cpp
 --- gcc-10.2.0/libsanitizer/tsan/tsan_interceptors_posix.cpp	2020-07-23 07:35:19.144404383 +0100
-+++ gcc-10.2.0-patched/libsanitizer/tsan/tsan_interceptors_posix.cpp	2021-11-13 04:36:28.976087338 +0000
++++ gcc-10.2.0-patched/libsanitizer/tsan/tsan_interceptors_posix.cpp	2021-11-30 04:56:12.073432468 +0000
 @@ -1048,7 +1048,7 @@
    REAL(pthread_exit)(retval);
  }
@@ -1279,7 +1352,7 @@ diff -Naur gcc-10.2.0/libsanitizer/tsan/tsan_interceptors_posix.cpp gcc-10.2.0-p
    #endif
 diff -Naur gcc-10.2.0/libsanitizer/tsan/tsan_platform_linux.cpp gcc-10.2.0-patched/libsanitizer/tsan/tsan_platform_linux.cpp
 --- gcc-10.2.0/libsanitizer/tsan/tsan_platform_linux.cpp	2020-07-23 07:35:19.144404383 +0100
-+++ gcc-10.2.0-patched/libsanitizer/tsan/tsan_platform_linux.cpp	2021-11-13 04:36:28.976087338 +0000
++++ gcc-10.2.0-patched/libsanitizer/tsan/tsan_platform_linux.cpp	2021-11-30 04:56:12.076765802 +0000
 @@ -13,7 +13,7 @@
  
  
@@ -1336,7 +1409,7 @@ diff -Naur gcc-10.2.0/libsanitizer/tsan/tsan_platform_linux.cpp gcc-10.2.0-patch
  # elif defined(__mips64)
 diff -Naur gcc-10.2.0/libsanitizer/tsan/tsan_rtl_amd64.S gcc-10.2.0-patched/libsanitizer/tsan/tsan_rtl_amd64.S
 --- gcc-10.2.0/libsanitizer/tsan/tsan_rtl_amd64.S	2020-07-23 07:35:19.148404426 +0100
-+++ gcc-10.2.0-patched/libsanitizer/tsan/tsan_rtl_amd64.S	2021-11-13 04:36:28.979420671 +0000
++++ gcc-10.2.0-patched/libsanitizer/tsan/tsan_rtl_amd64.S	2021-11-30 04:56:12.076765802 +0000
 @@ -192,7 +192,7 @@
    // obtain SP, store in %rdi, first argument to `void __tsan_setjmp(uptr sp)`
  #if defined(__FreeBSD__) || defined(__NetBSD__)
@@ -1366,7 +1439,7 @@ diff -Naur gcc-10.2.0/libsanitizer/tsan/tsan_rtl_amd64.S gcc-10.2.0-patched/libs
  # error "Unknown platform"
 diff -Naur gcc-10.2.0/libstdc++-v3/configure gcc-10.2.0-patched/libstdc++-v3/configure
 --- gcc-10.2.0/libstdc++-v3/configure	2020-07-23 07:35:19.188404867 +0100
-+++ gcc-10.2.0-patched/libstdc++-v3/configure	2021-11-13 04:36:28.996087339 +0000
++++ gcc-10.2.0-patched/libstdc++-v3/configure	2021-11-30 04:56:12.083432469 +0000
 @@ -6865,6 +6865,10 @@
    lt_cv_deplibs_check_method=pass_all
    ;;
@@ -7463,7 +7536,7 @@ diff -Naur gcc-10.2.0/libstdc++-v3/configure gcc-10.2.0-patched/libstdc++-v3/con
    # If we're not using GNU ld, then there's no point in even trying these
 diff -Naur gcc-10.2.0/libstdc++-v3/crossconfig.m4 gcc-10.2.0-patched/libstdc++-v3/crossconfig.m4
 --- gcc-10.2.0/libstdc++-v3/crossconfig.m4	2020-07-23 07:35:19.188404867 +0100
-+++ gcc-10.2.0-patched/libstdc++-v3/crossconfig.m4	2021-11-13 04:36:28.996087339 +0000
++++ gcc-10.2.0-patched/libstdc++-v3/crossconfig.m4	2021-11-30 04:56:12.083432469 +0000
 @@ -192,6 +192,12 @@
      AC_CHECK_FUNCS(sockatmark)
      AM_ICONV
@@ -7479,7 +7552,7 @@ diff -Naur gcc-10.2.0/libstdc++-v3/crossconfig.m4 gcc-10.2.0-patched/libstdc++-v
      GLIBCXX_CHECK_MATH_SUPPORT
 diff -Naur gcc-10.2.0/PKGBUILD gcc-10.2.0-patched/PKGBUILD
 --- gcc-10.2.0/PKGBUILD	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-10.2.0-patched/PKGBUILD	2021-11-13 04:36:28.996087339 +0000
++++ gcc-10.2.0-patched/PKGBUILD	2021-11-30 04:56:12.083432469 +0000
 @@ -0,0 +1,19 @@
 +PKGNAME=gcc
 +PKGVER=10.2.0

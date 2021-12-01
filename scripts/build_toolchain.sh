@@ -262,8 +262,8 @@ if [ "$strip_toolchain" = "yes" ]; then
 # TODO: This doesn't really work for llvm and leaves some things unstripped
 # This is kind of hacky, adapt llvm to use distribution and install-distribution-stripped
 # Strip bin, libexec, lib
-find "$target_dir/bin" -type f -exec $STRIP {} \; || true
-find "$target_dir/libexec" -type f -exec sh -c 'file {} | grep ELF' \; -exec $STRIP {} \; || true
-find "$target_dir/lib" -type f -exec sh -c 'file {} | grep ELF' \; -exec $STRIP {} \; || true
+find "$target_dir/bin" -type f -exec sh -c '(! echo {} | grep -q .*.o) && (file {} | grep ELF)' \; -exec $STRIP {} \; || true
+find "$target_dir/libexec" -type f -exec sh -c '(! echo {} | grep -q .*.o) && (file {} | grep ELF)' \; -exec $STRIP {} \; || true
+find "$target_dir/lib" -type f -exec sh -c '(! echo {} | grep -q .*.o) && (file {} | grep ELF)' \; -exec $STRIP {} \; || true
 
 fi

@@ -214,7 +214,7 @@ if [ "$toolchain" = "GNU" ]; then
     compiler_runtimes="libstdc++-v3 libsanitizer"
 
     if [ "$enable_libc" = "no" ]; then
-        libc_options="--without-headers --with-newlib --disable-shared"
+        libc_options="--without-headers --with-newlib --disable-shared --disable-threads"
         compiler_runtimes=""
     fi
 

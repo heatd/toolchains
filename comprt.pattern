@@ -1,0 +1,7 @@
+compiler-rt/cmake/config-ix.cmake
+compiler-rt/lib/builtins/*
+compiler-rt/lib/fuzzer/*
+compiler-rt/lib/lsan/*
+compiler-rt/lib/msan/*
+compiler-rt/lib/safestack/*
+compiler-rt/lib/scudo/*

@@ -124,7 +124,7 @@ LLVM|llvm)
 esac
 
 GNU_TARGET="$ARCH-onyx"
-LLVM_VER="12.0.0"
+LLVM_VER="13.0.0"
 BINUTILS_VER="2.37"
 GCC_VER="11.2.0"
 
@@ -253,8 +253,8 @@ elif [ "$toolchain" = "LLVM" ]; then
     -DCMAKE_MODULE_PATH=${ONYX_SRCDIR}/toolchains/cmake \
     -C ${LLVM_SRCDIR}/clang/cmake/caches/Onyx-stage2.cmake ${LLVM_SRCDIR}/llvm
 
-    ninja
-    DESTDIR=$target_dir ninja install
+    ninja distribution
+    DESTDIR=$target_dir ninja install-distribution-stripped
 fi
 
 if [ "$strip_toolchain" = "yes" ]; then

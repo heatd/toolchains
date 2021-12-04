@@ -13,7 +13,7 @@ if [ "$#" -ne "1" ]; then
 	exit 1
 fi
 
-LLVM_VER="12.0.0"
+LLVM_VER="13.0.0"
 
 STAGING_DIR=$1
 PATCHES=$PWD/toolchains

@@ -388,7 +388,7 @@ diff -Naur llvm-project-13.0.0/clang/cmake/caches/Onyx-stage2.cmake llvm-project
 +set(LLVM_RUNTIME_BUILD_ID_LINK_TARGETS "${RUNTIME_BUILD_ID_LINK}" CACHE STRING "")
 +
 +# Setup toolchain.
-+set(LLVM_INSTALL_TOOLCHAIN_ONLY OFF CACHE BOOL "")
++set(LLVM_INSTALL_TOOLCHAIN_ONLY ON CACHE BOOL "")
 +set(LLVM_TOOLCHAIN_TOOLS
 +  dsymutil
 +  llvm-ar

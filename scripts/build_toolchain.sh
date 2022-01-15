@@ -236,7 +236,7 @@ if [ "$toolchain" = "GNU" ]; then
 elif [ "$toolchain" = "LLVM" ]; then
 
     if [ "$use_lto" = "true" ]; then
-        llvm_build_extra="$llvm_build_extra -DLLVM_ENABLE_LTO=ON -DLLVM_PARALLEL_LINK_JOBS=1"
+        llvm_build_extra="$llvm_build_extra -DLLVM_ENABLE_LTO=Thin -DLLVM_PARALLEL_LINK_JOBS=1"
     else
         llvm_build_extra="$llvm_build_extra -DLLVM_ENABLE_LTO=OFF"
     fi

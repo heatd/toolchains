@@ -10,7 +10,6 @@ diff -Naur gcc-11.2.0/config.sub gcc-11.2.0-patched/config.sub
  	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx*)
  		;;
  	# This one is extra strict with allowed versions
-diff -Naur gcc-11.2.0/fixincludes/mkfixinc.sh gcc-11.2.0-patched/fixincludes/mkfixinc.sh
 --- gcc-11.2.0/fixincludes/mkfixinc.sh	2021-07-28 07:55:06.644278372 +0100
 +++ gcc-11.2.0-patched/fixincludes/mkfixinc.sh	2021-12-01 04:35:01.065713610 +0000
 @@ -20,7 +20,8 @@
@@ -23,7 +22,6 @@ diff -Naur gcc-11.2.0/fixincludes/mkfixinc.sh gcc-11.2.0-patched/fixincludes/mkf
  	#  IF there is no include fixing,
  	#  THEN create a no-op fixer and exit
  	(echo "#! /bin/sh" ; echo "exit 0" ) > ${target}
-diff -Naur gcc-11.2.0/gcc/config/i386/onyx64.h gcc-11.2.0-patched/gcc/config/i386/onyx64.h
 --- gcc-11.2.0/gcc/config/i386/onyx64.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-11.2.0-patched/gcc/config/i386/onyx64.h	2021-12-01 04:35:01.065713610 +0000
 @@ -0,0 +1,35 @@
@@ -62,7 +60,6 @@ diff -Naur gcc-11.2.0/gcc/config/i386/onyx64.h gcc-11.2.0-patched/gcc/config/i38
 +#undef LD_ONYX_PATH
 +
 +#define LD_ONYX_PATH  "/lib/ld-onyx-" ONYX_ARCH_SUFFIX ".so"
-diff -Naur gcc-11.2.0/gcc/config/i386/t-onyx gcc-11.2.0-patched/gcc/config/i386/t-onyx
 --- gcc-11.2.0/gcc/config/i386/t-onyx	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-11.2.0-patched/gcc/config/i386/t-onyx	2021-12-01 04:35:01.065713610 +0000
 @@ -0,0 +1,7 @@
@@ -73,10 +70,9 @@ diff -Naur gcc-11.2.0/gcc/config/i386/t-onyx gcc-11.2.0-patched/gcc/config/i386/
 +MULTILIB_OSDIRNAMES = m64=../lib$(call if_multiarch,:x86_64-onyx)
 +MULTILIB_OSDIRNAMES+= m32=../lib32$(call if_multiarch,:i386-onyx)
 +MULTILIB_OSDIRNAMES+= mx32=../libx32$(call if_multiarch,:x86_64-onyx-x32)
-diff -Naur gcc-11.2.0/gcc/config/onyx.h gcc-11.2.0-patched/gcc/config/onyx.h
 --- gcc-11.2.0/gcc/config/onyx.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-11.2.0-patched/gcc/config/onyx.h	2021-12-01 08:32:55.229814971 +0000
-@@ -0,0 +1,92 @@
+@@ -0,0 +1,91 @@
 +#undef TARGET_OS_CPP_BUILTINS
 +#define TARGET_OS_CPP_BUILTINS() \
 +do{ \
@@ -109,17 +105,16 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.h gcc-11.2.0-patched/gcc/config/onyx.h
 +	" -z now" \
 +	" -z text" \
 +	" -z noexecstack" \
-+	"%{pthread:-lpthread}" \
 +	"%{!hash-style: --hash-style=gnu}" \
 +	"%{!no-build-id: --build-id}" \
 +	"%{!no-eh-frame-hdr: --eh-frame-hdr}"
 +
 +/* Link with libpthread if -pthread and link with libc by default */
 +#undef  LIB_SPEC
-+#define LIB_SPEC "%{pthread:-lpthread} -lc"
++#define LIB_SPEC "%{pthread: -lpthread} -lc"
 +
 +#if defined(HAVE_LD_EH_FRAME_HDR)
-+#define LINK_EH_SPEC "%{!static|static-pie:--eh-frame-hdr} "
++#define LINK_EH_SPEC "%{!static|static-pie: --eh-frame-hdr} "
 +#endif
 +
 +#define ONYX_TARGET_LINK_GCC_C_SEQUENCE_SPEC \
@@ -211,7 +206,6 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
 +Driver
 +
 +; This comment is to ensure we retain the blank line above.
-diff -Naur gcc-11.2.0/gcc/config/riscv/onyx.h gcc-11.2.0-patched/gcc/config/riscv/onyx.h
 --- gcc-11.2.0/gcc/config/riscv/onyx.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-11.2.0-patched/gcc/config/riscv/onyx.h	2021-12-01 04:35:01.065713610 +0000
 @@ -0,0 +1,32 @@
@@ -247,14 +241,12 @@ diff -Naur gcc-11.2.0/gcc/config/riscv/onyx.h gcc-11.2.0-patched/gcc/config/risc
 +
 +#undef LD_ONYX_PATH
 +#define LD_ONYX_PATH "/lib/ld-onyx-riscv" XLEN_SPEC MUSL_ABI_SUFFIX ".so"
-diff -Naur gcc-11.2.0/gcc/config/riscv/t-onyx gcc-11.2.0-patched/gcc/config/riscv/t-onyx
 --- gcc-11.2.0/gcc/config/riscv/t-onyx	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-11.2.0-patched/gcc/config/riscv/t-onyx	2021-12-01 04:35:01.065713610 +0000
 @@ -0,0 +1,3 @@
 +# Only XLEN and ABI affect Linux multilib dir names, e.g. /lib32/ilp32d/
 +MULTILIB_DIRNAMES := $(patsubst rv32%,lib32,$(patsubst rv64%,lib,$(MULTILIB_DIRNAMES)))
 +MULTILIB_OSDIRNAMES := $(patsubst lib%,../lib%,$(MULTILIB_DIRNAMES))
-diff -Naur gcc-11.2.0/gcc/config/riscv/t-onyx-multilib gcc-11.2.0-patched/gcc/config/riscv/t-onyx-multilib
 --- gcc-11.2.0/gcc/config/riscv/t-onyx-multilib	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-11.2.0-patched/gcc/config/riscv/t-onyx-multilib	2021-12-01 04:35:01.065713610 +0000
 @@ -0,0 +1,24 @@
@@ -282,7 +274,6 @@ diff -Naur gcc-11.2.0/gcc/config/riscv/t-onyx-multilib gcc-11.2.0-patched/gcc/co
 +march.rv64imafdc/mabi.lp64d=march.rv64imafd/mabi.lp64d \
 +march.rv64imafdc/mabi.lp64d=march.rv64gc/mabi.lp64d \
 +march.rv64imafdc/mabi.lp64d=march.rv64g/mabi.lp64d
-diff -Naur gcc-11.2.0/gcc/config.gcc gcc-11.2.0-patched/gcc/config.gcc
 --- gcc-11.2.0/gcc/config.gcc	2021-07-28 07:55:07.000283339 +0100
 +++ gcc-11.2.0-patched/gcc/config.gcc	2021-12-01 08:02:57.546384822 +0000
 @@ -885,6 +885,15 @@
@@ -352,7 +343,6 @@ diff -Naur gcc-11.2.0/gcc/config.gcc gcc-11.2.0-patched/gcc/config.gcc
  	;;
  riscv*-*-elf* | riscv*-*-rtems*)
  	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
-diff -Naur gcc-11.2.0/libgcc/config.host gcc-11.2.0-patched/libgcc/config.host
 --- gcc-11.2.0/libgcc/config.host	2021-07-28 07:55:08.752307785 +0100
 +++ gcc-11.2.0-patched/libgcc/config.host	2021-12-01 04:35:01.069046944 +0000
 @@ -735,6 +735,11 @@
@@ -380,7 +370,6 @@ diff -Naur gcc-11.2.0/libgcc/config.host gcc-11.2.0-patched/libgcc/config.host
  riscv*-*-freebsd*)
  	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
  	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
-diff -Naur gcc-11.2.0/libsanitizer/aclocal.m4 gcc-11.2.0-patched/libsanitizer/aclocal.m4
 --- gcc-11.2.0/libsanitizer/aclocal.m4	2021-07-28 07:55:09.172313645 +0100
 +++ gcc-11.2.0-patched/libsanitizer/aclocal.m4	2021-12-01 09:21:39.833305844 +0000
 @@ -1,6 +1,6 @@
@@ -830,7 +819,6 @@ diff -Naur gcc-11.2.0/libsanitizer/aclocal.m4 gcc-11.2.0-patched/libsanitizer/ac
  #
  # This file is free software; the Free Software Foundation
  # gives unlimited permission to copy and/or distribute it,
-diff -Naur gcc-11.2.0/libsanitizer/asan/asan_linux.cpp gcc-11.2.0-patched/libsanitizer/asan/asan_linux.cpp
 --- gcc-11.2.0/libsanitizer/asan/asan_linux.cpp	2021-07-28 07:55:09.172313645 +0100
 +++ gcc-11.2.0-patched/libsanitizer/asan/asan_linux.cpp	2021-12-01 20:41:07.313699325 +0000
 @@ -13,7 +13,7 @@
@@ -869,7 +857,6 @@ diff -Naur gcc-11.2.0/libsanitizer/asan/asan_linux.cpp gcc-11.2.0-patched/libsan
  #endif  // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
-diff -Naur gcc-11.2.0/libsanitizer/asan/asan_malloc_linux.cpp gcc-11.2.0-patched/libsanitizer/asan/asan_malloc_linux.cpp
 --- gcc-11.2.0/libsanitizer/asan/asan_malloc_linux.cpp	2021-07-28 07:55:09.172313645 +0100
 +++ gcc-11.2.0-patched/libsanitizer/asan/asan_malloc_linux.cpp	2021-12-01 04:35:01.072380277 +0000
 @@ -15,7 +15,7 @@
@@ -881,7 +868,6 @@ diff -Naur gcc-11.2.0/libsanitizer/asan/asan_malloc_linux.cpp gcc-11.2.0-patched
  
  #include "sanitizer_common/sanitizer_allocator_checks.h"
  #include "sanitizer_common/sanitizer_errno.h"
-diff -Naur gcc-11.2.0/libsanitizer/asan/Makefile.in gcc-11.2.0-patched/libsanitizer/asan/Makefile.in
 --- gcc-11.2.0/libsanitizer/asan/Makefile.in	2021-07-28 07:55:09.172313645 +0100
 +++ gcc-11.2.0-patched/libsanitizer/asan/Makefile.in	2021-12-01 09:21:41.089972578 +0000
 @@ -1,7 +1,7 @@
@@ -1158,7 +1144,6 @@ diff -Naur gcc-11.2.0/libsanitizer/asan/Makefile.in gcc-11.2.0-patched/libsaniti
  	uninstall-toolexeclibLTLIBRARIES
  
  .PRECIOUS: Makefile
-diff -Naur gcc-11.2.0/libsanitizer/builtins/assembly.h gcc-11.2.0-patched/libsanitizer/builtins/assembly.h
 --- gcc-11.2.0/libsanitizer/builtins/assembly.h	2021-07-28 07:55:09.172313645 +0100
 +++ gcc-11.2.0-patched/libsanitizer/builtins/assembly.h	2021-12-01 04:35:01.072380277 +0000
 @@ -43,7 +43,7 @@
@@ -1170,7 +1155,6 @@ diff -Naur gcc-11.2.0/libsanitizer/builtins/assembly.h gcc-11.2.0-patched/libsan
  #define NO_EXEC_STACK_DIRECTIVE .section .note.GNU-stack,"",%progbits
  #else
  #define NO_EXEC_STACK_DIRECTIVE
-diff -Naur gcc-11.2.0/libsanitizer/configure gcc-11.2.0-patched/libsanitizer/configure
 --- gcc-11.2.0/libsanitizer/configure	2021-07-28 07:55:09.172313645 +0100
 +++ gcc-11.2.0-patched/libsanitizer/configure	2021-12-02 00:34:32.364453430 +0000
 @@ -704,6 +704,9 @@
@@ -1584,7 +1568,6 @@ diff -Naur gcc-11.2.0/libsanitizer/configure gcc-11.2.0-patched/libsanitizer/con
  }
   ;;
      "libtool":C)
-diff -Naur gcc-11.2.0/libsanitizer/configure.tgt gcc-11.2.0-patched/libsanitizer/configure.tgt
 --- gcc-11.2.0/libsanitizer/configure.tgt	2021-07-28 07:55:09.172313645 +0100
 +++ gcc-11.2.0-patched/libsanitizer/configure.tgt	2021-12-01 04:35:01.072380277 +0000
 @@ -31,6 +31,15 @@
@@ -1603,7 +1586,6 @@ diff -Naur gcc-11.2.0/libsanitizer/configure.tgt gcc-11.2.0-patched/libsanitizer
    powerpc*-*-linux*)
  	if test x$ac_cv_sizeof_void_p = x8; then
  		TSAN_SUPPORTED=yes
-diff -Naur gcc-11.2.0/libsanitizer/hwasan/Makefile.in gcc-11.2.0-patched/libsanitizer/hwasan/Makefile.in
 --- gcc-11.2.0/libsanitizer/hwasan/Makefile.in	2021-07-28 07:55:09.172313645 +0100
 +++ gcc-11.2.0-patched/libsanitizer/hwasan/Makefile.in	2021-12-01 09:21:41.116639246 +0000
 @@ -1,7 +1,7 @@
@@ -1815,7 +1797,6 @@ diff -Naur gcc-11.2.0/libsanitizer/hwasan/Makefile.in gcc-11.2.0-patched/libsani
  
  .PRECIOUS: Makefile
  
-diff -Naur gcc-11.2.0/libsanitizer/interception/interception.h gcc-11.2.0-patched/libsanitizer/interception/interception.h
 --- gcc-11.2.0/libsanitizer/interception/interception.h	2021-07-28 07:55:09.176313701 +0100
 +++ gcc-11.2.0-patched/libsanitizer/interception/interception.h	2021-12-01 04:36:45.525719240 +0000
 @@ -18,7 +18,7 @@
@@ -1836,7 +1817,6 @@ diff -Naur gcc-11.2.0/libsanitizer/interception/interception.h gcc-11.2.0-patche
  
  # include "interception_linux.h"
  # define INTERCEPT_FUNCTION(func) INTERCEPT_FUNCTION_LINUX_OR_FREEBSD(func)
-diff -Naur gcc-11.2.0/libsanitizer/interception/interception_linux.cpp gcc-11.2.0-patched/libsanitizer/interception/interception_linux.cpp
 --- gcc-11.2.0/libsanitizer/interception/interception_linux.cpp	2021-07-28 07:55:09.176313701 +0100
 +++ gcc-11.2.0-patched/libsanitizer/interception/interception_linux.cpp	2021-12-01 04:38:22.509057801 +0000
 @@ -14,7 +14,7 @@
@@ -1863,7 +1843,6 @@ diff -Naur gcc-11.2.0/libsanitizer/interception/interception_linux.cpp gcc-11.2.
  #endif  // SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
-diff -Naur gcc-11.2.0/libsanitizer/interception/interception_linux.h gcc-11.2.0-patched/libsanitizer/interception/interception_linux.h
 --- gcc-11.2.0/libsanitizer/interception/interception_linux.h	2021-07-28 07:55:09.176313701 +0100
 +++ gcc-11.2.0-patched/libsanitizer/interception/interception_linux.h	2021-12-01 04:39:22.212394353 +0000
 @@ -12,7 +12,7 @@
@@ -1895,7 +1874,6 @@ diff -Naur gcc-11.2.0/libsanitizer/interception/interception_linux.h gcc-11.2.0-
  #endif  // SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
-diff -Naur gcc-11.2.0/libsanitizer/interception/Makefile.in gcc-11.2.0-patched/libsanitizer/interception/Makefile.in
 --- gcc-11.2.0/libsanitizer/interception/Makefile.in	2021-07-28 07:55:09.176313701 +0100
 +++ gcc-11.2.0-patched/libsanitizer/interception/Makefile.in	2021-12-01 09:21:41.139972581 +0000
 @@ -1,7 +1,7 @@
@@ -2036,7 +2014,6 @@ diff -Naur gcc-11.2.0/libsanitizer/interception/Makefile.in gcc-11.2.0-patched/l
  
  .PRECIOUS: Makefile
  
-diff -Naur gcc-11.2.0/libsanitizer/libbacktrace/Makefile.in gcc-11.2.0-patched/libsanitizer/libbacktrace/Makefile.in
 --- gcc-11.2.0/libsanitizer/libbacktrace/Makefile.in	2021-07-28 07:55:09.176313701 +0100
 +++ gcc-11.2.0-patched/libsanitizer/libbacktrace/Makefile.in	2021-12-01 09:21:41.179972583 +0000
 @@ -1,7 +1,7 @@
@@ -2220,7 +2197,6 @@ diff -Naur gcc-11.2.0/libsanitizer/libbacktrace/Makefile.in gcc-11.2.0-patched/l
  
  .PRECIOUS: Makefile
  
-diff -Naur gcc-11.2.0/libsanitizer/lsan/Makefile.in gcc-11.2.0-patched/libsanitizer/lsan/Makefile.in
 --- gcc-11.2.0/libsanitizer/lsan/Makefile.in	2021-07-28 07:55:09.180313757 +0100
 +++ gcc-11.2.0-patched/libsanitizer/lsan/Makefile.in	2021-12-01 09:21:41.203305918 +0000
 @@ -1,7 +1,7 @@
@@ -2370,7 +2346,6 @@ diff -Naur gcc-11.2.0/libsanitizer/lsan/Makefile.in gcc-11.2.0-patched/libsaniti
  	clean-toolexeclibLTLIBRARIES cscopelist-am ctags ctags-am \
  	distclean distclean-compile distclean-generic \
  	distclean-libtool distclean-tags dvi dvi-am html html-am info \
-diff -Naur gcc-11.2.0/libsanitizer/Makefile.in gcc-11.2.0-patched/libsanitizer/Makefile.in
 --- gcc-11.2.0/libsanitizer/Makefile.in	2021-07-28 07:55:09.172313645 +0100
 +++ gcc-11.2.0-patched/libsanitizer/Makefile.in	2021-12-01 09:21:41.059972577 +0000
 @@ -1,7 +1,7 @@
@@ -2432,7 +2407,6 @@ diff -Naur gcc-11.2.0/libsanitizer/Makefile.in gcc-11.2.0-patched/libsanitizer/M
  	esac;
  $(top_srcdir)/../multilib.am $(am__empty):
  
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/Makefile.am gcc-11.2.0-patched/libsanitizer/sanitizer_common/Makefile.am
 --- gcc-11.2.0/libsanitizer/sanitizer_common/Makefile.am	2021-07-28 07:55:09.180313757 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/Makefile.am	2021-12-02 00:34:02.387785149 +0000
 @@ -57,6 +57,7 @@
@@ -2443,7 +2417,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/Makefile.am gcc-11.2.0-patch
  	sanitizer_rtems.cpp \
  	sanitizer_solaris.cpp \
  	sanitizer_stackdepot.cpp \
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/Makefile.in gcc-11.2.0-patched/libsanitizer/sanitizer_common/Makefile.in
 --- gcc-11.2.0/libsanitizer/sanitizer_common/Makefile.in	2021-07-28 07:55:09.180313757 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/Makefile.in	2021-12-02 00:34:33.177786807 +0000
 @@ -1,7 +1,7 @@
@@ -2887,7 +2860,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/Makefile.in gcc-11.2.0-patch
  
  .PRECIOUS: Makefile
  
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_errno_codes.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_errno_codes.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_errno_codes.h	2021-07-28 07:55:09.184313813 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_errno_codes.h	2021-12-02 01:09:30.964566525 +0000
 @@ -24,6 +24,7 @@
@@ -2898,7 +2870,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_errno_codes.h gcc-
  #define errno_ENAMETOOLONG 36
  
  // Those might not present or their value differ on different platforms.
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_glibc_version.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_glibc_version.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_glibc_version.h	2021-07-28 07:55:09.184313813 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_glibc_version.h	2021-12-01 04:35:01.072380277 +0000
 @@ -15,7 +15,7 @@
@@ -2910,7 +2881,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_glibc_version.h gc
  #include <features.h>
  #endif
  
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_internal_defs.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_internal_defs.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_internal_defs.h	2021-07-28 07:55:09.184313813 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_internal_defs.h	2021-12-01 04:40:59.959066289 +0000
 @@ -39,7 +39,7 @@
@@ -2931,7 +2901,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_internal_defs.h gc
      (SANITIZER_SOLARIS && (defined(_LP64) || _FILE_OFFSET_BITS == 64)) || \
      (SANITIZER_LINUX && defined(__x86_64__))
  typedef u64 OFF_T;
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_linux.cpp gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.cpp
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_linux.cpp	2021-07-28 07:55:09.184313813 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.cpp	2021-12-01 20:24:14.360311397 +0000
 @@ -14,7 +14,7 @@
@@ -3096,7 +3065,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_linux.cpp gcc-11.2
  #else
    const char *default_module_name = "/proc/self/exe";
    uptr module_name_len = internal_readlink(
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_linux.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_linux.h	2021-07-28 07:55:09.184313813 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.h	2021-12-02 00:31:05.701108960 +0000
 @@ -14,7 +14,7 @@
@@ -3150,7 +3118,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_linux.h gcc-11.2.0
  #endif  // SANITIZER_LINUX
  
  // This class reads thread IDs from /proc/<pid>/task using only syscalls.
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp	2021-07-28 07:55:09.184313813 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp	2021-12-01 23:27:46.174237575 +0000
 @@ -14,7 +14,7 @@
@@ -3193,7 +3160,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp 
  #if defined(__x86_64__) || defined(__i386__) || defined(__s390__)
    *addr = ThreadSelf();
    *size = GetTlsSize();
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_onyx.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_onyx.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_onyx.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_onyx.h	2021-12-02 00:23:13.677750192 +0000
 @@ -0,0 +1,33 @@
@@ -3230,7 +3196,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_onyx.h gcc-11.2.0-
 +#endif
 +
 +#endif
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform.h	2021-07-28 07:55:09.184313813 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform.h	2021-12-01 04:46:56.879085529 +0000
 @@ -15,7 +15,7 @@
@@ -3259,7 +3224,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform.h gcc-11.
  
  #if __LP64__ || defined(_WIN64)
  #  define SANITIZER_WORDSIZE 64
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h	2021-07-28 07:55:09.184313813 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h	2021-12-01 20:46:57.617051499 +0000
 @@ -138,6 +138,12 @@
@@ -3626,7 +3590,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform_intercept
  #define SANITIZER_INTERCEPT___CXA_ATEXIT SI_NETBSD
  #define SANITIZER_INTERCEPT_ATEXIT SI_NETBSD
  #define SANITIZER_INTERCEPT_PTHREAD_ATFORK SI_NETBSD
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp	2021-07-28 07:55:09.184313813 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp	2021-12-01 06:36:51.779440377 +0000
 @@ -13,7 +13,7 @@
@@ -3738,7 +3701,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_po
  // Compare against the union, because we can't reach into the union in a
  // compliant way.
  #ifdef ifa_dstaddr
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h	2021-07-28 07:55:09.184313813 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h	2021-12-01 06:31:43.989423824 +0000
 @@ -14,7 +14,7 @@
@@ -4060,7 +4022,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_po
 +#endif  // (SANITIZER_LINUX || SANITIZER_ONYX) || SANITIZER_MAC
  
  #endif
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp	2021-07-28 07:55:09.184313813 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp	2021-12-02 00:49:37.527835544 +0000
 @@ -300,7 +300,9 @@
@@ -4073,7 +4034,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp 
  }
  
  static bool MmapFixed(uptr fixed_addr, uptr size, int additional_flags,
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps.h	2021-07-28 07:55:09.184313813 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps.h	2021-12-02 00:21:28.571077866 +0000
 @@ -17,11 +17,12 @@
@@ -4090,7 +4050,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps.h gcc-11.
  #include "sanitizer_linux.h"
  #include "sanitizer_mac.h"
  #include "sanitizer_mutex.h"
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp	2021-12-02 01:58:32.418058456 +0000
 @@ -0,0 +1,121 @@
@@ -4215,7 +4174,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp 
 +}  // namespace __sanitizer
 +
 +#endif  // SANITIZER_ONYX
-diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp	2021-07-28 07:55:09.188313869 +0100
 +++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp	2021-12-01 04:35:01.079046945 +0000
 @@ -12,7 +12,7 @@
@@ -4233,7 +4191,6 @@ diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcd
  #endif  // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
-diff -Naur gcc-11.2.0/libsanitizer/tsan/Makefile.in gcc-11.2.0-patched/libsanitizer/tsan/Makefile.in
 --- gcc-11.2.0/libsanitizer/tsan/Makefile.in	2021-07-28 07:55:09.188313869 +0100
 +++ gcc-11.2.0-patched/libsanitizer/tsan/Makefile.in	2021-12-01 09:21:41.263305921 +0000
 @@ -1,7 +1,7 @@
@@ -4536,7 +4493,6 @@ diff -Naur gcc-11.2.0/libsanitizer/tsan/Makefile.in gcc-11.2.0-patched/libsaniti
  	uninstall-toolexeclibLTLIBRARIES
  
  .PRECIOUS: Makefile
-diff -Naur gcc-11.2.0/libsanitizer/tsan/tsan_interceptors_posix.cpp gcc-11.2.0-patched/libsanitizer/tsan/tsan_interceptors_posix.cpp
 --- gcc-11.2.0/libsanitizer/tsan/tsan_interceptors_posix.cpp	2021-07-28 07:55:09.188313869 +0100
 +++ gcc-11.2.0-patched/libsanitizer/tsan/tsan_interceptors_posix.cpp	2021-12-01 04:35:01.079046945 +0000
 @@ -1055,7 +1055,7 @@
@@ -4566,7 +4522,6 @@ diff -Naur gcc-11.2.0/libsanitizer/tsan/tsan_interceptors_posix.cpp gcc-11.2.0-p
    TSAN_INTERCEPT(pthread_tryjoin_np);
    TSAN_INTERCEPT(pthread_timedjoin_np);
    #endif
-diff -Naur gcc-11.2.0/libsanitizer/tsan/tsan_platform_linux.cpp gcc-11.2.0-patched/libsanitizer/tsan/tsan_platform_linux.cpp
 --- gcc-11.2.0/libsanitizer/tsan/tsan_platform_linux.cpp	2021-07-28 07:55:09.188313869 +0100
 +++ gcc-11.2.0-patched/libsanitizer/tsan/tsan_platform_linux.cpp	2021-12-01 05:00:39.385796535 +0000
 @@ -12,7 +12,7 @@
@@ -4623,7 +4578,6 @@ diff -Naur gcc-11.2.0/libsanitizer/tsan/tsan_platform_linux.cpp gcc-11.2.0-patch
  # ifdef __aarch64__
  #  define LONG_JMP_SP_ENV_SLOT 13
  # elif defined(__mips64)
-diff -Naur gcc-11.2.0/libsanitizer/tsan/tsan_rtl_amd64.S gcc-11.2.0-patched/libsanitizer/tsan/tsan_rtl_amd64.S
 --- gcc-11.2.0/libsanitizer/tsan/tsan_rtl_amd64.S	2021-07-28 07:55:09.192313925 +0100
 +++ gcc-11.2.0-patched/libsanitizer/tsan/tsan_rtl_amd64.S	2021-12-01 04:35:01.082380278 +0000
 @@ -192,7 +192,7 @@
@@ -4653,7 +4607,6 @@ diff -Naur gcc-11.2.0/libsanitizer/tsan/tsan_rtl_amd64.S gcc-11.2.0-patched/libs
    lea 32(%rsp), %rdi
  #else
  # error "Unknown platform"
-diff -Naur gcc-11.2.0/libsanitizer/ubsan/Makefile.in gcc-11.2.0-patched/libsanitizer/ubsan/Makefile.in
 --- gcc-11.2.0/libsanitizer/ubsan/Makefile.in	2021-07-28 07:55:09.192313925 +0100
 +++ gcc-11.2.0-patched/libsanitizer/ubsan/Makefile.in	2021-12-01 09:21:41.286639256 +0000
 @@ -1,7 +1,7 @@
@@ -4823,7 +4776,6 @@ diff -Naur gcc-11.2.0/libsanitizer/ubsan/Makefile.in gcc-11.2.0-patched/libsanit
  
  .PRECIOUS: Makefile
  
-diff -Naur gcc-11.2.0/libstdc++-v3/aclocal.m4 gcc-11.2.0-patched/libstdc++-v3/aclocal.m4
 --- gcc-11.2.0/libstdc++-v3/aclocal.m4	2021-07-28 07:55:09.208314147 +0100
 +++ gcc-11.2.0-patched/libstdc++-v3/aclocal.m4	2021-12-01 09:15:57.793287414 +0000
 @@ -1,6 +1,6 @@
@@ -5066,7 +5018,6 @@ diff -Naur gcc-11.2.0/libstdc++-v3/aclocal.m4 gcc-11.2.0-patched/libstdc++-v3/ac
  #
  # This file is free software; the Free Software Foundation
  # gives unlimited permission to copy and/or distribute it,
-diff -Naur gcc-11.2.0/libstdc++-v3/configure gcc-11.2.0-patched/libstdc++-v3/configure
 --- gcc-11.2.0/libstdc++-v3/configure	2021-07-28 07:55:09.228314429 +0100
 +++ gcc-11.2.0-patched/libstdc++-v3/configure	2021-12-01 09:16:01.849954299 +0000
 @@ -821,6 +821,9 @@
@@ -11246,7 +11197,6 @@ diff -Naur gcc-11.2.0/libstdc++-v3/configure gcc-11.2.0-patched/libstdc++-v3/con
    *-mingw32*)
  
    # If we're not using GNU ld, then there's no point in even trying these
-diff -Naur gcc-11.2.0/libstdc++-v3/crossconfig.m4 gcc-11.2.0-patched/libstdc++-v3/crossconfig.m4
 --- gcc-11.2.0/libstdc++-v3/crossconfig.m4	2021-07-28 07:55:09.228314429 +0100
 +++ gcc-11.2.0-patched/libstdc++-v3/crossconfig.m4	2021-12-01 04:35:01.105713612 +0000
 @@ -198,6 +198,12 @@
@@ -11262,7 +11212,6 @@ diff -Naur gcc-11.2.0/libstdc++-v3/crossconfig.m4 gcc-11.2.0-patched/libstdc++-v
    *-mingw32*)
      GLIBCXX_CHECK_LINKER_FEATURES
      GLIBCXX_CHECK_MATH_SUPPORT
-diff -Naur gcc-11.2.0/libstdc++-v3/doc/Makefile.in gcc-11.2.0-patched/libstdc++-v3/doc/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/doc/Makefile.in	2021-07-28 07:55:09.228314429 +0100
 +++ gcc-11.2.0-patched/libstdc++-v3/doc/Makefile.in	2021-12-01 09:16:04.926621132 +0000
 @@ -1,7 +1,7 @@
@@ -11313,7 +11262,6 @@ diff -Naur gcc-11.2.0/libstdc++-v3/doc/Makefile.in gcc-11.2.0-patched/libstdc++-
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-11.2.0/libstdc++-v3/include/Makefile.in gcc-11.2.0-patched/libstdc++-v3/include/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/include/Makefile.in	2021-07-28 07:55:09.276315096 +0100
 +++ gcc-11.2.0-patched/libstdc++-v3/include/Makefile.in	2021-12-01 09:16:04.959954467 +0000
 @@ -1,7 +1,7 @@
@@ -11364,7 +11312,6 @@ diff -Naur gcc-11.2.0/libstdc++-v3/include/Makefile.in gcc-11.2.0-patched/libstd
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-11.2.0/libstdc++-v3/libsupc++/Makefile.in gcc-11.2.0-patched/libstdc++-v3/libsupc++/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/libsupc++/Makefile.in	2021-07-28 07:55:09.328315822 +0100
 +++ gcc-11.2.0-patched/libstdc++-v3/libsupc++/Makefile.in	2021-12-01 09:16:04.999954469 +0000
 @@ -1,7 +1,7 @@
@@ -11424,7 +11371,6 @@ diff -Naur gcc-11.2.0/libstdc++-v3/libsupc++/Makefile.in gcc-11.2.0-patched/libs
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-11.2.0/libstdc++-v3/Makefile.in gcc-11.2.0-patched/libstdc++-v3/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/Makefile.in	2021-07-28 07:55:09.208314147 +0100
 +++ gcc-11.2.0-patched/libstdc++-v3/Makefile.in	2021-12-01 09:16:04.899954464 +0000
 @@ -1,7 +1,7 @@
@@ -11496,7 +11442,6 @@ diff -Naur gcc-11.2.0/libstdc++-v3/Makefile.in gcc-11.2.0-patched/libstdc++-v3/M
  	esac;
  $(top_srcdir)/fragment.am $(top_srcdir)/../multilib.am $(am__empty):
  
-diff -Naur gcc-11.2.0/libstdc++-v3/po/Makefile.in gcc-11.2.0-patched/libstdc++-v3/po/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/po/Makefile.in	2021-07-28 07:55:09.332315880 +0100
 +++ gcc-11.2.0-patched/libstdc++-v3/po/Makefile.in	2021-12-01 09:16:05.019954470 +0000
 @@ -1,7 +1,7 @@
@@ -11547,7 +11492,6 @@ diff -Naur gcc-11.2.0/libstdc++-v3/po/Makefile.in gcc-11.2.0-patched/libstdc++-v
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-11.2.0/libstdc++-v3/python/Makefile.in gcc-11.2.0-patched/libstdc++-v3/python/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/python/Makefile.in	2021-07-28 07:55:09.332315880 +0100
 +++ gcc-11.2.0-patched/libstdc++-v3/python/Makefile.in	2021-12-01 09:16:05.039954471 +0000
 @@ -1,7 +1,7 @@
@@ -11598,7 +11542,6 @@ diff -Naur gcc-11.2.0/libstdc++-v3/python/Makefile.in gcc-11.2.0-patched/libstdc
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-11.2.0/libstdc++-v3/src/c++11/Makefile.in gcc-11.2.0-patched/libstdc++-v3/src/c++11/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/src/c++11/Makefile.in	2021-07-28 07:55:09.332315880 +0100
 +++ gcc-11.2.0-patched/libstdc++-v3/src/c++11/Makefile.in	2021-12-01 09:16:05.106621142 +0000
 @@ -1,7 +1,7 @@
@@ -11658,7 +11601,6 @@ diff -Naur gcc-11.2.0/libstdc++-v3/src/c++11/Makefile.in gcc-11.2.0-patched/libs
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-11.2.0/libstdc++-v3/src/c++17/Makefile.in gcc-11.2.0-patched/libstdc++-v3/src/c++17/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/src/c++17/Makefile.in	2021-07-28 07:55:09.336315933 +0100
 +++ gcc-11.2.0-patched/libstdc++-v3/src/c++17/Makefile.in	2021-12-01 09:16:05.133287810 +0000
 @@ -1,7 +1,7 @@
@@ -11718,7 +11660,6 @@ diff -Naur gcc-11.2.0/libstdc++-v3/src/c++17/Makefile.in gcc-11.2.0-patched/libs
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-11.2.0/libstdc++-v3/src/c++20/Makefile.in gcc-11.2.0-patched/libstdc++-v3/src/c++20/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/src/c++20/Makefile.in	2021-07-28 07:55:09.340315989 +0100
 +++ gcc-11.2.0-patched/libstdc++-v3/src/c++20/Makefile.in	2021-12-01 09:16:05.156621144 +0000
 @@ -1,7 +1,7 @@
@@ -11778,7 +11719,6 @@ diff -Naur gcc-11.2.0/libstdc++-v3/src/c++20/Makefile.in gcc-11.2.0-patched/libs
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-11.2.0/libstdc++-v3/src/c++98/Makefile.in gcc-11.2.0-patched/libstdc++-v3/src/c++98/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/src/c++98/Makefile.in	2021-07-28 07:55:09.340315989 +0100
 +++ gcc-11.2.0-patched/libstdc++-v3/src/c++98/Makefile.in	2021-12-01 09:16:05.186621146 +0000
 @@ -1,7 +1,7 @@
@@ -11838,7 +11778,6 @@ diff -Naur gcc-11.2.0/libstdc++-v3/src/c++98/Makefile.in gcc-11.2.0-patched/libs
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-11.2.0/libstdc++-v3/src/filesystem/Makefile.in gcc-11.2.0-patched/libstdc++-v3/src/filesystem/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/src/filesystem/Makefile.in	2021-07-28 07:55:09.340315989 +0100
 +++ gcc-11.2.0-patched/libstdc++-v3/src/filesystem/Makefile.in	2021-12-01 09:16:05.209954481 +0000
 @@ -1,7 +1,7 @@
@@ -11898,7 +11837,6 @@ diff -Naur gcc-11.2.0/libstdc++-v3/src/filesystem/Makefile.in gcc-11.2.0-patched
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-11.2.0/libstdc++-v3/src/Makefile.in gcc-11.2.0-patched/libstdc++-v3/src/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/src/Makefile.in	2021-07-28 07:55:09.332315880 +0100
 +++ gcc-11.2.0-patched/libstdc++-v3/src/Makefile.in	2021-12-01 09:16:05.076621140 +0000
 @@ -1,7 +1,7 @@
@@ -11958,7 +11896,6 @@ diff -Naur gcc-11.2.0/libstdc++-v3/src/Makefile.in gcc-11.2.0-patched/libstdc++-
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-11.2.0/libstdc++-v3/testsuite/Makefile.in gcc-11.2.0-patched/libstdc++-v3/testsuite/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/testsuite/Makefile.in	2021-07-28 07:55:09.480317942 +0100
 +++ gcc-11.2.0-patched/libstdc++-v3/testsuite/Makefile.in	2021-12-01 09:16:05.233287815 +0000
 @@ -1,7 +1,7 @@
@@ -12009,7 +11946,6 @@ diff -Naur gcc-11.2.0/libstdc++-v3/testsuite/Makefile.in gcc-11.2.0-patched/libs
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-11.2.0/libtool.m4 gcc-11.2.0-patched/libtool.m4
 --- gcc-11.2.0/libtool.m4	2021-07-28 07:55:09.528318613 +0100
 +++ gcc-11.2.0-patched/libtool.m4	2021-12-01 08:41:18.063175369 +0000
 @@ -2490,7 +2490,17 @@
@@ -12042,7 +11978,6 @@ diff -Naur gcc-11.2.0/libtool.m4 gcc-11.2.0-patched/libtool.m4
  haiku*)
    lt_cv_deplibs_check_method=pass_all
    ;;
-diff -Naur gcc-11.2.0/PKGBUILD gcc-11.2.0-patched/PKGBUILD
 --- gcc-11.2.0/PKGBUILD	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-11.2.0-patched/PKGBUILD	2021-12-01 04:35:01.105713612 +0000
 @@ -0,0 +1,19 @@

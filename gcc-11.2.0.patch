@@ -1,6 +1,6 @@
 diff -Naur gcc-11.2.0/config.sub gcc-11.2.0-patched/config.sub
 --- gcc-11.2.0/config.sub	2021-07-28 07:55:06.620278039 +0100
-+++ gcc-11.2.0-patched/config.sub	2021-12-01 04:35:57.839050004 +0000
++++ gcc-11.2.0-patched/config.sub	2022-02-11 19:49:16.475847536 +0000
 @@ -1724,7 +1724,7 @@
  	     | powermax* | dnix* | nx6 | nx7 | sei* | dragonfly* \
  	     | skyos* | haiku* | rdos* | toppers* | drops* | es* \
@@ -10,8 +10,9 @@ diff -Naur gcc-11.2.0/config.sub gcc-11.2.0-patched/config.sub
  	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx*)
  		;;
  	# This one is extra strict with allowed versions
+diff -Naur gcc-11.2.0/fixincludes/mkfixinc.sh gcc-11.2.0-patched/fixincludes/mkfixinc.sh
 --- gcc-11.2.0/fixincludes/mkfixinc.sh	2021-07-28 07:55:06.644278372 +0100
-+++ gcc-11.2.0-patched/fixincludes/mkfixinc.sh	2021-12-01 04:35:01.065713610 +0000
++++ gcc-11.2.0-patched/fixincludes/mkfixinc.sh	2022-02-11 19:49:16.475847536 +0000
 @@ -20,7 +20,8 @@
      powerpcle-*-eabisim* | \
      powerpcle-*-eabi* | \
@@ -22,8 +23,54 @@ diff -Naur gcc-11.2.0/config.sub gcc-11.2.0-patched/config.sub
  	#  IF there is no include fixing,
  	#  THEN create a no-op fixer and exit
  	(echo "#! /bin/sh" ; echo "exit 0" ) > ${target}
+diff -Naur gcc-11.2.0/gcc/config/aarch64/aarch64-onyx.h gcc-11.2.0-patched/gcc/config/aarch64/aarch64-onyx.h
+--- gcc-11.2.0/gcc/config/aarch64/aarch64-onyx.h	1970-01-01 01:00:00.000000000 +0100
++++ gcc-11.2.0-patched/gcc/config/aarch64/aarch64-onyx.h	2022-02-20 03:31:38.881803007 +0000
+@@ -0,0 +1,16 @@
++#define MUSL_ABI_SUFFIX "%{mbig_endian:_be}%{mabi=ilp32:_ilp32}"
++
++#undef ONYX_TARGET_LINK_SPEC
++#define ONYX_TARGET_LINK_SPEC                                                  \
++  "%{mbig-endian:-EB} %{mlittle-endian:-EL} -X "                               \
++  "-maarch64onyx%{mabi=ilp32*:32}%{mbig-endian:b} " AARCH64_ERRATA_LINK_SPEC
++
++#undef LD_ONYX_PATH
++#define LD_ONYX_PATH "/lib/ld-onyx-arm64" MUSL_ABI_SUFFIX ".so"
++
++#undef TARGET_ASM_FILE_END
++#define TARGET_ASM_FILE_END aarch64_file_end_indicate_exec_stack
++
++#undef ONYX_EXTRA_STARTFILE_SPEC
++#define ONYX_EXTRA_STARTFILE_SPEC                                              \
++  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
+diff -Naur gcc-11.2.0/gcc/config/aarch64/t-aarch64-onyx gcc-11.2.0-patched/gcc/config/aarch64/t-aarch64-onyx
+--- gcc-11.2.0/gcc/config/aarch64/t-aarch64-onyx	1970-01-01 01:00:00.000000000 +0100
++++ gcc-11.2.0-patched/gcc/config/aarch64/t-aarch64-onyx	2022-02-11 20:10:12.137000000 +0000
+@@ -0,0 +1,21 @@
++# Machine description for AArch64 architecture.
++#  Copyright (C) 2016-2021 Free Software Foundation, Inc.
++#
++#  This file is part of GCC.
++#
++#  GCC is free software; you can redistribute it and/or modify it
++#  under the terms of the GNU General Public License as published by
++#  the Free Software Foundation; either version 3, or (at your option)
++#  any later version.
++#
++#  GCC is distributed in the hope that it will be useful, but
++#  WITHOUT ANY WARRANTY; without even the implied warranty of
++#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++#  General Public License for more details.
++#
++#  You should have received a copy of the GNU General Public License
++#  along with GCC; see the file COPYING3.  If not see
++#  <http://www.gnu.org/licenses/>.
++
++LIB1ASMSRC   = aarch64/lib1funcs.asm
++LIB1ASMFUNCS = _aarch64_sync_cache_range
+diff -Naur gcc-11.2.0/gcc/config/i386/onyx64.h gcc-11.2.0-patched/gcc/config/i386/onyx64.h
 --- gcc-11.2.0/gcc/config/i386/onyx64.h	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-11.2.0-patched/gcc/config/i386/onyx64.h	2021-12-01 04:35:01.065713610 +0000
++++ gcc-11.2.0-patched/gcc/config/i386/onyx64.h	2022-02-11 19:49:16.475847536 +0000
 @@ -0,0 +1,35 @@
 +/* SSP and Split stack support taken verbatim from gnu-user64.h
 + */
@@ -60,8 +107,9 @@ diff -Naur gcc-11.2.0/config.sub gcc-11.2.0-patched/config.sub
 +#undef LD_ONYX_PATH
 +
 +#define LD_ONYX_PATH  "/lib/ld-onyx-" ONYX_ARCH_SUFFIX ".so"
+diff -Naur gcc-11.2.0/gcc/config/i386/t-onyx gcc-11.2.0-patched/gcc/config/i386/t-onyx
 --- gcc-11.2.0/gcc/config/i386/t-onyx	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-11.2.0-patched/gcc/config/i386/t-onyx	2021-12-01 04:35:01.065713610 +0000
++++ gcc-11.2.0-patched/gcc/config/i386/t-onyx	2022-02-11 19:49:16.475847536 +0000
 @@ -0,0 +1,7 @@
 +MULTILIB_OPTIONS += mno-red-zone
 +comma=,
@@ -70,54 +118,68 @@ diff -Naur gcc-11.2.0/config.sub gcc-11.2.0-patched/config.sub
 +MULTILIB_OSDIRNAMES = m64=../lib$(call if_multiarch,:x86_64-onyx)
 +MULTILIB_OSDIRNAMES+= m32=../lib32$(call if_multiarch,:i386-onyx)
 +MULTILIB_OSDIRNAMES+= mx32=../libx32$(call if_multiarch,:x86_64-onyx-x32)
+diff -Naur gcc-11.2.0/gcc/config/onyx.h gcc-11.2.0-patched/gcc/config/onyx.h
 --- gcc-11.2.0/gcc/config/onyx.h	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-11.2.0-patched/gcc/config/onyx.h	2021-12-01 08:32:55.229814971 +0000
-@@ -0,0 +1,91 @@
++++ gcc-11.2.0-patched/gcc/config/onyx.h	2022-02-20 01:57:51.330061554 +0000
+@@ -0,0 +1,109 @@
 +#undef TARGET_OS_CPP_BUILTINS
-+#define TARGET_OS_CPP_BUILTINS() \
-+do{ \
-+	builtin_define_std("onyx"); \
-+	builtin_define_std("unix"); \
-+	builtin_assert("system=onyx");   \
-+	builtin_assert("system=unix");   \
-+	builtin_assert("system=posix");   \
-+} while(0);
++#define TARGET_OS_CPP_BUILTINS()                                               \
++  do {                                                                         \
++    builtin_define_std("onyx");                                                \
++    builtin_define_std("unix");                                                \
++    builtin_assert("system=onyx");                                             \
++    builtin_assert("system=unix");                                             \
++    builtin_assert("system=posix");                                            \
++  } while (0);
++
++#define ONYX_EXTRA_STARTFILE_SPEC ""
++#define ONYX_EXTRA_ENDFILE_SPEC ""
 +
 +#undef STARTFILE_SPEC
-+/* Onyx uses crt1.o, crti.o and crtbegin.o as start files. If we're a shared library or pie, use crtbeginS.o and Scrt1.o */
-+//#define STARTFILE_SPEC "%{!shared: %{" PIE_SPEC ": Scrt1.o%s;: crt1.o%s}} crti.o%s %{shared|" PIE_SPEC ": crtbeginS.o%s;: crtbegin.o%s}"
-+#define STARTFILE_SPEC "%{!shared:%{" PIE_SPEC ":S}crt1.o%s} crti.o%s %{shared|" PIE_SPEC":crtbeginS.o%s;:crtbegin.o%s}"
++/* Onyx uses crt1.o, crti.o and crtbegin.o as start files. If we're a shared
++ * library or pie, use crtbeginS.o and Scrt1.o */
++//#define STARTFILE_SPEC "%{!shared: %{" PIE_SPEC ": Scrt1.o%s;: crt1.o%s}}
++// crti.o%s %{shared|" PIE_SPEC ": crtbeginS.o%s;: crtbegin.o%s}"
++#define STARTFILE_SPEC                                                         \
++  "%{!shared:%{" PIE_SPEC ":S}crt1.o%s} crti.o%s %{shared|" PIE_SPEC           \
++  ":crtbeginS.o%s;:crtbegin.o%s}" ONYX_EXTRA_STARTFILE_SPEC
 +
 +#undef ENDFILE_SPEC
-+/* Onyx uses crtend.o and crtn.o as end files. If we're a shared library or pie, use crtendS.o */
-+#define ENDFILE_SPEC "%{shared|" PIE_SPEC ": crtendS.o%s;: crtend.o%s} crtn.o%s"
++/* Onyx uses crtend.o and crtn.o as end files. If we're a shared library or pie,
++ * use crtendS.o */
++#define ENDFILE_SPEC                                                           \
++  "%{shared|" PIE_SPEC                                                         \
++  ": crtendS.o%s;: crtend.o%s} crtn.o%s" ONYX_EXTRA_ENDFILE_SPEC
 +
 +// re-define in architecture-specific target files
-+#define LD_ONYX_PATH  "/lib/ld-onyx.so"
-+/* Onyx uses /lib/ld-onyx.so as a dynamic linker; also, build shared objects by default */
++#define LD_ONYX_PATH "/lib/ld-onyx.so"
++/* Onyx uses /lib/ld-onyx.so as a dynamic linker; also, build shared objects by
++ * default */
 +#define ONYX_TARGET_LINK_SPEC ""
 +#undef LINK_SPEC
-+#define LINK_SPEC ONYX_TARGET_LINK_SPEC \
-+    "%{shared: -shared} %{static: -static}" \
-+	"%{!shared: %{!static: %{rdynamic: -export-dynamic} %{!dynamic-linker: -dynamic-linker " LD_ONYX_PATH "}}}" \
-+	" -z combreloc" \
-+	" -z relro" \
-+	" -z now" \
-+	" -z text" \
-+	" -z noexecstack" \
-+	"%{!hash-style: --hash-style=gnu}" \
-+	"%{!no-build-id: --build-id}" \
-+	"%{!no-eh-frame-hdr: --eh-frame-hdr}"
++#define LINK_SPEC                                                              \
++  ONYX_TARGET_LINK_SPEC                                                        \
++  "%{shared: -shared} %{static: -static}"                                      \
++  "%{!shared: %{!static: %{rdynamic: -export-dynamic} %{!dynamic-linker: "     \
++  "-dynamic-linker " LD_ONYX_PATH "}}}"                                        \
++  " -z combreloc"                                                              \
++  " -z relro"                                                                  \
++  " -z now"                                                                    \
++  " -z text"                                                                   \
++  " -z noexecstack"                                                            \
++  "%{!hash-style: --hash-style=gnu}"                                           \
++  "%{!no-build-id: --build-id}"                                                \
++  "%{!no-eh-frame-hdr: --eh-frame-hdr}"
 +
 +/* Link with libpthread if -pthread and link with libc by default */
-+#undef  LIB_SPEC
++#undef LIB_SPEC
 +#define LIB_SPEC "%{pthread: -lpthread} -lc"
 +
 +#if defined(HAVE_LD_EH_FRAME_HDR)
 +#define LINK_EH_SPEC "%{!static|static-pie: --eh-frame-hdr} "
 +#endif
 +
-+#define ONYX_TARGET_LINK_GCC_C_SEQUENCE_SPEC \
++#define ONYX_TARGET_LINK_GCC_C_SEQUENCE_SPEC                                   \
 +  "%{static|static-pie:--start-group} %G %{!nolibc:%L} \
 +   %{static|static-pie:--end-group}%{!static:%{!static-pie:%G}}"
 +
@@ -131,24 +193,28 @@ diff -Naur gcc-11.2.0/config.sub gcc-11.2.0-patched/config.sub
 +   -lhwasan, and -llsan.  */
 +#if defined(HAVE_LD_STATIC_DYNAMIC)
 +#undef LIBASAN_EARLY_SPEC
-+#define LIBASAN_EARLY_SPEC "%{!shared:libasan_preinit%O%s} " \
-+  "%{static-libasan:%{!shared:" \
-+  LD_STATIC_OPTION " --whole-archive -lasan --no-whole-archive " \
-+  LD_DYNAMIC_OPTION "}}%{!static-libasan:-lasan}"
++#define LIBASAN_EARLY_SPEC                                                     \
++  "%{!shared:libasan_preinit%O%s} "                                            \
++  "%{static-libasan:%{!shared:" LD_STATIC_OPTION                               \
++  " --whole-archive -lasan --no-whole-archive " LD_DYNAMIC_OPTION              \
++  "}}%{!static-libasan:-lasan}"
 +#undef LIBHWASAN_EARLY_SPEC
-+#define LIBHWASAN_EARLY_SPEC "%{static-libhwasan:%{!shared:" \
-+  LD_STATIC_OPTION " --whole-archive -lhwasan --no-whole-archive " \
-+  LD_DYNAMIC_OPTION "}}%{!static-libhwasan:-lhwasan}"
++#define LIBHWASAN_EARLY_SPEC                                                   \
++  "%{static-libhwasan:%{!shared:" LD_STATIC_OPTION                             \
++  " --whole-archive -lhwasan --no-whole-archive " LD_DYNAMIC_OPTION            \
++  "}}%{!static-libhwasan:-lhwasan}"
 +#undef LIBTSAN_EARLY_SPEC
-+#define LIBTSAN_EARLY_SPEC "%{!shared:libtsan_preinit%O%s} " \
-+  "%{static-libtsan:%{!shared:" \
-+  LD_STATIC_OPTION " --whole-archive -ltsan --no-whole-archive " \
-+  LD_DYNAMIC_OPTION "}}%{!static-libtsan:-ltsan}"
++#define LIBTSAN_EARLY_SPEC                                                     \
++  "%{!shared:libtsan_preinit%O%s} "                                            \
++  "%{static-libtsan:%{!shared:" LD_STATIC_OPTION                               \
++  " --whole-archive -ltsan --no-whole-archive " LD_DYNAMIC_OPTION              \
++  "}}%{!static-libtsan:-ltsan}"
 +#undef LIBLSAN_EARLY_SPEC
-+#define LIBLSAN_EARLY_SPEC "%{!shared:liblsan_preinit%O%s} " \
-+  "%{static-liblsan:%{!shared:" \
-+  LD_STATIC_OPTION " --whole-archive -llsan --no-whole-archive " \
-+  LD_DYNAMIC_OPTION "}}%{!static-liblsan:-llsan}"
++#define LIBLSAN_EARLY_SPEC                                                     \
++  "%{!shared:liblsan_preinit%O%s} "                                            \
++  "%{static-liblsan:%{!shared:" LD_STATIC_OPTION                               \
++  " --whole-archive -llsan --no-whole-archive " LD_DYNAMIC_OPTION              \
++  "}}%{!static-liblsan:-llsan}"
 +#endif
 +
 +/* Use --as-needed -lgcc_s for eh support.  */
@@ -156,17 +222,18 @@ diff -Naur gcc-11.2.0/config.sub gcc-11.2.0-patched/config.sub
 +#define USE_LD_AS_NEEDED 1
 +#endif
 +
-+
-+#undef  OBJECT_FORMAT_ELF
++#undef OBJECT_FORMAT_ELF
 +#define OBJECT_FORMAT_ELF
 +
 +#undef CPLUSPLUS_CPP_SPEC
 +#define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
 +
++#ifndef TARGET_ASM_FILE_END
 +#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
++#endif
 diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
 --- gcc-11.2.0/gcc/config/onyx.opt	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-11.2.0-patched/gcc/config/onyx.opt	2021-12-01 04:35:01.065713610 +0000
++++ gcc-11.2.0-patched/gcc/config/onyx.opt	2022-02-11 19:49:16.475847536 +0000
 @@ -0,0 +1,38 @@
 +; Options for systems using onyx.h.
 +
@@ -206,8 +273,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
 +Driver
 +
 +; This comment is to ensure we retain the blank line above.
+diff -Naur gcc-11.2.0/gcc/config/riscv/onyx.h gcc-11.2.0-patched/gcc/config/riscv/onyx.h
 --- gcc-11.2.0/gcc/config/riscv/onyx.h	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-11.2.0-patched/gcc/config/riscv/onyx.h	2021-12-01 04:35:01.065713610 +0000
++++ gcc-11.2.0-patched/gcc/config/riscv/onyx.h	2022-02-11 19:49:16.475847536 +0000
 @@ -0,0 +1,32 @@
 +#define ICACHE_FLUSH_FUNC "__riscv_flush_icache"
 +
@@ -241,14 +309,16 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
 +
 +#undef LD_ONYX_PATH
 +#define LD_ONYX_PATH "/lib/ld-onyx-riscv" XLEN_SPEC MUSL_ABI_SUFFIX ".so"
+diff -Naur gcc-11.2.0/gcc/config/riscv/t-onyx gcc-11.2.0-patched/gcc/config/riscv/t-onyx
 --- gcc-11.2.0/gcc/config/riscv/t-onyx	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-11.2.0-patched/gcc/config/riscv/t-onyx	2021-12-01 04:35:01.065713610 +0000
++++ gcc-11.2.0-patched/gcc/config/riscv/t-onyx	2022-02-11 19:49:16.475847536 +0000
 @@ -0,0 +1,3 @@
 +# Only XLEN and ABI affect Linux multilib dir names, e.g. /lib32/ilp32d/
 +MULTILIB_DIRNAMES := $(patsubst rv32%,lib32,$(patsubst rv64%,lib,$(MULTILIB_DIRNAMES)))
 +MULTILIB_OSDIRNAMES := $(patsubst lib%,../lib%,$(MULTILIB_DIRNAMES))
+diff -Naur gcc-11.2.0/gcc/config/riscv/t-onyx-multilib gcc-11.2.0-patched/gcc/config/riscv/t-onyx-multilib
 --- gcc-11.2.0/gcc/config/riscv/t-onyx-multilib	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-11.2.0-patched/gcc/config/riscv/t-onyx-multilib	2021-12-01 04:35:01.065713610 +0000
++++ gcc-11.2.0-patched/gcc/config/riscv/t-onyx-multilib	2022-02-11 19:49:16.475847536 +0000
 @@ -0,0 +1,24 @@
 +# This file was generated by multilib-generator with the command:
 +#  ./multilib-generator rv64imac-lp64-rv64ima,rv64imaf,rv64imafd,rv64imafc,rv64imafdc- rv64imafdc-lp64d-rv64imafd-
@@ -274,8 +344,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
 +march.rv64imafdc/mabi.lp64d=march.rv64imafd/mabi.lp64d \
 +march.rv64imafdc/mabi.lp64d=march.rv64gc/mabi.lp64d \
 +march.rv64imafdc/mabi.lp64d=march.rv64g/mabi.lp64d
+diff -Naur gcc-11.2.0/gcc/config.gcc gcc-11.2.0-patched/gcc/config.gcc
 --- gcc-11.2.0/gcc/config.gcc	2021-07-28 07:55:07.000283339 +0100
-+++ gcc-11.2.0-patched/gcc/config.gcc	2021-12-01 08:02:57.546384822 +0000
++++ gcc-11.2.0-patched/gcc/config.gcc	2022-02-20 04:16:08.344629993 +0000
 @@ -885,6 +885,15 @@
    target_has_targetcm=yes
    target_has_targetdm=yes
@@ -321,7 +392,21 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  aarch64*-*-elf | aarch64*-*-fuchsia* | aarch64*-*-rtems*)
  	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h"
  	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-errata.h aarch64/aarch64-elf-raw.h"
-@@ -2484,6 +2515,21 @@
+@@ -1162,6 +1193,13 @@
+ 	done
+ 	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
+ 	;;
++aarch64*-*-onyx*)
++	tm_file="${tm_file} dbxelf.h elfos.h glibc-stdint.h"
++	tm_file="${tm_file} onyx.h aarch64/aarch64-elf.h aarch64/aarch64-errata.h aarch64/aarch64-onyx.h"
++	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-onyx"
++	tm_defines="${tm_defines}  TARGET_DEFAULT_ASYNC_UNWIND_TABLES=1"
++	extra_options="${extra_options} onyx.opt"
++	;;
+ aarch64*-wrs-vxworks*)
+         tm_file="${tm_file} elfos.h aarch64/aarch64-elf.h"
+         tm_file="${tm_file} vx-common.h vxworks.h aarch64/aarch64-vxworks.h"
+@@ -2484,6 +2522,21 @@
  	# Force .init_array support.  The configure script cannot always
  	# automatically detect that GAS supports it, yet we require it.
  	gcc_cv_initfini_array=yes
@@ -343,35 +428,81 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	;;
  riscv*-*-elf* | riscv*-*-rtems*)
  	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
+diff -Naur gcc-11.2.0/gcc/config.host gcc-11.2.0-patched/gcc/config.host
+--- gcc-11.2.0/gcc/config.host	2021-07-28 07:55:07.000283339 +0100
++++ gcc-11.2.0-patched/gcc/config.host	2022-02-20 02:44:47.032878565 +0000
+@@ -99,7 +99,7 @@
+ esac
+ 
+ case ${host} in
+-  aarch64*-*-freebsd* | aarch64*-*-linux* | aarch64*-*-fuchsia*)
++  aarch64*-*-freebsd* | aarch64*-*-linux* | aarch64*-*-fuchsia* | aarch64*-*-onyx*)
+     case ${target} in
+       aarch64*-*-*)
+ 	host_extra_gcc_objs="driver-aarch64.o"
+@@ -107,7 +107,7 @@
+ 	;;
+     esac
+     ;;
+-  arm*-*-freebsd* | arm*-*-netbsd* | arm*-*-linux* | arm*-*-fuchsia*)
++  arm*-*-freebsd* | arm*-*-netbsd* | arm*-*-linux* | arm*-*-fuchsia* | arm*-*-onyx*)
+     case ${target} in
+       arm*-*-*)
+ 	host_extra_gcc_objs="driver-arm.o"
+diff -Naur gcc-11.2.0/libgcc/config.host gcc-11.2.0-patched/libgcc/config.host
 --- gcc-11.2.0/libgcc/config.host	2021-07-28 07:55:08.752307785 +0100
-+++ gcc-11.2.0-patched/libgcc/config.host	2021-12-01 04:35:01.069046944 +0000
-@@ -735,6 +735,11 @@
++++ gcc-11.2.0-patched/libgcc/config.host	2022-02-20 02:05:36.810105130 +0000
+@@ -245,6 +245,10 @@
+   tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-fuchsia"
+   extra_parts="crtbegin.o crtend.o"
+   ;;
++*-*-onyx*)
++  tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver"
++  extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
++  ;;
+ *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
+   tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-linux"
+   extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
+@@ -389,6 +393,13 @@
+ 	tmake_file="${tmake_file} ${cpu_type}/t-lse t-slibgcc-libgcc"
+ 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
+ 	;;
++aarch64*-*-onyx*)
++	extra_parts="$extra_parts crti.o crtn.o crtfastmath.o"
++	md_unwind_header=aarch64/linux-unwind.h
++	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
++	tmake_file="${tmake_file} ${cpu_type}/t-lse t-slibgcc-libgcc"
++	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
++	;;
+ aarch64*-*-vxworks7*)
+ 	extra_parts="$extra_parts crtfastmath.o"
+ 	md_unwind_header=aarch64/aarch64-unwind.h
+@@ -735,6 +746,10 @@
  	tm_file="${tm_file} i386/elf-lib.h"
  	md_unwind_header=i386/linux-unwind.h
  	;;
 +x86_64-*-onyx*)
-+	extra_parts="$extra_parts crti.o crtbegin.o crtbeginS.o crtend.o crtendS.o crtn.o"
-+	tmake_file="${tmake_file} i386/t-crtstuff t-crtstuff-pic t-libgcc-pic"
-+	tmake_file="${tmake_file} t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-eh-dw2-dip"
++	extra_parts="$extra_parts crti.o crtn.o"
++	tmake_file="${tmake_file} i386/t-crtstuff"
 +	;;
  i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-kopensolaris*-gnu)
  	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
  	tmake_file="${tmake_file} i386/t-crtpc t-crtfm i386/t-crtstuff t-dfprules"
-@@ -1276,6 +1281,12 @@
+@@ -1276,6 +1291,11 @@
  	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
  	md_unwind_header=riscv/linux-unwind.h
  	;;
 +riscv*-*-onyx*)
-+	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver"
-+	tmake_file="${tmake_file} t-slibgcc-libgcc t-crtstuff-pic t-libgcc-pic"
-+	extra_parts="$extra_parts crtbegin.o crtbeginS.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
++	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address}"
++	extra_parts="$extra_parts crti.o crtn.o"
 +	md_unwind_header=riscv/linux-unwind.h
 +	;;
  riscv*-*-freebsd*)
  	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
  	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
+diff -Naur gcc-11.2.0/libsanitizer/aclocal.m4 gcc-11.2.0-patched/libsanitizer/aclocal.m4
 --- gcc-11.2.0/libsanitizer/aclocal.m4	2021-07-28 07:55:09.172313645 +0100
-+++ gcc-11.2.0-patched/libsanitizer/aclocal.m4	2021-12-01 09:21:39.833305844 +0000
++++ gcc-11.2.0-patched/libsanitizer/aclocal.m4	2022-02-11 19:49:16.479180895 +0000
 @@ -1,6 +1,6 @@
 -# generated automatically by aclocal 1.15.1 -*- Autoconf -*-
 +# generated automatically by aclocal 1.16.5 -*- Autoconf -*-
@@ -819,8 +950,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  #
  # This file is free software; the Free Software Foundation
  # gives unlimited permission to copy and/or distribute it,
+diff -Naur gcc-11.2.0/libsanitizer/asan/asan_linux.cpp gcc-11.2.0-patched/libsanitizer/asan/asan_linux.cpp
 --- gcc-11.2.0/libsanitizer/asan/asan_linux.cpp	2021-07-28 07:55:09.172313645 +0100
-+++ gcc-11.2.0-patched/libsanitizer/asan/asan_linux.cpp	2021-12-01 20:41:07.313699325 +0000
++++ gcc-11.2.0-patched/libsanitizer/asan/asan_linux.cpp	2022-02-11 19:49:16.479180895 +0000
 @@ -13,7 +13,7 @@
  
  #include "sanitizer_common/sanitizer_platform.h"
@@ -857,8 +989,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  #endif  // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
+diff -Naur gcc-11.2.0/libsanitizer/asan/asan_malloc_linux.cpp gcc-11.2.0-patched/libsanitizer/asan/asan_malloc_linux.cpp
 --- gcc-11.2.0/libsanitizer/asan/asan_malloc_linux.cpp	2021-07-28 07:55:09.172313645 +0100
-+++ gcc-11.2.0-patched/libsanitizer/asan/asan_malloc_linux.cpp	2021-12-01 04:35:01.072380277 +0000
++++ gcc-11.2.0-patched/libsanitizer/asan/asan_malloc_linux.cpp	2022-02-11 19:49:16.479180895 +0000
 @@ -15,7 +15,7 @@
  
  #include "sanitizer_common/sanitizer_platform.h"
@@ -868,8 +1001,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  
  #include "sanitizer_common/sanitizer_allocator_checks.h"
  #include "sanitizer_common/sanitizer_errno.h"
+diff -Naur gcc-11.2.0/libsanitizer/asan/Makefile.in gcc-11.2.0-patched/libsanitizer/asan/Makefile.in
 --- gcc-11.2.0/libsanitizer/asan/Makefile.in	2021-07-28 07:55:09.172313645 +0100
-+++ gcc-11.2.0-patched/libsanitizer/asan/Makefile.in	2021-12-01 09:21:41.089972578 +0000
++++ gcc-11.2.0-patched/libsanitizer/asan/Makefile.in	2022-02-11 19:49:16.479180895 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -1144,8 +1278,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	uninstall-toolexeclibLTLIBRARIES
  
  .PRECIOUS: Makefile
+diff -Naur gcc-11.2.0/libsanitizer/builtins/assembly.h gcc-11.2.0-patched/libsanitizer/builtins/assembly.h
 --- gcc-11.2.0/libsanitizer/builtins/assembly.h	2021-07-28 07:55:09.172313645 +0100
-+++ gcc-11.2.0-patched/libsanitizer/builtins/assembly.h	2021-12-01 04:35:01.072380277 +0000
++++ gcc-11.2.0-patched/libsanitizer/builtins/assembly.h	2022-02-11 19:49:16.479180895 +0000
 @@ -43,7 +43,7 @@
  #define CONST_SECTION .section .rodata
  
@@ -1155,8 +1290,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  #define NO_EXEC_STACK_DIRECTIVE .section .note.GNU-stack,"",%progbits
  #else
  #define NO_EXEC_STACK_DIRECTIVE
+diff -Naur gcc-11.2.0/libsanitizer/configure gcc-11.2.0-patched/libsanitizer/configure
 --- gcc-11.2.0/libsanitizer/configure	2021-07-28 07:55:09.172313645 +0100
-+++ gcc-11.2.0-patched/libsanitizer/configure	2021-12-02 00:34:32.364453430 +0000
++++ gcc-11.2.0-patched/libsanitizer/configure	2022-02-11 19:49:16.482514254 +0000
 @@ -704,6 +704,9 @@
  AM_DEFAULT_VERBOSITY
  AM_DEFAULT_V
@@ -1568,8 +1704,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  }
   ;;
      "libtool":C)
+diff -Naur gcc-11.2.0/libsanitizer/configure.tgt gcc-11.2.0-patched/libsanitizer/configure.tgt
 --- gcc-11.2.0/libsanitizer/configure.tgt	2021-07-28 07:55:09.172313645 +0100
-+++ gcc-11.2.0-patched/libsanitizer/configure.tgt	2021-12-01 04:35:01.072380277 +0000
++++ gcc-11.2.0-patched/libsanitizer/configure.tgt	2022-02-20 02:08:13.814609959 +0000
 @@ -31,6 +31,15 @@
  		TSAN_TARGET_DEPENDENT_OBJECTS=tsan_rtl_amd64.lo
  	fi
@@ -1586,8 +1723,24 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
    powerpc*-*-linux*)
  	if test x$ac_cv_sizeof_void_p = x8; then
  		TSAN_SUPPORTED=yes
+@@ -59,6 +68,14 @@
+ 	if test x$ac_cv_sizeof_void_p = x8; then
+ 		TSAN_SUPPORTED=yes
+ 		LSAN_SUPPORTED=yes
++		TSAN_TARGET_DEPENDENT_OBJECTS=tsan_rtl_aarch64.lo
++		HWASAN_SUPPORTED=yes
++	fi
++	;;
++  aarch64*-*-onyx*)
++	if test x$ac_cv_sizeof_void_p = x8; then
++		TSAN_SUPPORTED=yes
++		LSAN_SUPPORTED=yes
+ 		TSAN_TARGET_DEPENDENT_OBJECTS=tsan_rtl_aarch64.lo
+ 		HWASAN_SUPPORTED=yes
+ 	fi
+diff -Naur gcc-11.2.0/libsanitizer/hwasan/Makefile.in gcc-11.2.0-patched/libsanitizer/hwasan/Makefile.in
 --- gcc-11.2.0/libsanitizer/hwasan/Makefile.in	2021-07-28 07:55:09.172313645 +0100
-+++ gcc-11.2.0-patched/libsanitizer/hwasan/Makefile.in	2021-12-01 09:21:41.116639246 +0000
++++ gcc-11.2.0-patched/libsanitizer/hwasan/Makefile.in	2022-02-11 19:49:16.485847612 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -1797,8 +1950,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  
  .PRECIOUS: Makefile
  
+diff -Naur gcc-11.2.0/libsanitizer/interception/interception.h gcc-11.2.0-patched/libsanitizer/interception/interception.h
 --- gcc-11.2.0/libsanitizer/interception/interception.h	2021-07-28 07:55:09.176313701 +0100
-+++ gcc-11.2.0-patched/libsanitizer/interception/interception.h	2021-12-01 04:36:45.525719240 +0000
++++ gcc-11.2.0-patched/libsanitizer/interception/interception.h	2022-02-11 19:49:16.485847612 +0000
 @@ -18,7 +18,7 @@
  
  #if !SANITIZER_LINUX && !SANITIZER_FREEBSD && !SANITIZER_MAC && \
@@ -1817,8 +1971,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  
  # include "interception_linux.h"
  # define INTERCEPT_FUNCTION(func) INTERCEPT_FUNCTION_LINUX_OR_FREEBSD(func)
+diff -Naur gcc-11.2.0/libsanitizer/interception/interception_linux.cpp gcc-11.2.0-patched/libsanitizer/interception/interception_linux.cpp
 --- gcc-11.2.0/libsanitizer/interception/interception_linux.cpp	2021-07-28 07:55:09.176313701 +0100
-+++ gcc-11.2.0-patched/libsanitizer/interception/interception_linux.cpp	2021-12-01 04:38:22.509057801 +0000
++++ gcc-11.2.0-patched/libsanitizer/interception/interception_linux.cpp	2022-02-11 19:49:16.485847612 +0000
 @@ -14,7 +14,7 @@
  #include "interception.h"
  
@@ -1843,8 +1998,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  #endif  // SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
+diff -Naur gcc-11.2.0/libsanitizer/interception/interception_linux.h gcc-11.2.0-patched/libsanitizer/interception/interception_linux.h
 --- gcc-11.2.0/libsanitizer/interception/interception_linux.h	2021-07-28 07:55:09.176313701 +0100
-+++ gcc-11.2.0-patched/libsanitizer/interception/interception_linux.h	2021-12-01 04:39:22.212394353 +0000
++++ gcc-11.2.0-patched/libsanitizer/interception/interception_linux.h	2022-02-11 19:49:16.485847612 +0000
 @@ -12,7 +12,7 @@
  //===----------------------------------------------------------------------===//
  
@@ -1874,8 +2030,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  #endif  // SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
+diff -Naur gcc-11.2.0/libsanitizer/interception/Makefile.in gcc-11.2.0-patched/libsanitizer/interception/Makefile.in
 --- gcc-11.2.0/libsanitizer/interception/Makefile.in	2021-07-28 07:55:09.176313701 +0100
-+++ gcc-11.2.0-patched/libsanitizer/interception/Makefile.in	2021-12-01 09:21:41.139972581 +0000
++++ gcc-11.2.0-patched/libsanitizer/interception/Makefile.in	2022-02-11 19:49:16.489180971 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -2014,8 +2171,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  
  .PRECIOUS: Makefile
  
+diff -Naur gcc-11.2.0/libsanitizer/libbacktrace/Makefile.in gcc-11.2.0-patched/libsanitizer/libbacktrace/Makefile.in
 --- gcc-11.2.0/libsanitizer/libbacktrace/Makefile.in	2021-07-28 07:55:09.176313701 +0100
-+++ gcc-11.2.0-patched/libsanitizer/libbacktrace/Makefile.in	2021-12-01 09:21:41.179972583 +0000
++++ gcc-11.2.0-patched/libsanitizer/libbacktrace/Makefile.in	2022-02-11 19:49:16.489180971 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -2197,8 +2355,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  
  .PRECIOUS: Makefile
  
+diff -Naur gcc-11.2.0/libsanitizer/lsan/Makefile.in gcc-11.2.0-patched/libsanitizer/lsan/Makefile.in
 --- gcc-11.2.0/libsanitizer/lsan/Makefile.in	2021-07-28 07:55:09.180313757 +0100
-+++ gcc-11.2.0-patched/libsanitizer/lsan/Makefile.in	2021-12-01 09:21:41.203305918 +0000
++++ gcc-11.2.0-patched/libsanitizer/lsan/Makefile.in	2022-02-11 19:49:16.489180971 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -2346,8 +2505,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	clean-toolexeclibLTLIBRARIES cscopelist-am ctags ctags-am \
  	distclean distclean-compile distclean-generic \
  	distclean-libtool distclean-tags dvi dvi-am html html-am info \
+diff -Naur gcc-11.2.0/libsanitizer/Makefile.in gcc-11.2.0-patched/libsanitizer/Makefile.in
 --- gcc-11.2.0/libsanitizer/Makefile.in	2021-07-28 07:55:09.172313645 +0100
-+++ gcc-11.2.0-patched/libsanitizer/Makefile.in	2021-12-01 09:21:41.059972577 +0000
++++ gcc-11.2.0-patched/libsanitizer/Makefile.in	2022-02-11 19:49:16.492514329 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -2407,8 +2567,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	esac;
  $(top_srcdir)/../multilib.am $(am__empty):
  
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/Makefile.am gcc-11.2.0-patched/libsanitizer/sanitizer_common/Makefile.am
 --- gcc-11.2.0/libsanitizer/sanitizer_common/Makefile.am	2021-07-28 07:55:09.180313757 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/Makefile.am	2021-12-02 00:34:02.387785149 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/Makefile.am	2022-02-11 19:49:16.492514329 +0000
 @@ -57,6 +57,7 @@
  	sanitizer_procmaps_linux.cpp \
  	sanitizer_procmaps_mac.cpp \
@@ -2417,8 +2578,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	sanitizer_rtems.cpp \
  	sanitizer_solaris.cpp \
  	sanitizer_stackdepot.cpp \
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/Makefile.in gcc-11.2.0-patched/libsanitizer/sanitizer_common/Makefile.in
 --- gcc-11.2.0/libsanitizer/sanitizer_common/Makefile.in	2021-07-28 07:55:09.180313757 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/Makefile.in	2021-12-02 00:34:33.177786807 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/Makefile.in	2022-02-11 19:49:16.492514329 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -2860,8 +3022,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  
  .PRECIOUS: Makefile
  
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_errno_codes.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_errno_codes.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_errno_codes.h	2021-07-28 07:55:09.184313813 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_errno_codes.h	2021-12-02 01:09:30.964566525 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_errno_codes.h	2022-02-11 19:49:16.492514329 +0000
 @@ -24,6 +24,7 @@
  #define errno_ENOMEM 12
  #define errno_EBUSY 16
@@ -2870,8 +3033,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  #define errno_ENAMETOOLONG 36
  
  // Those might not present or their value differ on different platforms.
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_glibc_version.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_glibc_version.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_glibc_version.h	2021-07-28 07:55:09.184313813 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_glibc_version.h	2021-12-01 04:35:01.072380277 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_glibc_version.h	2022-02-11 19:49:16.492514329 +0000
 @@ -15,7 +15,7 @@
  
  #include "sanitizer_platform.h"
@@ -2881,8 +3045,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  #include <features.h>
  #endif
  
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_internal_defs.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_internal_defs.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_internal_defs.h	2021-07-28 07:55:09.184313813 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_internal_defs.h	2021-12-01 04:40:59.959066289 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_internal_defs.h	2022-02-11 19:49:16.492514329 +0000
 @@ -39,7 +39,7 @@
  
  // TLS is handled differently on different platforms
@@ -2901,8 +3066,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
      (SANITIZER_SOLARIS && (defined(_LP64) || _FILE_OFFSET_BITS == 64)) || \
      (SANITIZER_LINUX && defined(__x86_64__))
  typedef u64 OFF_T;
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_linux.cpp gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.cpp
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_linux.cpp	2021-07-28 07:55:09.184313813 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.cpp	2021-12-01 20:24:14.360311397 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.cpp	2022-02-20 08:12:07.091414365 +0000
 @@ -14,7 +14,7 @@
  #include "sanitizer_platform.h"
  
@@ -3065,8 +3231,18 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  #else
    const char *default_module_name = "/proc/self/exe";
    uptr module_name_len = internal_readlink(
+@@ -1795,7 +1849,7 @@
+ 
+ static bool Aarch64GetESR(ucontext_t *ucontext, u64 *esr) {
+   static const u32 kEsrMagic = 0x45535201;
+-  u8 *aux = ucontext->uc_mcontext.__reserved;
++  u8 *aux = (u8 *) &ucontext->uc_mcontext.__reserved;
+   while (true) {
+     _aarch64_ctx *ctx = (_aarch64_ctx *)aux;
+     if (ctx->size == 0) break;
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_linux.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_linux.h	2021-07-28 07:55:09.184313813 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.h	2021-12-02 00:31:05.701108960 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.h	2022-02-11 19:49:16.495847688 +0000
 @@ -14,7 +14,7 @@
  
  #include "sanitizer_platform.h"
@@ -3118,8 +3294,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  #endif  // SANITIZER_LINUX
  
  // This class reads thread IDs from /proc/<pid>/task using only syscalls.
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp	2021-07-28 07:55:09.184313813 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp	2021-12-01 23:27:46.174237575 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp	2022-02-11 19:49:16.495847688 +0000
 @@ -14,7 +14,7 @@
  #include "sanitizer_platform.h"
  
@@ -3160,8 +3337,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  #if defined(__x86_64__) || defined(__i386__) || defined(__s390__)
    *addr = ThreadSelf();
    *size = GetTlsSize();
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_onyx.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_onyx.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_onyx.h	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_onyx.h	2021-12-02 00:23:13.677750192 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_onyx.h	2022-02-11 19:49:16.495847688 +0000
 @@ -0,0 +1,33 @@
 +//===-- sanitizer_onyx.h ------------------------------------*- C++ -*-===//
 +//
@@ -3196,8 +3374,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
 +#endif
 +
 +#endif
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform.h	2021-07-28 07:55:09.184313813 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform.h	2021-12-01 04:46:56.879085529 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform.h	2022-02-11 19:49:16.495847688 +0000
 @@ -15,7 +15,7 @@
  #if !defined(__linux__) && !defined(__FreeBSD__) && !defined(__NetBSD__) && \
    !defined(__APPLE__) && !defined(_WIN32) && \
@@ -3224,8 +3403,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  
  #if __LP64__ || defined(_WIN64)
  #  define SANITIZER_WORDSIZE 64
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h	2021-07-28 07:55:09.184313813 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h	2021-12-01 20:46:57.617051499 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h	2022-02-11 19:49:16.495847688 +0000
 @@ -138,6 +138,12 @@
  #define SI_LINUX_NOT_FREEBSD 0
  #endif
@@ -3590,8 +3770,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  #define SANITIZER_INTERCEPT___CXA_ATEXIT SI_NETBSD
  #define SANITIZER_INTERCEPT_ATEXIT SI_NETBSD
  #define SANITIZER_INTERCEPT_PTHREAD_ATFORK SI_NETBSD
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp	2021-07-28 07:55:09.184313813 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp	2021-12-01 06:36:51.779440377 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp	2022-02-11 19:49:16.495847688 +0000
 @@ -13,7 +13,7 @@
  
  #include "sanitizer_platform.h"
@@ -3701,8 +3882,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  // Compare against the union, because we can't reach into the union in a
  // compliant way.
  #ifdef ifa_dstaddr
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h	2021-07-28 07:55:09.184313813 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h	2021-12-01 06:31:43.989423824 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h	2022-02-11 19:49:16.499181046 +0000
 @@ -14,7 +14,7 @@
  #ifndef SANITIZER_PLATFORM_LIMITS_POSIX_H
  #define SANITIZER_PLATFORM_LIMITS_POSIX_H
@@ -4022,8 +4204,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
 +#endif  // (SANITIZER_LINUX || SANITIZER_ONYX) || SANITIZER_MAC
  
  #endif
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp	2021-07-28 07:55:09.184313813 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp	2021-12-02 00:49:37.527835544 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp	2022-02-11 19:49:16.499181046 +0000
 @@ -300,7 +300,9 @@
    // to read the file mappings from /proc/self/maps. Luckily, neither the
    // process will be able to load additional libraries, so it's fine to use the
@@ -4034,8 +4217,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  }
  
  static bool MmapFixed(uptr fixed_addr, uptr size, int additional_flags,
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps.h gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps.h
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps.h	2021-07-28 07:55:09.184313813 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps.h	2021-12-02 00:21:28.571077866 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps.h	2022-02-11 19:49:16.499181046 +0000
 @@ -17,11 +17,12 @@
  
  #if SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD || \
@@ -4050,8 +4234,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  #include "sanitizer_linux.h"
  #include "sanitizer_mac.h"
  #include "sanitizer_mutex.h"
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp	2021-12-02 01:58:32.418058456 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp	2022-02-11 19:49:16.499181046 +0000
 @@ -0,0 +1,121 @@
 +//===-- sanitizer_procmaps_onyx.cpp
 +//----------------------------------------===//
@@ -4174,8 +4359,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
 +}  // namespace __sanitizer
 +
 +#endif  // SANITIZER_ONYX
+diff -Naur gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp
 --- gcc-11.2.0/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp	2021-07-28 07:55:09.188313869 +0100
-+++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp	2021-12-01 04:35:01.079046945 +0000
++++ gcc-11.2.0-patched/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp	2022-02-11 19:49:16.499181046 +0000
 @@ -12,7 +12,7 @@
  
  #include "sanitizer_platform.h"
@@ -4191,8 +4377,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  #endif  // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
+diff -Naur gcc-11.2.0/libsanitizer/tsan/Makefile.in gcc-11.2.0-patched/libsanitizer/tsan/Makefile.in
 --- gcc-11.2.0/libsanitizer/tsan/Makefile.in	2021-07-28 07:55:09.188313869 +0100
-+++ gcc-11.2.0-patched/libsanitizer/tsan/Makefile.in	2021-12-01 09:21:41.263305921 +0000
++++ gcc-11.2.0-patched/libsanitizer/tsan/Makefile.in	2022-02-11 19:49:16.499181046 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -4493,8 +4680,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	uninstall-toolexeclibLTLIBRARIES
  
  .PRECIOUS: Makefile
+diff -Naur gcc-11.2.0/libsanitizer/tsan/tsan_interceptors_posix.cpp gcc-11.2.0-patched/libsanitizer/tsan/tsan_interceptors_posix.cpp
 --- gcc-11.2.0/libsanitizer/tsan/tsan_interceptors_posix.cpp	2021-07-28 07:55:09.188313869 +0100
-+++ gcc-11.2.0-patched/libsanitizer/tsan/tsan_interceptors_posix.cpp	2021-12-01 04:35:01.079046945 +0000
++++ gcc-11.2.0-patched/libsanitizer/tsan/tsan_interceptors_posix.cpp	2022-02-11 19:49:16.499181046 +0000
 @@ -1055,7 +1055,7 @@
    REAL(pthread_exit)(retval);
  }
@@ -4522,8 +4710,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
    TSAN_INTERCEPT(pthread_tryjoin_np);
    TSAN_INTERCEPT(pthread_timedjoin_np);
    #endif
+diff -Naur gcc-11.2.0/libsanitizer/tsan/tsan_platform_linux.cpp gcc-11.2.0-patched/libsanitizer/tsan/tsan_platform_linux.cpp
 --- gcc-11.2.0/libsanitizer/tsan/tsan_platform_linux.cpp	2021-07-28 07:55:09.188313869 +0100
-+++ gcc-11.2.0-patched/libsanitizer/tsan/tsan_platform_linux.cpp	2021-12-01 05:00:39.385796535 +0000
++++ gcc-11.2.0-patched/libsanitizer/tsan/tsan_platform_linux.cpp	2022-02-11 19:49:16.499181046 +0000
 @@ -12,7 +12,7 @@
  //===----------------------------------------------------------------------===//
  
@@ -4578,8 +4767,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  # ifdef __aarch64__
  #  define LONG_JMP_SP_ENV_SLOT 13
  # elif defined(__mips64)
+diff -Naur gcc-11.2.0/libsanitizer/tsan/tsan_rtl_amd64.S gcc-11.2.0-patched/libsanitizer/tsan/tsan_rtl_amd64.S
 --- gcc-11.2.0/libsanitizer/tsan/tsan_rtl_amd64.S	2021-07-28 07:55:09.192313925 +0100
-+++ gcc-11.2.0-patched/libsanitizer/tsan/tsan_rtl_amd64.S	2021-12-01 04:35:01.082380278 +0000
++++ gcc-11.2.0-patched/libsanitizer/tsan/tsan_rtl_amd64.S	2022-02-11 19:49:16.502514405 +0000
 @@ -192,7 +192,7 @@
    // obtain SP, store in %rdi, first argument to `void __tsan_setjmp(uptr sp)`
  #if defined(__FreeBSD__) || defined(__NetBSD__)
@@ -4607,8 +4797,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
    lea 32(%rsp), %rdi
  #else
  # error "Unknown platform"
+diff -Naur gcc-11.2.0/libsanitizer/ubsan/Makefile.in gcc-11.2.0-patched/libsanitizer/ubsan/Makefile.in
 --- gcc-11.2.0/libsanitizer/ubsan/Makefile.in	2021-07-28 07:55:09.192313925 +0100
-+++ gcc-11.2.0-patched/libsanitizer/ubsan/Makefile.in	2021-12-01 09:21:41.286639256 +0000
++++ gcc-11.2.0-patched/libsanitizer/ubsan/Makefile.in	2022-02-11 19:49:16.502514405 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -4776,8 +4967,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  
  .PRECIOUS: Makefile
  
+diff -Naur gcc-11.2.0/libstdc++-v3/aclocal.m4 gcc-11.2.0-patched/libstdc++-v3/aclocal.m4
 --- gcc-11.2.0/libstdc++-v3/aclocal.m4	2021-07-28 07:55:09.208314147 +0100
-+++ gcc-11.2.0-patched/libstdc++-v3/aclocal.m4	2021-12-01 09:15:57.793287414 +0000
++++ gcc-11.2.0-patched/libstdc++-v3/aclocal.m4	2022-02-11 19:49:16.502514405 +0000
 @@ -1,6 +1,6 @@
 -# generated automatically by aclocal 1.15.1 -*- Autoconf -*-
 +# generated automatically by aclocal 1.16.5 -*- Autoconf -*-
@@ -5018,8 +5210,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  #
  # This file is free software; the Free Software Foundation
  # gives unlimited permission to copy and/or distribute it,
+diff -Naur gcc-11.2.0/libstdc++-v3/configure gcc-11.2.0-patched/libstdc++-v3/configure
 --- gcc-11.2.0/libstdc++-v3/configure	2021-07-28 07:55:09.228314429 +0100
-+++ gcc-11.2.0-patched/libstdc++-v3/configure	2021-12-01 09:16:01.849954299 +0000
++++ gcc-11.2.0-patched/libstdc++-v3/configure	2022-02-11 19:49:16.509181122 +0000
 @@ -821,6 +821,9 @@
  AM_DEFAULT_VERBOSITY
  AM_DEFAULT_V
@@ -11197,8 +11390,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
    *-mingw32*)
  
    # If we're not using GNU ld, then there's no point in even trying these
+diff -Naur gcc-11.2.0/libstdc++-v3/crossconfig.m4 gcc-11.2.0-patched/libstdc++-v3/crossconfig.m4
 --- gcc-11.2.0/libstdc++-v3/crossconfig.m4	2021-07-28 07:55:09.228314429 +0100
-+++ gcc-11.2.0-patched/libstdc++-v3/crossconfig.m4	2021-12-01 04:35:01.105713612 +0000
++++ gcc-11.2.0-patched/libstdc++-v3/crossconfig.m4	2022-02-11 19:49:16.512514481 +0000
 @@ -198,6 +198,12 @@
      AC_CHECK_FUNCS(uselocale)
      AM_ICONV
@@ -11212,8 +11406,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
    *-mingw32*)
      GLIBCXX_CHECK_LINKER_FEATURES
      GLIBCXX_CHECK_MATH_SUPPORT
+diff -Naur gcc-11.2.0/libstdc++-v3/doc/Makefile.in gcc-11.2.0-patched/libstdc++-v3/doc/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/doc/Makefile.in	2021-07-28 07:55:09.228314429 +0100
-+++ gcc-11.2.0-patched/libstdc++-v3/doc/Makefile.in	2021-12-01 09:16:04.926621132 +0000
++++ gcc-11.2.0-patched/libstdc++-v3/doc/Makefile.in	2022-02-11 19:49:16.512514481 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -11262,8 +11457,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
+diff -Naur gcc-11.2.0/libstdc++-v3/include/Makefile.in gcc-11.2.0-patched/libstdc++-v3/include/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/include/Makefile.in	2021-07-28 07:55:09.276315096 +0100
-+++ gcc-11.2.0-patched/libstdc++-v3/include/Makefile.in	2021-12-01 09:16:04.959954467 +0000
++++ gcc-11.2.0-patched/libstdc++-v3/include/Makefile.in	2022-02-11 19:49:16.512514481 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -11312,8 +11508,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
+diff -Naur gcc-11.2.0/libstdc++-v3/libsupc++/Makefile.in gcc-11.2.0-patched/libstdc++-v3/libsupc++/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/libsupc++/Makefile.in	2021-07-28 07:55:09.328315822 +0100
-+++ gcc-11.2.0-patched/libstdc++-v3/libsupc++/Makefile.in	2021-12-01 09:16:04.999954469 +0000
++++ gcc-11.2.0-patched/libstdc++-v3/libsupc++/Makefile.in	2022-02-11 19:49:16.512514481 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -11371,8 +11568,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
+diff -Naur gcc-11.2.0/libstdc++-v3/Makefile.in gcc-11.2.0-patched/libstdc++-v3/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/Makefile.in	2021-07-28 07:55:09.208314147 +0100
-+++ gcc-11.2.0-patched/libstdc++-v3/Makefile.in	2021-12-01 09:16:04.899954464 +0000
++++ gcc-11.2.0-patched/libstdc++-v3/Makefile.in	2022-02-11 19:49:16.512514481 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -11442,8 +11640,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	esac;
  $(top_srcdir)/fragment.am $(top_srcdir)/../multilib.am $(am__empty):
  
+diff -Naur gcc-11.2.0/libstdc++-v3/po/Makefile.in gcc-11.2.0-patched/libstdc++-v3/po/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/po/Makefile.in	2021-07-28 07:55:09.332315880 +0100
-+++ gcc-11.2.0-patched/libstdc++-v3/po/Makefile.in	2021-12-01 09:16:05.019954470 +0000
++++ gcc-11.2.0-patched/libstdc++-v3/po/Makefile.in	2022-02-11 19:49:16.512514481 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -11492,8 +11691,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
+diff -Naur gcc-11.2.0/libstdc++-v3/python/Makefile.in gcc-11.2.0-patched/libstdc++-v3/python/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/python/Makefile.in	2021-07-28 07:55:09.332315880 +0100
-+++ gcc-11.2.0-patched/libstdc++-v3/python/Makefile.in	2021-12-01 09:16:05.039954471 +0000
++++ gcc-11.2.0-patched/libstdc++-v3/python/Makefile.in	2022-02-11 19:49:16.519181198 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -11542,8 +11742,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
+diff -Naur gcc-11.2.0/libstdc++-v3/src/c++11/Makefile.in gcc-11.2.0-patched/libstdc++-v3/src/c++11/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/src/c++11/Makefile.in	2021-07-28 07:55:09.332315880 +0100
-+++ gcc-11.2.0-patched/libstdc++-v3/src/c++11/Makefile.in	2021-12-01 09:16:05.106621142 +0000
++++ gcc-11.2.0-patched/libstdc++-v3/src/c++11/Makefile.in	2022-02-11 19:49:16.519181198 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -11601,8 +11802,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
+diff -Naur gcc-11.2.0/libstdc++-v3/src/c++17/Makefile.in gcc-11.2.0-patched/libstdc++-v3/src/c++17/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/src/c++17/Makefile.in	2021-07-28 07:55:09.336315933 +0100
-+++ gcc-11.2.0-patched/libstdc++-v3/src/c++17/Makefile.in	2021-12-01 09:16:05.133287810 +0000
++++ gcc-11.2.0-patched/libstdc++-v3/src/c++17/Makefile.in	2022-02-11 19:49:16.522514556 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -11660,8 +11862,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
+diff -Naur gcc-11.2.0/libstdc++-v3/src/c++20/Makefile.in gcc-11.2.0-patched/libstdc++-v3/src/c++20/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/src/c++20/Makefile.in	2021-07-28 07:55:09.340315989 +0100
-+++ gcc-11.2.0-patched/libstdc++-v3/src/c++20/Makefile.in	2021-12-01 09:16:05.156621144 +0000
++++ gcc-11.2.0-patched/libstdc++-v3/src/c++20/Makefile.in	2022-02-11 19:49:16.522514556 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -11719,8 +11922,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
+diff -Naur gcc-11.2.0/libstdc++-v3/src/c++98/Makefile.in gcc-11.2.0-patched/libstdc++-v3/src/c++98/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/src/c++98/Makefile.in	2021-07-28 07:55:09.340315989 +0100
-+++ gcc-11.2.0-patched/libstdc++-v3/src/c++98/Makefile.in	2021-12-01 09:16:05.186621146 +0000
++++ gcc-11.2.0-patched/libstdc++-v3/src/c++98/Makefile.in	2022-02-11 19:49:16.522514556 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -11778,8 +11982,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
+diff -Naur gcc-11.2.0/libstdc++-v3/src/filesystem/Makefile.in gcc-11.2.0-patched/libstdc++-v3/src/filesystem/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/src/filesystem/Makefile.in	2021-07-28 07:55:09.340315989 +0100
-+++ gcc-11.2.0-patched/libstdc++-v3/src/filesystem/Makefile.in	2021-12-01 09:16:05.209954481 +0000
++++ gcc-11.2.0-patched/libstdc++-v3/src/filesystem/Makefile.in	2022-02-11 19:49:16.525847915 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -11837,8 +12042,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
+diff -Naur gcc-11.2.0/libstdc++-v3/src/Makefile.in gcc-11.2.0-patched/libstdc++-v3/src/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/src/Makefile.in	2021-07-28 07:55:09.332315880 +0100
-+++ gcc-11.2.0-patched/libstdc++-v3/src/Makefile.in	2021-12-01 09:16:05.076621140 +0000
++++ gcc-11.2.0-patched/libstdc++-v3/src/Makefile.in	2022-02-11 19:49:16.525847915 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -11896,8 +12102,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
+diff -Naur gcc-11.2.0/libstdc++-v3/testsuite/Makefile.in gcc-11.2.0-patched/libstdc++-v3/testsuite/Makefile.in
 --- gcc-11.2.0/libstdc++-v3/testsuite/Makefile.in	2021-07-28 07:55:09.480317942 +0100
-+++ gcc-11.2.0-patched/libstdc++-v3/testsuite/Makefile.in	2021-12-01 09:16:05.233287815 +0000
++++ gcc-11.2.0-patched/libstdc++-v3/testsuite/Makefile.in	2022-02-11 19:49:16.525847915 +0000
 @@ -1,7 +1,7 @@
 -# Makefile.in generated by automake 1.15.1 from Makefile.am.
 +# Makefile.in generated by automake 1.16.5 from Makefile.am.
@@ -11946,8 +12153,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
+diff -Naur gcc-11.2.0/libtool.m4 gcc-11.2.0-patched/libtool.m4
 --- gcc-11.2.0/libtool.m4	2021-07-28 07:55:09.528318613 +0100
-+++ gcc-11.2.0-patched/libtool.m4	2021-12-01 08:41:18.063175369 +0000
++++ gcc-11.2.0-patched/libtool.m4	2022-02-11 19:49:16.529181274 +0000
 @@ -2490,7 +2490,17 @@
    # assume the GNU/Linux dynamic linker is in use.
    dynamic_linker='GNU/Linux ld.so'
@@ -11978,8 +12186,9 @@ diff -Naur gcc-11.2.0/gcc/config/onyx.opt gcc-11.2.0-patched/gcc/config/onyx.opt
  haiku*)
    lt_cv_deplibs_check_method=pass_all
    ;;
+diff -Naur gcc-11.2.0/PKGBUILD gcc-11.2.0-patched/PKGBUILD
 --- gcc-11.2.0/PKGBUILD	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-11.2.0-patched/PKGBUILD	2021-12-01 04:35:01.105713612 +0000
++++ gcc-11.2.0-patched/PKGBUILD	2022-02-11 19:49:16.529181274 +0000
 @@ -0,0 +1,19 @@
 +PKGNAME=gcc
 +PKGVER=11.2.0

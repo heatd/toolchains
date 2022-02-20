@@ -123,6 +123,13 @@ LLVM|llvm)
     ;;
 esac
 
+case "${ARCH}" in
+arm64|ARM64)
+    # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARCH64 is stupid, but GNU really likes it
+    ARCH="aarch64"
+    ;;
+esac
+
 GNU_TARGET="$ARCH-onyx"
 LLVM_VER="13.0.0"
 BINUTILS_VER="2.37"

@@ -76,26 +76,9 @@ if (NOT CMAKE_FIND_NO_INSTALL_PREFIX)
   endif()
 endif()
 
-# Non "standard" but common install prefixes
-list(APPEND CMAKE_SYSTEM_PREFIX_PATH
-  /usr/X11R6
-  /usr/pkg
-  /opt
-  )
-
-# List common include file locations not under the common prefixes.
-list(APPEND CMAKE_SYSTEM_INCLUDE_PATH
-  # X11
-  /usr/include/X11
-  )
-
-list(APPEND CMAKE_SYSTEM_LIBRARY_PATH
-  # X11
-  /usr/lib/X11
-  )
 
 list(APPEND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
-  /lib /lib32 /lib64 /usr/lib /usr/lib32 /usr/lib64
+  /lib /usr/lib
   )
 
 if(CMAKE_SYSROOT_COMPILE)
@@ -132,11 +115,11 @@ if(CMAKE_COMPILER_SYSROOT)
   endif()
 endif()
 
-# Enable use of lib32 and lib64 search path variants by default.
-set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB32_PATHS TRUE)
-set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS TRUE)
-set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIBX32_PATHS TRUE)
-
 set(ENV{PKG_CONFIG_DIR} "")
 set(ENV{PKG_CONFIG_LIBDIR} "${CMAKE_SYSROOT}/usr/lib/pkgconfig:${CMAKE_SYSROOT}/usr/share/pkgconfig")
 set(ENV{PKG_CONFIG_SYSROOT_DIR} ${CMAKE_SYSROOT})
+
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)

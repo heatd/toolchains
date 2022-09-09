@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2021 Pedro Falcato
+# Copyright (c) 2021 - 2022 Pedro Falcato
 # This file is part of Onyx, and is released under the terms of the MIT License
 # check LICENSE at the root directory for more information
 #
@@ -13,7 +13,7 @@ if [ "$#" -ne "1" ]; then
 	exit 1
 fi
 
-LLVM_VER="14.0.0"
+LLVM_VER="15.0.0"
 
 STAGING_DIR=$1
 PATCHES=$PWD/toolchains

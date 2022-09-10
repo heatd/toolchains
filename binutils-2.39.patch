@@ -1,14 +1,14 @@
-diff -Naur binutils-2.37/bfd/config.bfd binutils-2.37-patched/bfd/config.bfd
---- binutils-2.37/bfd/config.bfd	2021-07-08 12:37:19.000000000 +0100
-+++ binutils-2.37-patched/bfd/config.bfd	2022-02-20 02:20:07.346969565 +0000
-@@ -255,12 +255,12 @@
-     targ_selvecs=aarch64_elf64_be_cloudabi_vec
+diff -Naur binutils-2.39/bfd/config.bfd binutils-2.39-patched/bfd/config.bfd
+--- binutils-2.39/bfd/config.bfd	2022-07-08 10:46:47.000000000 +0100
++++ binutils-2.39-patched/bfd/config.bfd	2022-09-10 02:54:03.680746910 +0100
+@@ -274,12 +274,12 @@
+     targ_selvecs="aarch64_elf64_be_vec aarch64_elf32_le_vec aarch64_elf32_be_vec arm_elf32_le_vec arm_elf32_be_vec"
      want64=true
      ;;
 -  aarch64-*-linux* | aarch64-*-netbsd*)
 +  aarch64-*-linux* | aarch64-*-netbsd* | aarch64-*-onyx*)
      targ_defvec=aarch64_elf64_le_vec
-     targ_selvecs="aarch64_elf64_be_vec aarch64_elf32_le_vec aarch64_elf32_be_vec arm_elf32_le_vec arm_elf32_be_vec"
+     targ_selvecs="aarch64_elf64_be_vec aarch64_elf32_le_vec aarch64_elf32_be_vec arm_elf32_le_vec arm_elf32_be_vec aarch64_pei_vec"
      want64=true
      ;;
 -  aarch64_be-*-linux* | aarch64_be-*-netbsd*)
@@ -16,7 +16,7 @@ diff -Naur binutils-2.37/bfd/config.bfd binutils-2.37-patched/bfd/config.bfd
      targ_defvec=aarch64_elf64_be_vec
      targ_selvecs="aarch64_elf64_le_vec aarch64_elf32_le_vec aarch64_elf32_be_vec arm_elf32_be_vec arm_elf32_le_vec"
      want64=true
-@@ -634,7 +634,17 @@
+@@ -655,7 +655,17 @@
      targ_selvecs=
      targ64_selvecs=x86_64_elf64_vec
      ;;
@@ -34,65 +34,74 @@ diff -Naur binutils-2.37/bfd/config.bfd binutils-2.37-patched/bfd/config.bfd
    x86_64-*-cloudabi*)
      targ_defvec=x86_64_elf64_cloudabi_vec
      want64=true
-diff -Naur binutils-2.37/config.sub binutils-2.37-patched/config.sub
---- binutils-2.37/config.sub	2021-07-08 12:37:19.000000000 +0100
-+++ binutils-2.37-patched/config.sub	2022-02-11 19:49:16.465847461 +0000
-@@ -1727,7 +1727,7 @@
+diff -Naur binutils-2.39/config.sub binutils-2.39-patched/config.sub
+--- binutils-2.39/config.sub	2022-07-08 10:46:47.000000000 +0100
++++ binutils-2.39-patched/config.sub	2022-09-10 02:54:03.680746910 +0100
+@@ -1751,7 +1751,7 @@
  	     | scout* | superux* | sysv* | rtmk* | tpf* | windiss* \
  	     | powermax* | dnix* | nx6 | nx7 | sei* | dragonfly* \
  	     | skyos* | haiku* | rdos* | toppers* | drops* | es* \
 -	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
 +	     | onefs* | tirtos* | phoenix* | fuchsia* | onyx* | redox* | bme* \
  	     | midnightbsd* | amdhsa* | unleashed* | emscripten* | wasi* \
- 	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx*)
- 		;;
-diff -Naur binutils-2.37/configure binutils-2.37-patched/configure
---- binutils-2.37/configure	2021-07-18 17:36:27.000000000 +0100
-+++ binutils-2.37-patched/configure	2022-02-11 19:49:16.469180819 +0000
-@@ -3013,7 +3013,7 @@
+ 	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx* | zephyr* \
+ 	     | fiwix* )
+diff -Naur binutils-2.39/configure binutils-2.39-patched/configure
+--- binutils-2.39/configure	2022-07-08 10:55:40.000000000 +0100
++++ binutils-2.39-patched/configure	2022-09-10 02:54:03.684080288 +0100
+@@ -2792,7 +2792,7 @@
+ # binutils, gas and ld appear in that order because it makes sense to run
+ # "make check" in that particular order.
+ # If --enable-gold is used, "gold" may replace "ld".
+-host_tools="texinfo flex bison binutils gas ld fixincludes gcc cgen sid sim gdb gdbserver gprof etc expect dejagnu m4 utils guile fastjar gnattools libcc1 gotools"
++host_tools="flex bison binutils gas ld fixincludes gcc cgen sid sim gdb gdbserver gprof etc expect dejagnu m4 utils guile fastjar gnattools libcc1 gotools"
+ 
+ # these libraries are built for the target environment, and are built after
+ # the host libraries and the host tools (which may be a cross compiler)
+@@ -3016,7 +3016,7 @@
        *-*-elf* | *-*-sysv4* | *-*-unixware* | *-*-eabi* | hppa*64*-*-hpux* \
        | *-*-linux* | *-*-gnu* | frv-*-uclinux* | *-*-irix5* | *-*-irix6* \
        | *-*-netbsd* | *-*-openbsd* | *-*-freebsd* | *-*-dragonfly* \
--      | *-*-solaris2* | *-*-nto* | *-*-nacl*)
-+      | *-*-solaris2* | *-*-nto* | *-*-nacl* | *-*-onyx*)
+-      | *-*-solaris2* | *-*-nto* | *-*-nacl* | *-*-haiku*)
++      | *-*-solaris2* | *-*-nto* | *-*-nacl* | *-*-haiku* | *-*-onyx*)
          case "${target}" in
            *-*-linux*aout* | *-*-linux*oldld*)
              ;;
-diff -Naur binutils-2.37/configure.ac binutils-2.37-patched/configure.ac
---- binutils-2.37/configure.ac	2021-07-18 17:48:58.000000000 +0100
-+++ binutils-2.37-patched/configure.ac	2022-02-11 19:49:16.469180819 +0000
+diff -Naur binutils-2.39/configure.ac binutils-2.39-patched/configure.ac
+--- binutils-2.39/configure.ac	2022-08-05 12:02:04.000000000 +0100
++++ binutils-2.39-patched/configure.ac	2022-09-10 02:54:03.690747045 +0100
 @@ -336,7 +336,7 @@
        *-*-elf* | *-*-sysv4* | *-*-unixware* | *-*-eabi* | hppa*64*-*-hpux* \
        | *-*-linux* | *-*-gnu* | frv-*-uclinux* | *-*-irix5* | *-*-irix6* \
        | *-*-netbsd* | *-*-openbsd* | *-*-freebsd* | *-*-dragonfly* \
--      | *-*-solaris2* | *-*-nto* | *-*-nacl*)
-+      | *-*-solaris2* | *-*-nto* | *-*-nacl* | *-*-onyx*)
+-      | *-*-solaris2* | *-*-nto* | *-*-nacl* | *-*-haiku*)
++      | *-*-solaris2* | *-*-nto* | *-*-nacl* | *-*-haiku* | *-*-onyx*)
          case "${target}" in
            *-*-linux*aout* | *-*-linux*oldld*)
              ;;
-diff -Naur binutils-2.37/gas/configure.tgt binutils-2.37-patched/gas/configure.tgt
---- binutils-2.37/gas/configure.tgt	2021-07-08 12:37:19.000000000 +0100
-+++ binutils-2.37-patched/gas/configure.tgt	2022-02-11 19:49:16.472514178 +0000
-@@ -126,6 +126,7 @@
-   aarch64*-*-elf*)			fmt=elf;;
+diff -Naur binutils-2.39/gas/configure.tgt binutils-2.39-patched/gas/configure.tgt
+--- binutils-2.39/gas/configure.tgt	2022-07-08 10:46:47.000000000 +0100
++++ binutils-2.39-patched/gas/configure.tgt	2022-09-10 02:54:03.690747045 +0100
+@@ -129,6 +129,7 @@
    aarch64*-*-fuchsia*)			fmt=elf;;
+   aarch64*-*-haiku*)			fmt=elf em=haiku ;;
    aarch64*-*-genode*)			fmt=elf;;
 +  aarch64*-*-onyx*)			fmt=elf em=linux ;;
    aarch64*-*-linux*)			fmt=elf em=linux
      case ${cpu}-${os} in
        aarch64*-linux-gnu_ilp32)		arch=aarch64:32 ;;
-@@ -222,6 +223,7 @@
+@@ -226,6 +227,7 @@
    i386-*-elfiamcu)			fmt=elf arch=iamcu ;;
    i386-*-elf*)				fmt=elf ;;
    i386-*-fuchsia*)			fmt=elf ;;
 +  i386-*-onyx*)         fmt=elf em=linux ;;
+   i386-*-haiku*)			fmt=elf em=haiku ;;
    i386-*-genode*)			fmt=elf ;;
    i386-*-bsd*)				fmt=aout em=386bsd ;;
-   i386-*-netbsdpe*)			fmt=coff em=pe ;;
-diff -Naur binutils-2.37/ld/configure.tgt binutils-2.37-patched/ld/configure.tgt
---- binutils-2.37/ld/configure.tgt	2021-07-08 12:37:20.000000000 +0100
-+++ binutils-2.37-patched/ld/configure.tgt	2022-02-20 02:15:25.514672814 +0000
-@@ -59,6 +59,9 @@
+diff -Naur binutils-2.39/ld/configure.tgt binutils-2.39-patched/ld/configure.tgt
+--- binutils-2.39/ld/configure.tgt	2022-07-29 08:37:48.000000000 +0100
++++ binutils-2.39-patched/ld/configure.tgt	2022-09-10 02:54:03.700747180 +0100
+@@ -96,6 +96,9 @@
  aarch64-*-fuchsia*)	targ_emul=aarch64elf
  			targ_extra_emuls="aarch64elfb armelf armelfb"
  			;;
@@ -102,7 +111,7 @@ diff -Naur binutils-2.37/ld/configure.tgt binutils-2.37-patched/ld/configure.tgt
  aarch64_be-*-linux-gnu_ilp32)
  			targ_emul=aarch64linux32b
  			targ_extra_libpath="aarch64linuxb aarch64linux aarch64linux32 armelfb_linux_eabi armelf_linux_eabi"
-@@ -309,6 +312,10 @@
+@@ -352,6 +355,10 @@
  i[3-7]86-*-rdos*)	targ_emul=elf_i386
  			targ_extra_emuls=elf_iamcu
  			;;
@@ -113,7 +122,7 @@ diff -Naur binutils-2.37/ld/configure.tgt binutils-2.37-patched/ld/configure.tgt
  i[3-7]86-*-bsd)		targ_emul=i386bsd
  			targ_extra_ofiles=
  			;;
-@@ -767,6 +774,10 @@
+@@ -819,6 +826,10 @@
  			targ_extra_emuls="elf32briscv elf64lriscv elf32lriscv"
  			targ_extra_libpath=$targ_extra_emuls
  			;;
@@ -124,16 +133,16 @@ diff -Naur binutils-2.37/ld/configure.tgt binutils-2.37-patched/ld/configure.tgt
  riscv64*-*-*)		targ_emul=elf64lriscv
  			targ_extra_emuls="elf32lriscv elf64briscv elf32briscv"
  			targ_extra_libpath=$targ_extra_emuls
-diff -Naur binutils-2.37/ld/emulparams/aarch64onyx32b.sh binutils-2.37-patched/ld/emulparams/aarch64onyx32b.sh
---- binutils-2.37/ld/emulparams/aarch64onyx32b.sh	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.37-patched/ld/emulparams/aarch64onyx32b.sh	2022-02-20 02:13:58.773975725 +0000
+diff -Naur binutils-2.39/ld/emulparams/aarch64onyx32b.sh binutils-2.39-patched/ld/emulparams/aarch64onyx32b.sh
+--- binutils-2.39/ld/emulparams/aarch64onyx32b.sh	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.39-patched/ld/emulparams/aarch64onyx32b.sh	2022-09-10 02:54:03.700747180 +0100
 @@ -0,0 +1,3 @@
 +source_sh ${srcdir}/emulparams/aarch64onyx32.sh
 +OUTPUT_FORMAT="elf32-bigaarch64"
 +ELF_INTERPRETER_NAME=\"/lib/ld-onyx-arm64_be_ilp32.so\"
-diff -Naur binutils-2.37/ld/emulparams/aarch64onyx32.sh binutils-2.37-patched/ld/emulparams/aarch64onyx32.sh
---- binutils-2.37/ld/emulparams/aarch64onyx32.sh	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.37-patched/ld/emulparams/aarch64onyx32.sh	2022-02-20 02:14:04.950691839 +0000
+diff -Naur binutils-2.39/ld/emulparams/aarch64onyx32.sh binutils-2.39-patched/ld/emulparams/aarch64onyx32.sh
+--- binutils-2.39/ld/emulparams/aarch64onyx32.sh	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.39-patched/ld/emulparams/aarch64onyx32.sh	2022-09-10 02:54:03.700747180 +0100
 @@ -0,0 +1,39 @@
 +ARCH="aarch64:ilp32"
 +MACHINE=
@@ -174,16 +183,16 @@ diff -Naur binutils-2.37/ld/emulparams/aarch64onyx32.sh binutils-2.37-patched/ld
 +PLT=".plt          ${RELOCATING-0} : ALIGN(16) { *(.plt)${RELOCATING+${IREL_IN_PLT+ *(.iplt)}} }"
 +
 +ELF_INTERPRETER_NAME=\"/lib/ld-onyx-arm64_ilp32.so\"
-diff -Naur binutils-2.37/ld/emulparams/aarch64onyxb.sh binutils-2.37-patched/ld/emulparams/aarch64onyxb.sh
---- binutils-2.37/ld/emulparams/aarch64onyxb.sh	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.37-patched/ld/emulparams/aarch64onyxb.sh	2022-02-20 02:14:23.527507404 +0000
+diff -Naur binutils-2.39/ld/emulparams/aarch64onyxb.sh binutils-2.39-patched/ld/emulparams/aarch64onyxb.sh
+--- binutils-2.39/ld/emulparams/aarch64onyxb.sh	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.39-patched/ld/emulparams/aarch64onyxb.sh	2022-09-10 02:54:03.700747180 +0100
 @@ -0,0 +1,3 @@
 +source_sh ${srcdir}/emulparams/aarch64onyx.sh
 +OUTPUT_FORMAT="elf64-bigaarch64"
 +ELF_INTERPRETER_NAME=\"/lib/ld-onyx-arm64_be.so\"
-diff -Naur binutils-2.37/ld/emulparams/aarch64onyx.sh binutils-2.37-patched/ld/emulparams/aarch64onyx.sh
---- binutils-2.37/ld/emulparams/aarch64onyx.sh	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.37-patched/ld/emulparams/aarch64onyx.sh	2022-02-20 02:12:18.559844785 +0000
+diff -Naur binutils-2.39/ld/emulparams/aarch64onyx.sh binutils-2.39-patched/ld/emulparams/aarch64onyx.sh
+--- binutils-2.39/ld/emulparams/aarch64onyx.sh	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.39-patched/ld/emulparams/aarch64onyx.sh	2022-09-10 02:54:03.700747180 +0100
 @@ -0,0 +1,39 @@
 +ARCH=aarch64
 +MACHINE=
@@ -224,54 +233,24 @@ diff -Naur binutils-2.37/ld/emulparams/aarch64onyx.sh binutils-2.37-patched/ld/e
 +PLT=".plt          ${RELOCATING-0} : ALIGN(16) { *(.plt)${RELOCATING+${IREL_IN_PLT+ *(.iplt)}} }"
 +
 +ELF_INTERPRETER_NAME=\"/lib/ld-onyx-arm64.so\"
-diff -Naur binutils-2.37/ld/emulparams/elf_i386_onyx.sh binutils-2.37-patched/ld/emulparams/elf_i386_onyx.sh
---- binutils-2.37/ld/emulparams/elf_i386_onyx.sh	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.37-patched/ld/emulparams/elf_i386_onyx.sh	2022-02-11 19:49:16.472514178 +0000
+diff -Naur binutils-2.39/ld/emulparams/elf_i386_onyx.sh binutils-2.39-patched/ld/emulparams/elf_i386_onyx.sh
+--- binutils-2.39/ld/emulparams/elf_i386_onyx.sh	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.39-patched/ld/emulparams/elf_i386_onyx.sh	2022-09-10 02:54:03.700747180 +0100
 @@ -0,0 +1,3 @@
 +. ${srcdir}/emulparams/elf_i386.sh
 +GENERATE_SHLIB_SCRIPT=yes
 +GENERATE_PIE_SCRIPT=yes
 \ No newline at end of file
-diff -Naur binutils-2.37/ld/emulparams/elf_x86_64_onyx.sh binutils-2.37-patched/ld/emulparams/elf_x86_64_onyx.sh
---- binutils-2.37/ld/emulparams/elf_x86_64_onyx.sh	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.37-patched/ld/emulparams/elf_x86_64_onyx.sh	2022-02-11 19:49:16.472514178 +0000
+diff -Naur binutils-2.39/ld/emulparams/elf_x86_64_onyx.sh binutils-2.39-patched/ld/emulparams/elf_x86_64_onyx.sh
+--- binutils-2.39/ld/emulparams/elf_x86_64_onyx.sh	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.39-patched/ld/emulparams/elf_x86_64_onyx.sh	2022-09-10 02:54:03.700747180 +0100
 @@ -0,0 +1 @@
 +. ${srcdir}/emulparams/elf_x86_64.sh
 \ No newline at end of file
-diff -Naur binutils-2.37/ld/Makefile.am binutils-2.37-patched/ld/Makefile.am
---- binutils-2.37/ld/Makefile.am	2021-07-08 12:37:20.000000000 +0100
-+++ binutils-2.37-patched/ld/Makefile.am	2022-02-20 05:31:27.979178995 +0000
-@@ -282,6 +282,7 @@
- 	eelf_i386_ldso.c \
- 	eelf_i386_sol2.c \
- 	eelf_i386_vxworks.c \
-+	eelf_i386_onyx.c \ 
- 	eelf_iamcu.c \
- 	eelf_s390.c \
- 	eh8300elf.c \
-@@ -387,6 +388,10 @@
- 	eaarch64linuxb.c \
- 	eaarch64linux32.c \
- 	eaarch64linux32b.c \
-+	eaarch64onyx.c \
-+	eaarch64onyxb.c \
-+	eaarch64onyx32.c \
-+	eaarch64onyx32b.c \
- 	eelf32_x86_64.c \
- 	eelf32b4300.c \
- 	eelf32bmip.c \
-@@ -456,6 +461,7 @@
- 	eelf_x86_64_cloudabi.c \
- 	eelf_x86_64_fbsd.c \
- 	eelf_x86_64_sol2.c \
-+	eelf_x86_64_onyx.c \
- 	ehppa64linux.c \
- 	ei386pep.c \
- 	emmo.c
-diff -Naur binutils-2.37/ld/Makefile.in binutils-2.37-patched/ld/Makefile.in
---- binutils-2.37/ld/Makefile.in	2021-07-18 17:38:34.000000000 +0100
-+++ binutils-2.37-patched/ld/Makefile.in	2022-02-20 05:51:12.446515287 +0000
-@@ -772,6 +772,7 @@
+diff -Naur binutils-2.39/ld/Makefile.am binutils-2.39-patched/ld/Makefile.am
+--- binutils-2.39/ld/Makefile.am	2022-07-08 10:46:48.000000000 +0100
++++ binutils-2.39-patched/ld/Makefile.am	2022-09-10 02:54:03.700747180 +0100
+@@ -281,6 +281,7 @@
  	eelf_i386_ldso.c \
  	eelf_i386_sol2.c \
  	eelf_i386_vxworks.c \
@@ -279,10 +258,10 @@ diff -Naur binutils-2.37/ld/Makefile.in binutils-2.37-patched/ld/Makefile.in
  	eelf_iamcu.c \
  	eelf_s390.c \
  	eh8300elf.c \
-@@ -876,6 +877,10 @@
- 	eaarch64linuxb.c \
+@@ -388,6 +389,10 @@
  	eaarch64linux32.c \
  	eaarch64linux32b.c \
+ 	eaarch64linuxb.c \
 +	eaarch64onyx.c \
 +	eaarch64onyxb.c \
 +	eaarch64onyx32.c \
@@ -290,15 +269,45 @@ diff -Naur binutils-2.37/ld/Makefile.in binutils-2.37-patched/ld/Makefile.in
  	eelf32_x86_64.c \
  	eelf32b4300.c \
  	eelf32bmip.c \
-@@ -945,6 +950,7 @@
- 	eelf_x86_64_cloudabi.c \
+@@ -457,6 +462,7 @@
  	eelf_x86_64_fbsd.c \
+ 	eelf_x86_64_haiku.c \
  	eelf_x86_64_sol2.c \
 +	eelf_x86_64_onyx.c \
  	ehppa64linux.c \
  	ei386pep.c \
  	emmo.c
-@@ -1246,6 +1252,10 @@
+diff -Naur binutils-2.39/ld/Makefile.in binutils-2.39-patched/ld/Makefile.in
+--- binutils-2.39/ld/Makefile.in	2022-08-05 10:56:53.000000000 +0100
++++ binutils-2.39-patched/ld/Makefile.in	2022-09-10 03:42:32.230490925 +0100
+@@ -778,6 +778,7 @@
+ 	eelf_i386_ldso.c \
+ 	eelf_i386_sol2.c \
+ 	eelf_i386_vxworks.c \
++	eelf_i386_onyx.c \
+ 	eelf_iamcu.c \
+ 	eelf_s390.c \
+ 	eh8300elf.c \
+@@ -884,6 +885,10 @@
+ 	eaarch64linux32.c \
+ 	eaarch64linux32b.c \
+ 	eaarch64linuxb.c \
++	eaarch64onyx.c \
++	eaarch64onyxb.c \
++	eaarch64onyx32.c \
++	eaarch64onyx32b.c \
+ 	eelf32_x86_64.c \
+ 	eelf32b4300.c \
+ 	eelf32bmip.c \
+@@ -953,6 +958,7 @@
+ 	eelf_x86_64_fbsd.c \
+ 	eelf_x86_64_haiku.c \
+ 	eelf_x86_64_sol2.c \
++	eelf_x86_64_onyx.c \
+ 	ehppa64linux.c \
+ 	ei386pep.c \
+ 	emmo.c
+@@ -1255,6 +1261,10 @@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eaarch64linux32.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eaarch64linux32b.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eaarch64linuxb.Po@am__quote@
@@ -309,25 +318,25 @@ diff -Naur binutils-2.37/ld/Makefile.in binutils-2.37-patched/ld/Makefile.in
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eaix5ppc.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eaix5rs6.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eaixppc.Po@am__quote@
-@@ -1434,6 +1444,7 @@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_i386_be.Po@am__quote@
+@@ -1445,6 +1455,7 @@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_i386_fbsd.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_i386_haiku.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_i386_ldso.Po@am__quote@
 +@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_i386_onyx.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_i386_sol2.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_i386_vxworks.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_iamcu.Po@am__quote@
-@@ -1445,6 +1456,7 @@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_x86_64.Po@am__quote@
+@@ -1454,6 +1465,7 @@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_x86_64_cloudabi.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_x86_64_fbsd.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_x86_64_haiku.Po@am__quote@
 +@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_x86_64_onyx.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_x86_64_sol2.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eh8300elf.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eh8300elf_linux.Po@am__quote@
-diff -Naur binutils-2.37/PKGBUILD binutils-2.37-patched/PKGBUILD
---- binutils-2.37/PKGBUILD	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.37-patched/PKGBUILD	2022-02-11 19:49:16.472514178 +0000
+diff -Naur binutils-2.39/PKGBUILD binutils-2.39-patched/PKGBUILD
+--- binutils-2.39/PKGBUILD	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.39-patched/PKGBUILD	2022-09-10 02:54:03.704080558 +0100
 @@ -0,0 +1,14 @@
 +PKGNAME=binutils
 +PKGVER=2.37
@@ -336,7 +345,7 @@ diff -Naur binutils-2.37/PKGBUILD binutils-2.37-patched/PKGBUILD
 +	cd ..
 +	mkdir -p binutils-build
 +	cd binutils-build
-+	../binutils-2.37/configure --host=x86_64-onyx --prefix=/usr --with-sysroot=  --disable-werror --disable-nls --enable-gold --enable-lto --enable-plugins
++	../binutils-2.39/configure --host=x86_64-onyx --prefix=/usr --with-sysroot=  --disable-werror --disable-nls --enable-gold --enable-lto --enable-plugins
 +	$MAKE all
 +}
 +

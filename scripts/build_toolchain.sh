@@ -8,7 +8,7 @@
 
 set -e
 
-TEMP=$(getopt -o 'a:cT:ht:' --long 'arch:,continue,threads:,help,toolchain:,use-lto,strip,no-strip,no-libc' -n 'build_toolchain' -- "$@")
+TEMP=$(getopt -o 'a:cT:ht:' --long 'arch:,continue,threads:,help,toolchain:,use-lto,strip,no-strip,no-libc,with-iwyu:' -n 'build_toolchain' -- "$@")
 
 eval set -- "$TEMP"
 
@@ -91,6 +91,11 @@ while true; do
         "--no-libc")
             enable_libc="no"
             shift
+            continue
+        ;;
+        '--with-iwyu')
+            iwyu_path=$2
+            shift 2
             continue
         ;;
         '--')
@@ -248,6 +253,11 @@ elif [ "$toolchain" = "LLVM" ]; then
         llvm_build_extra="$llvm_build_extra -DLLVM_ENABLE_LTO=OFF"
     fi
 
+    if [ -n "$iwyu_path" ]; then
+        # TODO: doesn't work yet.
+        llvm_build_extra="$llvm_build_extra -DLLVM_EXTERNAL_PROJECTS=iwyu -DLLVM_EXTERNAL_IWYU_SOURCE_DIR=$(realpath $iwyu_path)"
+    fi
+
     cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_RTTI=ON  \
     -DCMAKE_C_COMPILER=clang \
@@ -266,11 +276,9 @@ fi
 
 if [ "$strip_toolchain" = "yes" ]; then
 
-# TODO: This doesn't really work for llvm and leaves some things unstripped
-# This is kind of hacky, adapt llvm to use distribution and install-distribution-stripped
 # Strip bin, libexec, lib
-find "$target_dir/bin" -type f -exec sh -c '(! echo {} | grep -q .*.o) && (file {} | grep ELF)' \; -exec $STRIP {} \; || true
-find "$target_dir/libexec" -type f -exec sh -c '(! echo {} | grep -q .*.o) && (file {} | grep ELF)' \; -exec $STRIP {} \; || true
-find "$target_dir/lib" -type f -exec sh -c '(! echo {} | grep -q .*.o) && (file {} | grep ELF)' \; -exec $STRIP {} \; || true
+find "$target_dir/bin" -type f -not -name '*.o' -not -name '*.lo' -exec sh -c '(file {} | grep ELF) >/dev/null 2>&1' \;  -exec "$STRIP" {} \; || true
+find "$target_dir/libexec" -type f -not -name '*.o' -not -name '*.lo' -exec sh -c '(file {} | grep ELF) >/dev/null 2>&1' \;  -exec "$STRIP" {} \; || true
+find "$target_dir/lib" -type f -not -name '*.o' -not -name '*.lo' -exec sh -c '(file {} | grep ELF) >/dev/null 2>&1' \;  -exec "$STRIP" {} \; || true
 
 fi

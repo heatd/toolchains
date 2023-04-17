@@ -448,7 +448,6 @@ diff -Naur libsanitizer/aclocal.m4 libsanitizer-patched/aclocal.m4
  #
  # This file is free software; the Free Software Foundation
  # gives unlimited permission to copy and/or distribute it,
-diff -Naur libsanitizer/asan/asan_linux.cpp libsanitizer-patched/asan/asan_linux.cpp
 --- libsanitizer/asan/asan_linux.cpp	2021-07-28 07:55:09.172313645 +0100
 +++ libsanitizer-patched/asan/asan_linux.cpp	2021-12-02 03:34:30.418368314 +0000
 @@ -13,7 +13,7 @@
@@ -487,7 +486,6 @@ diff -Naur libsanitizer/asan/asan_linux.cpp libsanitizer-patched/asan/asan_linux
  #endif  // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
-diff -Naur libsanitizer/asan/asan_malloc_linux.cpp libsanitizer-patched/asan/asan_malloc_linux.cpp
 --- libsanitizer/asan/asan_malloc_linux.cpp	2021-07-28 07:55:09.172313645 +0100
 +++ libsanitizer-patched/asan/asan_malloc_linux.cpp	2021-12-02 03:34:30.418368314 +0000
 @@ -15,7 +15,7 @@
@@ -499,7 +497,6 @@ diff -Naur libsanitizer/asan/asan_malloc_linux.cpp libsanitizer-patched/asan/asa
  
  #include "sanitizer_common/sanitizer_allocator_checks.h"
  #include "sanitizer_common/sanitizer_errno.h"
-diff -Naur libsanitizer/asan/Makefile.in libsanitizer-patched/asan/Makefile.in
 --- libsanitizer/asan/Makefile.in	2021-07-28 07:55:09.172313645 +0100
 +++ libsanitizer-patched/asan/Makefile.in	2021-12-02 03:34:30.415034980 +0000
 @@ -1,7 +1,7 @@
@@ -776,7 +773,6 @@ diff -Naur libsanitizer/asan/Makefile.in libsanitizer-patched/asan/Makefile.in
  	uninstall-toolexeclibLTLIBRARIES
  
  .PRECIOUS: Makefile
-diff -Naur libsanitizer/builtins/assembly.h libsanitizer-patched/builtins/assembly.h
 --- libsanitizer/builtins/assembly.h	2021-07-28 07:55:09.172313645 +0100
 +++ libsanitizer-patched/builtins/assembly.h	2021-12-02 03:34:30.405034979 +0000
 @@ -43,7 +43,7 @@
@@ -788,7 +784,6 @@ diff -Naur libsanitizer/builtins/assembly.h libsanitizer-patched/builtins/assemb
  #define NO_EXEC_STACK_DIRECTIVE .section .note.GNU-stack,"",%progbits
  #else
  #define NO_EXEC_STACK_DIRECTIVE
-diff -Naur libsanitizer/configure libsanitizer-patched/configure
 --- libsanitizer/configure	2021-07-28 07:55:09.172313645 +0100
 +++ libsanitizer-patched/configure	2021-12-02 03:34:30.421701647 +0000
 @@ -704,6 +704,9 @@
@@ -1202,7 +1197,6 @@ diff -Naur libsanitizer/configure libsanitizer-patched/configure
  }
   ;;
      "libtool":C)
-diff -Naur libsanitizer/configure.tgt libsanitizer-patched/configure.tgt
 --- libsanitizer/configure.tgt	2021-07-28 07:55:09.172313645 +0100
 +++ libsanitizer-patched/configure.tgt	2021-12-02 03:34:30.405034979 +0000
 @@ -31,6 +31,15 @@
@@ -1221,7 +1215,6 @@ diff -Naur libsanitizer/configure.tgt libsanitizer-patched/configure.tgt
    powerpc*-*-linux*)
  	if test x$ac_cv_sizeof_void_p = x8; then
  		TSAN_SUPPORTED=yes
-diff -Naur libsanitizer/hwasan/Makefile.in libsanitizer-patched/hwasan/Makefile.in
 --- libsanitizer/hwasan/Makefile.in	2021-07-28 07:55:09.172313645 +0100
 +++ libsanitizer-patched/hwasan/Makefile.in	2021-12-02 03:34:30.421701647 +0000
 @@ -1,7 +1,7 @@
@@ -1433,7 +1426,6 @@ diff -Naur libsanitizer/hwasan/Makefile.in libsanitizer-patched/hwasan/Makefile.
  
  .PRECIOUS: Makefile
  
-diff -Naur libsanitizer/interception/interception.h libsanitizer-patched/interception/interception.h
 --- libsanitizer/interception/interception.h	2021-07-28 07:55:09.176313701 +0100
 +++ libsanitizer-patched/interception/interception.h	2021-12-02 03:34:30.418368314 +0000
 @@ -18,7 +18,7 @@
@@ -1454,7 +1446,6 @@ diff -Naur libsanitizer/interception/interception.h libsanitizer-patched/interce
  
  # include "interception_linux.h"
  # define INTERCEPT_FUNCTION(func) INTERCEPT_FUNCTION_LINUX_OR_FREEBSD(func)
-diff -Naur libsanitizer/interception/interception_linux.cpp libsanitizer-patched/interception/interception_linux.cpp
 --- libsanitizer/interception/interception_linux.cpp	2021-07-28 07:55:09.176313701 +0100
 +++ libsanitizer-patched/interception/interception_linux.cpp	2021-12-02 03:34:30.418368314 +0000
 @@ -14,7 +14,7 @@
@@ -1481,7 +1472,6 @@ diff -Naur libsanitizer/interception/interception_linux.cpp libsanitizer-patched
  #endif  // SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
-diff -Naur libsanitizer/interception/interception_linux.h libsanitizer-patched/interception/interception_linux.h
 --- libsanitizer/interception/interception_linux.h	2021-07-28 07:55:09.176313701 +0100
 +++ libsanitizer-patched/interception/interception_linux.h	2021-12-02 03:34:30.418368314 +0000
 @@ -12,7 +12,7 @@
@@ -1513,7 +1503,6 @@ diff -Naur libsanitizer/interception/interception_linux.h libsanitizer-patched/i
  #endif  // SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
-diff -Naur libsanitizer/interception/Makefile.in libsanitizer-patched/interception/Makefile.in
 --- libsanitizer/interception/Makefile.in	2021-07-28 07:55:09.176313701 +0100
 +++ libsanitizer-patched/interception/Makefile.in	2021-12-02 03:34:30.418368314 +0000
 @@ -1,7 +1,7 @@
@@ -1654,7 +1643,6 @@ diff -Naur libsanitizer/interception/Makefile.in libsanitizer-patched/intercepti
  
  .PRECIOUS: Makefile
  
-diff -Naur libsanitizer/libbacktrace/Makefile.in libsanitizer-patched/libbacktrace/Makefile.in
 --- libsanitizer/libbacktrace/Makefile.in	2021-07-28 07:55:09.176313701 +0100
 +++ libsanitizer-patched/libbacktrace/Makefile.in	2021-12-02 03:34:30.415034980 +0000
 @@ -1,7 +1,7 @@
@@ -1838,7 +1826,6 @@ diff -Naur libsanitizer/libbacktrace/Makefile.in libsanitizer-patched/libbacktra
  
  .PRECIOUS: Makefile
  
-diff -Naur libsanitizer/lsan/Makefile.in libsanitizer-patched/lsan/Makefile.in
 --- libsanitizer/lsan/Makefile.in	2021-07-28 07:55:09.180313757 +0100
 +++ libsanitizer-patched/lsan/Makefile.in	2021-12-02 03:34:30.421701647 +0000
 @@ -1,7 +1,7 @@
@@ -1988,7 +1975,6 @@ diff -Naur libsanitizer/lsan/Makefile.in libsanitizer-patched/lsan/Makefile.in
  	clean-toolexeclibLTLIBRARIES cscopelist-am ctags ctags-am \
  	distclean distclean-compile distclean-generic \
  	distclean-libtool distclean-tags dvi dvi-am html html-am info \
-diff -Naur libsanitizer/Makefile.in libsanitizer-patched/Makefile.in
 --- libsanitizer/Makefile.in	2021-07-28 07:55:09.172313645 +0100
 +++ libsanitizer-patched/Makefile.in	2021-12-02 03:34:30.401701646 +0000
 @@ -1,7 +1,7 @@
@@ -2050,7 +2036,6 @@ diff -Naur libsanitizer/Makefile.in libsanitizer-patched/Makefile.in
  	esac;
  $(top_srcdir)/../multilib.am $(am__empty):
  
-diff -Naur libsanitizer/sanitizer_common/Makefile.am libsanitizer-patched/sanitizer_common/Makefile.am
 --- libsanitizer/sanitizer_common/Makefile.am	2021-07-28 07:55:09.180313757 +0100
 +++ libsanitizer-patched/sanitizer_common/Makefile.am	2021-12-02 03:34:30.415034980 +0000
 @@ -57,6 +57,7 @@
@@ -2061,7 +2046,6 @@ diff -Naur libsanitizer/sanitizer_common/Makefile.am libsanitizer-patched/saniti
  	sanitizer_rtems.cpp \
  	sanitizer_solaris.cpp \
  	sanitizer_stackdepot.cpp \
-diff -Naur libsanitizer/sanitizer_common/Makefile.in libsanitizer-patched/sanitizer_common/Makefile.in
 --- libsanitizer/sanitizer_common/Makefile.in	2021-07-28 07:55:09.180313757 +0100
 +++ libsanitizer-patched/sanitizer_common/Makefile.in	2021-12-02 03:34:30.408368313 +0000
 @@ -1,7 +1,7 @@
@@ -2505,7 +2489,6 @@ diff -Naur libsanitizer/sanitizer_common/Makefile.in libsanitizer-patched/saniti
  
  .PRECIOUS: Makefile
  
-diff -Naur libsanitizer/sanitizer_common/sanitizer_errno_codes.h libsanitizer-patched/sanitizer_common/sanitizer_errno_codes.h
 --- libsanitizer/sanitizer_common/sanitizer_errno_codes.h	2021-07-28 07:55:09.184313813 +0100
 +++ libsanitizer-patched/sanitizer_common/sanitizer_errno_codes.h	2021-12-02 03:34:30.408368313 +0000
 @@ -24,6 +24,7 @@
@@ -2516,7 +2499,6 @@ diff -Naur libsanitizer/sanitizer_common/sanitizer_errno_codes.h libsanitizer-pa
  #define errno_ENAMETOOLONG 36
  
  // Those might not present or their value differ on different platforms.
-diff -Naur libsanitizer/sanitizer_common/sanitizer_glibc_version.h libsanitizer-patched/sanitizer_common/sanitizer_glibc_version.h
 --- libsanitizer/sanitizer_common/sanitizer_glibc_version.h	2021-07-28 07:55:09.184313813 +0100
 +++ libsanitizer-patched/sanitizer_common/sanitizer_glibc_version.h	2021-12-02 03:34:30.415034980 +0000
 @@ -15,7 +15,7 @@
@@ -2528,7 +2510,6 @@ diff -Naur libsanitizer/sanitizer_common/sanitizer_glibc_version.h libsanitizer-
  #include <features.h>
  #endif
  
-diff -Naur libsanitizer/sanitizer_common/sanitizer_internal_defs.h libsanitizer-patched/sanitizer_common/sanitizer_internal_defs.h
 --- libsanitizer/sanitizer_common/sanitizer_internal_defs.h	2021-07-28 07:55:09.184313813 +0100
 +++ libsanitizer-patched/sanitizer_common/sanitizer_internal_defs.h	2021-12-02 03:34:30.415034980 +0000
 @@ -39,7 +39,7 @@
@@ -2549,7 +2530,6 @@ diff -Naur libsanitizer/sanitizer_common/sanitizer_internal_defs.h libsanitizer-
      (SANITIZER_SOLARIS && (defined(_LP64) || _FILE_OFFSET_BITS == 64)) || \
      (SANITIZER_LINUX && defined(__x86_64__))
  typedef u64 OFF_T;
-diff -Naur libsanitizer/sanitizer_common/sanitizer_linux.cpp libsanitizer-patched/sanitizer_common/sanitizer_linux.cpp
 --- libsanitizer/sanitizer_common/sanitizer_linux.cpp	2021-07-28 07:55:09.184313813 +0100
 +++ libsanitizer-patched/sanitizer_common/sanitizer_linux.cpp	2021-12-02 03:34:30.408368313 +0000
 @@ -14,7 +14,7 @@
@@ -2567,8 +2547,8 @@ diff -Naur libsanitizer/sanitizer_common/sanitizer_linux.cpp libsanitizer-patche
  
 +#if SANITIZER_ONYX
 +
-+#include <onyx/public/handle.h>
-+#include <onyx/public/process.h>
++#include <uapi/handle.h>
++#include <uapi/process.h>
 +
 +#endif
  extern char **environ;
@@ -2714,7 +2694,6 @@ diff -Naur libsanitizer/sanitizer_common/sanitizer_linux.cpp libsanitizer-patche
  #else
    const char *default_module_name = "/proc/self/exe";
    uptr module_name_len = internal_readlink(
-diff -Naur libsanitizer/sanitizer_common/sanitizer_linux.h libsanitizer-patched/sanitizer_common/sanitizer_linux.h
 --- libsanitizer/sanitizer_common/sanitizer_linux.h	2021-07-28 07:55:09.184313813 +0100
 +++ libsanitizer-patched/sanitizer_common/sanitizer_linux.h	2021-12-02 03:34:30.415034980 +0000
 @@ -14,7 +14,7 @@
@@ -2768,7 +2747,6 @@ diff -Naur libsanitizer/sanitizer_common/sanitizer_linux.h libsanitizer-patched/
  #endif  // SANITIZER_LINUX
  
  // This class reads thread IDs from /proc/<pid>/task using only syscalls.
-diff -Naur libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp libsanitizer-patched/sanitizer_common/sanitizer_linux_libcdep.cpp
 --- libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp	2021-07-28 07:55:09.184313813 +0100
 +++ libsanitizer-patched/sanitizer_common/sanitizer_linux_libcdep.cpp	2021-12-02 03:34:30.408368313 +0000
 @@ -14,7 +14,7 @@
@@ -2811,7 +2789,6 @@ diff -Naur libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp libsanitize
  #if defined(__x86_64__) || defined(__i386__) || defined(__s390__)
    *addr = ThreadSelf();
    *size = GetTlsSize();
-diff -Naur libsanitizer/sanitizer_common/sanitizer_onyx.h libsanitizer-patched/sanitizer_common/sanitizer_onyx.h
 --- libsanitizer/sanitizer_common/sanitizer_onyx.h	1970-01-01 01:00:00.000000000 +0100
 +++ libsanitizer-patched/sanitizer_common/sanitizer_onyx.h	2021-12-02 03:34:30.408368313 +0000
 @@ -0,0 +1,33 @@
@@ -2834,7 +2811,7 @@ diff -Naur libsanitizer/sanitizer_common/sanitizer_onyx.h libsanitizer-patched/s
 +
 +#include "sanitizer_common.h"
 +
-+#include <onyx/public/process.h>
++#include <uapi/process.h>
 +
 +namespace __sanitizer {
 +
@@ -2877,7 +2854,6 @@ diff -Naur libsanitizer/sanitizer_common/sanitizer_platform.h libsanitizer-patch
  
  #if __LP64__ || defined(_WIN64)
  #  define SANITIZER_WORDSIZE 64
-diff -Naur libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h libsanitizer-patched/sanitizer_common/sanitizer_platform_interceptors.h
 --- libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h	2021-07-28 07:55:09.184313813 +0100
 +++ libsanitizer-patched/sanitizer_common/sanitizer_platform_interceptors.h	2021-12-02 03:34:30.415034980 +0000
 @@ -138,6 +138,12 @@
@@ -3244,7 +3220,6 @@ diff -Naur libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h libsa
  #define SANITIZER_INTERCEPT___CXA_ATEXIT SI_NETBSD
  #define SANITIZER_INTERCEPT_ATEXIT SI_NETBSD
  #define SANITIZER_INTERCEPT_PTHREAD_ATFORK SI_NETBSD
-diff -Naur libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp libsanitizer-patched/sanitizer_common/sanitizer_platform_limits_posix.cpp
 --- libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp	2021-07-28 07:55:09.184313813 +0100
 +++ libsanitizer-patched/sanitizer_common/sanitizer_platform_limits_posix.cpp	2021-12-02 03:34:30.415034980 +0000
 @@ -13,7 +13,7 @@
@@ -3356,7 +3331,6 @@ diff -Naur libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp lib
  // Compare against the union, because we can't reach into the union in a
  // compliant way.
  #ifdef ifa_dstaddr
-diff -Naur libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h libsanitizer-patched/sanitizer_common/sanitizer_platform_limits_posix.h
 --- libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h	2021-07-28 07:55:09.184313813 +0100
 +++ libsanitizer-patched/sanitizer_common/sanitizer_platform_limits_posix.h	2021-12-02 03:34:30.415034980 +0000
 @@ -14,7 +14,7 @@
@@ -3678,7 +3652,6 @@ diff -Naur libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h libsa
 +#endif  // (SANITIZER_LINUX || SANITIZER_ONYX) || SANITIZER_MAC
  
  #endif
-diff -Naur libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp libsanitizer-patched/sanitizer_common/sanitizer_posix_libcdep.cpp
 --- libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp	2021-07-28 07:55:09.184313813 +0100
 +++ libsanitizer-patched/sanitizer_common/sanitizer_posix_libcdep.cpp	2021-12-02 03:34:30.408368313 +0000
 @@ -300,7 +300,9 @@
@@ -3691,7 +3664,6 @@ diff -Naur libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp libsanitize
  }
  
  static bool MmapFixed(uptr fixed_addr, uptr size, int additional_flags,
-diff -Naur libsanitizer/sanitizer_common/sanitizer_procmaps.h libsanitizer-patched/sanitizer_common/sanitizer_procmaps.h
 --- libsanitizer/sanitizer_common/sanitizer_procmaps.h	2021-07-28 07:55:09.184313813 +0100
 +++ libsanitizer-patched/sanitizer_common/sanitizer_procmaps.h	2021-12-02 03:34:30.408368313 +0000
 @@ -17,11 +17,12 @@
@@ -3708,7 +3680,6 @@ diff -Naur libsanitizer/sanitizer_common/sanitizer_procmaps.h libsanitizer-patch
  #include "sanitizer_linux.h"
  #include "sanitizer_mac.h"
  #include "sanitizer_mutex.h"
-diff -Naur libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp libsanitizer-patched/sanitizer_common/sanitizer_procmaps_onyx.cpp
 --- libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp	1970-01-01 01:00:00.000000000 +0100
 +++ libsanitizer-patched/sanitizer_common/sanitizer_procmaps_onyx.cpp	2021-12-02 03:34:30.408368313 +0000
 @@ -0,0 +1,121 @@
@@ -3726,8 +3697,8 @@ diff -Naur libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp libsanitize
 +
 +#include "sanitizer_platform.h"
 +#if SANITIZER_ONYX
-+#include <onyx/public/process.h>
-+#include <onyx/public/handle.h>
++#include <uapi/process.h>
++#include <uapi/handle.h>
 +
 +#include "sanitizer_errno.h"
 +#include "sanitizer_common.h"
@@ -3851,7 +3822,6 @@ diff -Naur libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp libs
  #endif  // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
-diff -Naur libsanitizer/tsan/Makefile.in libsanitizer-patched/tsan/Makefile.in
 --- libsanitizer/tsan/Makefile.in	2021-07-28 07:55:09.188313869 +0100
 +++ libsanitizer-patched/tsan/Makefile.in	2021-12-02 03:34:30.418368314 +0000
 @@ -1,7 +1,7 @@
@@ -4154,7 +4124,6 @@ diff -Naur libsanitizer/tsan/Makefile.in libsanitizer-patched/tsan/Makefile.in
  	uninstall-toolexeclibLTLIBRARIES
  
  .PRECIOUS: Makefile
-diff -Naur libsanitizer/tsan/tsan_interceptors_posix.cpp libsanitizer-patched/tsan/tsan_interceptors_posix.cpp
 --- libsanitizer/tsan/tsan_interceptors_posix.cpp	2021-07-28 07:55:09.188313869 +0100
 +++ libsanitizer-patched/tsan/tsan_interceptors_posix.cpp	2021-12-02 03:34:30.418368314 +0000
 @@ -1055,7 +1055,7 @@
@@ -4184,7 +4153,6 @@ diff -Naur libsanitizer/tsan/tsan_interceptors_posix.cpp libsanitizer-patched/ts
    TSAN_INTERCEPT(pthread_tryjoin_np);
    TSAN_INTERCEPT(pthread_timedjoin_np);
    #endif
-diff -Naur libsanitizer/tsan/tsan_platform_linux.cpp libsanitizer-patched/tsan/tsan_platform_linux.cpp
 --- libsanitizer/tsan/tsan_platform_linux.cpp	2021-07-28 07:55:09.188313869 +0100
 +++ libsanitizer-patched/tsan/tsan_platform_linux.cpp	2021-12-02 03:34:30.418368314 +0000
 @@ -12,7 +12,7 @@
@@ -4241,7 +4209,6 @@ diff -Naur libsanitizer/tsan/tsan_platform_linux.cpp libsanitizer-patched/tsan/t
  # ifdef __aarch64__
  #  define LONG_JMP_SP_ENV_SLOT 13
  # elif defined(__mips64)
-diff -Naur libsanitizer/tsan/tsan_rtl_amd64.S libsanitizer-patched/tsan/tsan_rtl_amd64.S
 --- libsanitizer/tsan/tsan_rtl_amd64.S	2021-07-28 07:55:09.192313925 +0100
 +++ libsanitizer-patched/tsan/tsan_rtl_amd64.S	2021-12-02 03:34:30.418368314 +0000
 @@ -192,7 +192,7 @@
@@ -4271,7 +4238,6 @@ diff -Naur libsanitizer/tsan/tsan_rtl_amd64.S libsanitizer-patched/tsan/tsan_rtl
    lea 32(%rsp), %rdi
  #else
  # error "Unknown platform"
-diff -Naur libsanitizer/ubsan/Makefile.in libsanitizer-patched/ubsan/Makefile.in
 --- libsanitizer/ubsan/Makefile.in	2021-07-28 07:55:09.192313925 +0100
 +++ libsanitizer-patched/ubsan/Makefile.in	2021-12-02 03:34:30.405034979 +0000
 @@ -1,7 +1,7 @@

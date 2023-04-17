@@ -153,7 +153,6 @@ diff -Naur llvm-project-15.0.0/clang/cmake/caches/Onyx.cmake llvm-project-15.0.0
 +  ${EXTRA_ARGS}
 +  -C ${CMAKE_CURRENT_LIST_DIR}/Onyx-stage2.cmake
 +  CACHE STRING "")
-diff -Naur llvm-project-15.0.0/clang/cmake/caches/Onyx-stage2.cmake llvm-project-15.0.0-patched/clang/cmake/caches/Onyx-stage2.cmake
 --- llvm-project-15.0.0/clang/cmake/caches/Onyx-stage2.cmake	1970-01-01 01:00:00.000000000 +0100
 +++ llvm-project-15.0.0-patched/clang/cmake/caches/Onyx-stage2.cmake	2022-09-09 03:44:05.682119413 +0100
 @@ -0,0 +1,276 @@
@@ -433,7 +432,6 @@ diff -Naur llvm-project-15.0.0/clang/cmake/caches/Onyx-stage2.cmake llvm-project
 +  runtimes
 +  ${LLVM_TOOLCHAIN_TOOLS}
 +  CACHE STRING "")
-diff -Naur llvm-project-15.0.0/clang/lib/Basic/Targets/OSTargets.h llvm-project-15.0.0-patched/clang/lib/Basic/Targets/OSTargets.h
 --- llvm-project-15.0.0/clang/lib/Basic/Targets/OSTargets.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/clang/lib/Basic/Targets/OSTargets.h	2022-09-09 03:44:05.682119413 +0100
 @@ -945,6 +945,53 @@
@@ -490,7 +488,6 @@ diff -Naur llvm-project-15.0.0/clang/lib/Basic/Targets/OSTargets.h llvm-project-
  // WebAssembly target
  template <typename Target>
  class LLVM_LIBRARY_VISIBILITY WebAssemblyOSTargetInfo
-diff -Naur llvm-project-15.0.0/clang/lib/Basic/Targets.cpp llvm-project-15.0.0-patched/clang/lib/Basic/Targets.cpp
 --- llvm-project-15.0.0/clang/lib/Basic/Targets.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/clang/lib/Basic/Targets.cpp	2022-09-09 03:44:05.682119413 +0100
 @@ -145,6 +145,8 @@
@@ -538,7 +535,6 @@ diff -Naur llvm-project-15.0.0/clang/lib/Basic/Targets.cpp llvm-project-15.0.0-p
      case llvm::Triple::KFreeBSD:
        return new KFreeBSDTargetInfo<X86_64TargetInfo>(Triple, Opts);
      case llvm::Triple::Solaris:
-diff -Naur llvm-project-15.0.0/clang/lib/Driver/CMakeLists.txt llvm-project-15.0.0-patched/clang/lib/Driver/CMakeLists.txt
 --- llvm-project-15.0.0/clang/lib/Driver/CMakeLists.txt	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/clang/lib/Driver/CMakeLists.txt	2022-09-09 03:44:05.682119413 +0100
 @@ -54,6 +54,7 @@
@@ -549,7 +545,6 @@ diff -Naur llvm-project-15.0.0/clang/lib/Driver/CMakeLists.txt llvm-project-15.0
    ToolChains/Gnu.cpp
    ToolChains/Haiku.cpp
    ToolChains/HIPUtility.cpp
-diff -Naur llvm-project-15.0.0/clang/lib/Driver/Driver.cpp llvm-project-15.0.0-patched/clang/lib/Driver/Driver.cpp
 --- llvm-project-15.0.0/clang/lib/Driver/Driver.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/clang/lib/Driver/Driver.cpp	2022-09-09 03:44:05.685452787 +0100
 @@ -23,6 +23,7 @@
@@ -570,7 +565,6 @@ diff -Naur llvm-project-15.0.0/clang/lib/Driver/Driver.cpp llvm-project-15.0.0-p
      case llvm::Triple::Solaris:
        TC = std::make_unique<toolchains::Solaris>(*this, Target, Args);
        break;
-diff -Naur llvm-project-15.0.0/clang/lib/Driver/SanitizerArgs.cpp llvm-project-15.0.0-patched/clang/lib/Driver/SanitizerArgs.cpp
 --- llvm-project-15.0.0/clang/lib/Driver/SanitizerArgs.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/clang/lib/Driver/SanitizerArgs.cpp	2022-09-09 03:44:05.685452787 +0100
 @@ -828,7 +828,7 @@
@@ -582,7 +576,6 @@ diff -Naur llvm-project-15.0.0/clang/lib/Driver/SanitizerArgs.cpp llvm-project-1
  
    ImplicitCfiRuntime = TC.getTriple().isAndroid();
  
-diff -Naur llvm-project-15.0.0/clang/lib/Driver/ToolChains/Onyx.cpp llvm-project-15.0.0-patched/clang/lib/Driver/ToolChains/Onyx.cpp
 --- llvm-project-15.0.0/clang/lib/Driver/ToolChains/Onyx.cpp	1970-01-01 01:00:00.000000000 +0100
 +++ llvm-project-15.0.0-patched/clang/lib/Driver/ToolChains/Onyx.cpp	2022-09-09 03:44:05.685452787 +0100
 @@ -0,0 +1,433 @@
@@ -1019,7 +1012,6 @@ diff -Naur llvm-project-15.0.0/clang/lib/Driver/ToolChains/Onyx.cpp llvm-project
 +
 +  return Res;
 +}
-diff -Naur llvm-project-15.0.0/clang/lib/Driver/ToolChains/Onyx.h llvm-project-15.0.0-patched/clang/lib/Driver/ToolChains/Onyx.h
 --- llvm-project-15.0.0/clang/lib/Driver/ToolChains/Onyx.h	1970-01-01 01:00:00.000000000 +0100
 +++ llvm-project-15.0.0-patched/clang/lib/Driver/ToolChains/Onyx.h	2022-09-09 03:44:05.685452787 +0100
 @@ -0,0 +1,101 @@
@@ -1124,7 +1116,6 @@ diff -Naur llvm-project-15.0.0/clang/lib/Driver/ToolChains/Onyx.h llvm-project-1
 +} // end namespace clang
 +
 +#endif // LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_ONYX_H
-diff -Naur llvm-project-15.0.0/clang/lib/Driver/XRayArgs.cpp llvm-project-15.0.0-patched/clang/lib/Driver/XRayArgs.cpp
 --- llvm-project-15.0.0/clang/lib/Driver/XRayArgs.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/clang/lib/Driver/XRayArgs.cpp	2022-09-09 03:44:05.685452787 +0100
 @@ -35,7 +35,7 @@
@@ -1136,7 +1127,6 @@ diff -Naur llvm-project-15.0.0/clang/lib/Driver/XRayArgs.cpp llvm-project-15.0.0
      switch (Triple.getArch()) {
      case llvm::Triple::x86_64:
      case llvm::Triple::arm:
-diff -Naur llvm-project-15.0.0/compiler-rt/cmake/config-ix.cmake llvm-project-15.0.0-patched/compiler-rt/cmake/config-ix.cmake
 --- llvm-project-15.0.0/compiler-rt/cmake/config-ix.cmake	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/cmake/config-ix.cmake	2022-09-09 03:44:05.685452787 +0100
 @@ -692,7 +692,7 @@
@@ -1225,7 +1215,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/cmake/config-ix.cmake llvm-project-15
    set(COMPILER_RT_HAS_SHADOWCALLSTACK TRUE)
  else()
    set(COMPILER_RT_HAS_SHADOWCALLSTACK FALSE)
-diff -Naur llvm-project-15.0.0/compiler-rt/CMakeLists.txt llvm-project-15.0.0-patched/compiler-rt/CMakeLists.txt
 --- llvm-project-15.0.0/compiler-rt/CMakeLists.txt	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/CMakeLists.txt	2022-09-09 03:44:05.685452787 +0100
 @@ -184,7 +184,7 @@
@@ -1257,7 +1246,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/CMakeLists.txt llvm-project-15.0.0-pa
  macro(append_libcxx_libs var)
    if (${var}_INTREE)
      # TODO: We don't need to add --unwindlib=none to SANITIZER_COMMON_LINK_FLAGS
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/asan/asan_linux.cpp llvm-project-15.0.0-patched/compiler-rt/lib/asan/asan_linux.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/asan/asan_linux.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/asan/asan_linux.cpp	2022-09-09 03:44:05.688786161 +0100
 @@ -13,7 +13,7 @@
@@ -1283,7 +1271,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/asan/asan_linux.cpp llvm-project-
  #endif  // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/asan/asan_malloc_linux.cpp llvm-project-15.0.0-patched/compiler-rt/lib/asan/asan_malloc_linux.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/asan/asan_malloc_linux.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/asan/asan_malloc_linux.cpp	2022-09-09 03:44:05.688786161 +0100
 @@ -15,7 +15,7 @@
@@ -1295,7 +1282,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/asan/asan_malloc_linux.cpp llvm-p
  
  #  include "asan_allocator.h"
  #  include "asan_interceptors.h"
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/builtins/assembly.h llvm-project-15.0.0-patched/compiler-rt/lib/builtins/assembly.h
 --- llvm-project-15.0.0/compiler-rt/lib/builtins/assembly.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/builtins/assembly.h	2022-09-09 03:44:05.688786161 +0100
 @@ -49,7 +49,7 @@
@@ -1307,7 +1293,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/builtins/assembly.h llvm-project-
  #define NO_EXEC_STACK_DIRECTIVE .section .note.GNU-stack,"",%progbits
  #else
  #define NO_EXEC_STACK_DIRECTIVE
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/fuzzer/afl/afl_driver.cpp llvm-project-15.0.0-patched/compiler-rt/lib/fuzzer/afl/afl_driver.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/fuzzer/afl/afl_driver.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/fuzzer/afl/afl_driver.cpp	2022-09-09 03:44:05.688786161 +0100
 @@ -60,21 +60,31 @@
@@ -1342,7 +1327,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/fuzzer/afl/afl_driver.cpp llvm-pr
  #else
  #error "Support for your platform has not been implemented"
  #endif
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/fuzzer/FuzzerPlatform.h llvm-project-15.0.0-patched/compiler-rt/lib/fuzzer/FuzzerPlatform.h
 --- llvm-project-15.0.0/compiler-rt/lib/fuzzer/FuzzerPlatform.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/fuzzer/FuzzerPlatform.h	2022-09-09 03:44:05.688786161 +0100
 @@ -20,6 +20,7 @@
@@ -1419,7 +1403,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/fuzzer/FuzzerPlatform.h llvm-proj
  
  #ifdef __x86_64
  #if __has_attribute(target)
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/fuzzer/FuzzerUtilLinux.cpp llvm-project-15.0.0-patched/compiler-rt/lib/fuzzer/FuzzerUtilLinux.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/fuzzer/FuzzerUtilLinux.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/fuzzer/FuzzerUtilLinux.cpp	2022-09-09 03:44:05.688786161 +0100
 @@ -9,7 +9,7 @@
@@ -1431,7 +1414,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/fuzzer/FuzzerUtilLinux.cpp llvm-p
  #include "FuzzerCommand.h"
  
  #include <stdlib.h>
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/fuzzer/FuzzerUtilPosix.cpp llvm-project-15.0.0-patched/compiler-rt/lib/fuzzer/FuzzerUtilPosix.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/fuzzer/FuzzerUtilPosix.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/fuzzer/FuzzerUtilPosix.cpp	2022-09-09 03:44:05.688786161 +0100
 @@ -151,7 +151,7 @@
@@ -1443,7 +1425,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/fuzzer/FuzzerUtilPosix.cpp llvm-p
      // ru_maxrss is in KiB
      return usage.ru_maxrss >> 10;
    } else if (LIBFUZZER_APPLE) {
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/interception/interception.h llvm-project-15.0.0-patched/compiler-rt/lib/interception/interception.h
 --- llvm-project-15.0.0/compiler-rt/lib/interception/interception.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/interception/interception.h	2022-09-09 03:44:05.688786161 +0100
 @@ -18,7 +18,7 @@
@@ -1464,7 +1445,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/interception/interception.h llvm-
  
  # include "interception_linux.h"
  # define INTERCEPT_FUNCTION(func) INTERCEPT_FUNCTION_LINUX_OR_FREEBSD(func)
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/interception/interception_linux.cpp llvm-project-15.0.0-patched/compiler-rt/lib/interception/interception_linux.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/interception/interception_linux.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/interception/interception_linux.cpp	2022-09-09 03:44:05.688786161 +0100
 @@ -14,7 +14,7 @@
@@ -1482,7 +1462,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/interception/interception_linux.c
  #endif  // SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/interception/interception_linux.h llvm-project-15.0.0-patched/compiler-rt/lib/interception/interception_linux.h
 --- llvm-project-15.0.0/compiler-rt/lib/interception/interception_linux.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/interception/interception_linux.h	2022-09-09 03:44:05.688786161 +0100
 @@ -12,7 +12,7 @@
@@ -1494,7 +1473,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/interception/interception_linux.h
  
  #if !defined(INCLUDED_FROM_INTERCEPTION_LIB)
  # error "interception_linux.h should be included from interception library only"
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/lsan/lsan_common.h llvm-project-15.0.0-patched/compiler-rt/lib/lsan/lsan_common.h
 --- llvm-project-15.0.0/compiler-rt/lib/lsan/lsan_common.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/lsan/lsan_common.h	2022-09-09 03:44:05.688786161 +0100
 @@ -44,7 +44,7 @@
@@ -1506,7 +1484,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/lsan/lsan_common.h llvm-project-1
  #  define CAN_SANITIZE_LEAKS 1
  #else
  #  define CAN_SANITIZE_LEAKS 0
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/lsan/lsan_common_linux.cpp llvm-project-15.0.0-patched/compiler-rt/lib/lsan/lsan_common_linux.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/lsan/lsan_common_linux.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/lsan/lsan_common_linux.cpp	2022-09-09 03:44:05.692119534 +0100
 @@ -15,7 +15,7 @@
@@ -1518,7 +1495,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/lsan/lsan_common_linux.cpp llvm-p
  #include <link.h>
  
  #include "sanitizer_common/sanitizer_common.h"
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/lsan/lsan_linux.cpp llvm-project-15.0.0-patched/compiler-rt/lib/lsan/lsan_linux.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/lsan/lsan_linux.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/lsan/lsan_linux.cpp	2022-09-09 03:44:05.692119534 +0100
 @@ -12,7 +12,7 @@
@@ -1530,7 +1506,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/lsan/lsan_linux.cpp llvm-project-
  
  #include "lsan_allocator.h"
  
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/msan/msan.h llvm-project-15.0.0-patched/compiler-rt/lib/msan/msan.h
 --- llvm-project-15.0.0/compiler-rt/lib/msan/msan.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/msan/msan.h	2022-09-09 03:44:05.692119534 +0100
 @@ -237,7 +237,9 @@
@@ -1544,7 +1519,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/msan/msan.h llvm-project-15.0.0-p
  
  #ifdef MSAN_LINUX_X86_64_OLD_MAPPING
  // Requires PIE binary and ASLR enabled.
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/msan/msan_interceptors.cpp llvm-project-15.0.0-patched/compiler-rt/lib/msan/msan_interceptors.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/msan/msan_interceptors.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/msan/msan_interceptors.cpp	2022-09-09 03:44:05.692119534 +0100
 @@ -867,7 +867,7 @@
@@ -1597,7 +1571,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/msan/msan_interceptors.cpp llvm-p
    INTERCEPT_FUNCTION(fork);
    MSAN_MAYBE_INTERCEPT_OPENPTY;
    MSAN_MAYBE_INTERCEPT_FORKPTY;
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/msan/msan_linux.cpp llvm-project-15.0.0-patched/compiler-rt/lib/msan/msan_linux.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/msan/msan_linux.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/msan/msan_linux.cpp	2022-09-09 03:44:05.692119534 +0100
 @@ -12,7 +12,7 @@
@@ -1609,7 +1582,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/msan/msan_linux.cpp llvm-project-
  
  #include "msan.h"
  #include "msan_report.h"
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/orc/endianness.h llvm-project-15.0.0-patched/compiler-rt/lib/orc/endianness.h
 --- llvm-project-15.0.0/compiler-rt/lib/orc/endianness.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/orc/endianness.h	2022-09-09 03:44:05.692119534 +0100
 @@ -22,7 +22,7 @@
@@ -1621,7 +1593,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/orc/endianness.h llvm-project-15.
  #include <endian.h>
  #elif defined(_AIX)
  #include <sys/machine.h>
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/safestack/safestack_platform.h llvm-project-15.0.0-patched/compiler-rt/lib/safestack/safestack_platform.h
 --- llvm-project-15.0.0/compiler-rt/lib/safestack/safestack_platform.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/safestack/safestack_platform.h	2022-09-09 03:44:05.692119534 +0100
 @@ -25,7 +25,7 @@
@@ -1633,7 +1604,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/safestack/safestack_platform.h ll
  #error "Support for your platform has not been implemented"
  #endif
  
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/CMakeLists.txt llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/CMakeLists.txt
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/CMakeLists.txt	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/CMakeLists.txt	2022-09-09 03:44:05.692119534 +0100
 @@ -30,6 +30,7 @@
@@ -1652,7 +1622,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/CMakeLists.txt l
    sanitizer_stoptheworld_netbsd_libcdep.cpp
    )
  
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_asm.h llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_asm.h
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_asm.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_asm.h	2022-09-09 03:44:05.692119534 +0100
 @@ -59,7 +59,7 @@
@@ -1664,7 +1633,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_asm.h 
  // clang-format off
  #define NO_EXEC_STACK_DIRECTIVE .section .note.GNU-stack,"",%progbits
  // clang-format on
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_errno_codes.h llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_errno_codes.h
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_errno_codes.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_errno_codes.h	2022-09-09 03:44:05.692119534 +0100
 @@ -24,6 +24,7 @@
@@ -1675,7 +1643,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_errno_
  #define errno_ENAMETOOLONG 36
  
  // Those might not present or their value differ on different platforms.
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_getauxval.h llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_getauxval.h
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_getauxval.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_getauxval.h	2022-09-09 03:44:05.692119534 +0100
 @@ -19,10 +19,10 @@
@@ -1691,7 +1658,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_getaux
       !SANITIZER_GO
  #  define SANITIZER_USE_GETAUXVAL 1
  # else
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_glibc_version.h llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_glibc_version.h
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_glibc_version.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_glibc_version.h	2022-09-09 03:44:05.692119534 +0100
 @@ -15,7 +15,7 @@
@@ -1703,7 +1669,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_glibc_
  #include <features.h>
  #endif
  
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_internal_defs.h llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_internal_defs.h
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_internal_defs.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_internal_defs.h	2022-09-09 03:47:57.998265172 +0100
 @@ -39,7 +39,7 @@
@@ -1724,7 +1689,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_intern
      (SANITIZER_SOLARIS && (defined(_LP64) || _FILE_OFFSET_BITS == 64)) || \
      (SANITIZER_LINUX && !SANITIZER_GLIBC && !SANITIZER_ANDROID) ||        \
      (SANITIZER_LINUX && (defined(__x86_64__) || defined(__hexagon__)))
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_libignore.cpp llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_libignore.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_libignore.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_libignore.cpp	2022-09-09 03:48:22.135224668 +0100
 @@ -9,7 +9,7 @@
@@ -1736,7 +1700,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_libign
  
  #include "sanitizer_libignore.h"
  #include "sanitizer_flags.h"
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_linux.cpp llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_linux.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_linux.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_linux.cpp	2022-09-09 05:35:13.057817472 +0100
 @@ -14,7 +14,7 @@
@@ -1754,8 +1717,8 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_linux.
  
 +#if SANITIZER_ONYX
 +
-+#include <onyx/public/handle.h>
-+#include <onyx/public/process.h>
++#include <uapi/handle.h>
++#include <uapi/process.h>
 +
 +#endif
  extern char **environ;
@@ -1901,7 +1864,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_linux.
  // Android headers in the older NDK releases miss this definition.
  struct __sanitizer_esr_context {
    struct _aarch64_ctx head;
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_linux.h llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_linux.h
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_linux.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_linux.h	2022-09-09 03:44:05.695452908 +0100
 @@ -14,7 +14,7 @@
@@ -1955,7 +1917,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_linux.
  #endif  // SANITIZER_LINUX
  
  // This class reads thread IDs from /proc/<pid>/task using only syscalls.
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_linux_libcdep.cpp llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_linux_libcdep.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_linux_libcdep.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_linux_libcdep.cpp	2022-09-09 03:50:27.716749667 +0100
 @@ -14,7 +14,7 @@
@@ -1994,7 +1955,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_linux_
    uptr addr, size;
    GetTls(&addr, &size);
    return size;
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_onyx.h llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_onyx.h
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_onyx.h	1970-01-01 01:00:00.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_onyx.h	2022-09-09 03:44:05.695452908 +0100
 @@ -0,0 +1,33 @@
@@ -2017,7 +1977,7 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_onyx.h
 +
 +#include "sanitizer_common.h"
 +
-+#include <onyx/public/process.h>
++#include <uapi/process.h>
 +
 +namespace __sanitizer {
 +
@@ -2065,7 +2025,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_platfo
  
  #if __LP64__ || defined(_WIN64)
  #  define SANITIZER_WORDSIZE 64
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_platform_interceptors.h llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_platform_interceptors.h
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_platform_interceptors.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_platform_interceptors.h	2022-09-09 03:58:30.759918435 +0100
 @@ -138,6 +138,12 @@
@@ -2501,7 +2460,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_platfo
  #define SANITIZER_INTERCEPT___CXA_ATEXIT SI_NETBSD
  #define SANITIZER_INTERCEPT_ATEXIT SI_NETBSD
  #define SANITIZER_INTERCEPT_PTHREAD_ATFORK SI_NETBSD
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp	2022-09-09 03:59:23.063975056 +0100
 @@ -11,7 +11,7 @@
@@ -2636,7 +2594,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_platfo
  // Compare against the union, because we can't reach into the union in a
  // compliant way.
  #ifdef ifa_dstaddr
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.h llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.h
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.h	2022-09-09 03:59:47.964317218 +0100
 @@ -14,7 +14,7 @@
@@ -2962,7 +2919,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_platfo
 +#endif  // SANITIZER_LINUX || SANITIZER_ONYX || SANITIZER_APPLE
  
  #endif
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_posix_libcdep.cpp llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_posix_libcdep.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_posix_libcdep.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_posix_libcdep.cpp	2022-09-09 03:44:05.698786281 +0100
 @@ -295,7 +295,9 @@
@@ -2975,7 +2931,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_posix_
  }
  
  static bool MmapFixed(uptr fixed_addr, uptr size, int additional_flags,
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_procmaps.h llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_procmaps.h
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_procmaps.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_procmaps.h	2022-09-09 04:00:44.555090081 +0100
 @@ -17,12 +17,13 @@
@@ -2993,7 +2948,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_procma
  #include "sanitizer_mac.h"
  #include "sanitizer_mutex.h"
  
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_procmaps_onyx.cpp llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_procmaps_onyx.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_procmaps_onyx.cpp	1970-01-01 01:00:00.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_procmaps_onyx.cpp	2022-09-09 03:44:05.698786281 +0100
 @@ -0,0 +1,120 @@
@@ -3011,8 +2965,8 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_procma
 +
 +#include "sanitizer_platform.h"
 +#if SANITIZER_ONYX
-+#include <onyx/public/process.h>
-+#include <onyx/public/handle.h>
++#include <uapi/process.h>
++#include <uapi/handle.h>
 +
 +#include "sanitizer_errno.h"
 +#include "sanitizer_common.h"
@@ -3148,7 +3102,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_stopth
 +}
 +
 +#endif  // SANITIZER_ONYX
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp	2022-09-09 03:44:05.702119655 +0100
 @@ -12,7 +12,7 @@
@@ -3166,7 +3119,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/sanitizer_common/sanitizer_unwind
  #endif  // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/scudo/scudo_platform.h llvm-project-15.0.0-patched/compiler-rt/lib/scudo/scudo_platform.h
 --- llvm-project-15.0.0/compiler-rt/lib/scudo/scudo_platform.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/scudo/scudo_platform.h	2022-09-09 03:44:05.702119655 +0100
 @@ -16,7 +16,7 @@
@@ -3187,7 +3139,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/scudo/scudo_platform.h llvm-proje
  // Non-Android Linux use an exclusive TSD per thread.
  #  define SCUDO_TSD_EXCLUSIVE 1
  # else
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/tsan/rtl/tsan_interceptors_posix.cpp llvm-project-15.0.0-patched/compiler-rt/lib/tsan/rtl/tsan_interceptors_posix.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/tsan/rtl/tsan_interceptors_posix.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/tsan/rtl/tsan_interceptors_posix.cpp	2022-09-09 03:44:05.702119655 +0100
 @@ -1109,7 +1109,7 @@
@@ -3208,7 +3159,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/tsan/rtl/tsan_interceptors_posix.
    TSAN_INTERCEPT(pthread_tryjoin_np);
    TSAN_INTERCEPT(pthread_timedjoin_np);
    #endif
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/tsan/rtl/tsan_platform_linux.cpp llvm-project-15.0.0-patched/compiler-rt/lib/tsan/rtl/tsan_platform_linux.cpp
 --- llvm-project-15.0.0/compiler-rt/lib/tsan/rtl/tsan_platform_linux.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/tsan/rtl/tsan_platform_linux.cpp	2022-09-09 04:01:28.912358266 +0100
 @@ -12,7 +12,7 @@
@@ -3247,7 +3197,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/tsan/rtl/tsan_platform_linux.cpp 
  # ifdef __aarch64__
  #  define LONG_JMP_SP_ENV_SLOT 13
  # elif defined(__mips64)
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/tsan/rtl/tsan_rtl_amd64.S llvm-project-15.0.0-patched/compiler-rt/lib/tsan/rtl/tsan_rtl_amd64.S
 --- llvm-project-15.0.0/compiler-rt/lib/tsan/rtl/tsan_rtl_amd64.S	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/tsan/rtl/tsan_rtl_amd64.S	2022-09-09 03:44:05.702119655 +0100
 @@ -33,7 +33,7 @@
@@ -3277,7 +3226,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/tsan/rtl/tsan_rtl_amd64.S llvm-pr
    lea 32(%rsp), %rdi
  #else
  # error "Unknown platform"
-diff -Naur llvm-project-15.0.0/compiler-rt/lib/ubsan/ubsan_platform.h llvm-project-15.0.0-patched/compiler-rt/lib/ubsan/ubsan_platform.h
 --- llvm-project-15.0.0/compiler-rt/lib/ubsan/ubsan_platform.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/compiler-rt/lib/ubsan/ubsan_platform.h	2022-09-09 03:44:05.702119655 +0100
 @@ -16,7 +16,7 @@
@@ -3289,7 +3237,6 @@ diff -Naur llvm-project-15.0.0/compiler-rt/lib/ubsan/ubsan_platform.h llvm-proje
  #define CAN_SANITIZE_UB 1
  #else
  # define CAN_SANITIZE_UB 0
-diff -Naur llvm-project-15.0.0/libcxx/include/__config llvm-project-15.0.0-patched/libcxx/include/__config
 --- llvm-project-15.0.0/libcxx/include/__config	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/libcxx/include/__config	2022-09-09 04:03:24.097238340 +0100
 @@ -912,7 +912,8 @@
@@ -3311,7 +3258,6 @@ diff -Naur llvm-project-15.0.0/libcxx/include/__config llvm-project-15.0.0-patch
  #    define _LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
  #  endif
  
-diff -Naur llvm-project-15.0.0/libcxx/include/__locale llvm-project-15.0.0-patched/libcxx/include/__locale
 --- llvm-project-15.0.0/libcxx/include/__locale	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/libcxx/include/__locale	2022-09-09 03:44:05.705453028 +0100
 @@ -40,7 +40,7 @@
@@ -3323,7 +3269,6 @@ diff -Naur llvm-project-15.0.0/libcxx/include/__locale llvm-project-15.0.0-patch
  # include <__support/musl/xlocale.h>
  #endif
  
-diff -Naur llvm-project-15.0.0/libcxx/src/include/config_elast.h llvm-project-15.0.0-patched/libcxx/src/include/config_elast.h
 --- llvm-project-15.0.0/libcxx/src/include/config_elast.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/libcxx/src/include/config_elast.h	2022-09-09 04:02:06.172860895 +0100
 @@ -31,7 +31,7 @@
@@ -3335,7 +3280,6 @@ diff -Naur llvm-project-15.0.0/libcxx/src/include/config_elast.h llvm-project-15
  #define _LIBCPP_ELAST 4095
  #elif defined(__APPLE__)
  // No _LIBCPP_ELAST needed on Apple
-diff -Naur llvm-project-15.0.0/llvm/include/llvm/ADT/Triple.h llvm-project-15.0.0-patched/llvm/include/llvm/ADT/Triple.h
 --- llvm-project-15.0.0/llvm/include/llvm/ADT/Triple.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/llvm/include/llvm/ADT/Triple.h	2022-09-09 03:44:05.705453028 +0100
 @@ -187,6 +187,7 @@
@@ -3357,7 +3301,6 @@ diff -Naur llvm-project-15.0.0/llvm/include/llvm/ADT/Triple.h llvm-project-15.0.
    bool isOSDragonFly() const { return getOS() == Triple::DragonFly; }
  
    bool isOSSolaris() const {
-diff -Naur llvm-project-15.0.0/llvm/lib/CodeGen/TargetLoweringBase.cpp llvm-project-15.0.0-patched/llvm/lib/CodeGen/TargetLoweringBase.cpp
 --- llvm-project-15.0.0/llvm/lib/CodeGen/TargetLoweringBase.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/llvm/lib/CodeGen/TargetLoweringBase.cpp	2022-09-09 03:44:05.705453028 +0100
 @@ -192,7 +192,7 @@
@@ -3369,7 +3312,6 @@ diff -Naur llvm-project-15.0.0/llvm/lib/CodeGen/TargetLoweringBase.cpp llvm-proj
        (TT.isAndroid() && !TT.isAndroidVersionLT(9))) {
      setLibcallName(RTLIB::SINCOS_F32, "sincosf");
      setLibcallName(RTLIB::SINCOS_F64, "sincos");
-diff -Naur llvm-project-15.0.0/llvm/lib/Support/Triple.cpp llvm-project-15.0.0-patched/llvm/lib/Support/Triple.cpp
 --- llvm-project-15.0.0/llvm/lib/Support/Triple.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/llvm/lib/Support/Triple.cpp	2022-09-09 03:44:05.705453028 +0100
 @@ -216,6 +216,7 @@
@@ -3388,7 +3330,6 @@ diff -Naur llvm-project-15.0.0/llvm/lib/Support/Triple.cpp llvm-project-15.0.0-p
      .StartsWith("ios", Triple::IOS)
      .StartsWith("kfreebsd", Triple::KFreeBSD)
      .StartsWith("linux", Triple::Linux)
-diff -Naur llvm-project-15.0.0/llvm/lib/Target/X86/X86ISelDAGToDAG.cpp llvm-project-15.0.0-patched/llvm/lib/Target/X86/X86ISelDAGToDAG.cpp
 --- llvm-project-15.0.0/llvm/lib/Target/X86/X86ISelDAGToDAG.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/llvm/lib/Target/X86/X86ISelDAGToDAG.cpp	2022-09-09 03:44:05.708786402 +0100
 @@ -1701,7 +1701,7 @@
@@ -3400,7 +3341,6 @@ diff -Naur llvm-project-15.0.0/llvm/lib/Target/X86/X86ISelDAGToDAG.cpp llvm-proj
        if (Subtarget->isTarget64BitILP32() && !AllowSegmentRegForX32)
          return true;
        switch (N->getPointerInfo().getAddrSpace()) {
-diff -Naur llvm-project-15.0.0/llvm/lib/Target/X86/X86ISelLowering.cpp llvm-project-15.0.0-patched/llvm/lib/Target/X86/X86ISelLowering.cpp
 --- llvm-project-15.0.0/llvm/lib/Target/X86/X86ISelLowering.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/llvm/lib/Target/X86/X86ISelLowering.cpp	2022-09-09 03:44:05.718786523 +0100
 @@ -2878,7 +2878,7 @@
@@ -3430,7 +3370,6 @@ diff -Naur llvm-project-15.0.0/llvm/lib/Target/X86/X86ISelLowering.cpp llvm-proj
    if ((GuardMode == "tls" || GuardMode.empty()) &&
        hasStackGuardSlotTLS(Subtarget.getTargetTriple()))
      return;
-diff -Naur llvm-project-15.0.0/llvm/lib/Target/X86/X86Subtarget.h llvm-project-15.0.0-patched/llvm/lib/Target/X86/X86Subtarget.h
 --- llvm-project-15.0.0/llvm/lib/Target/X86/X86Subtarget.h	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/llvm/lib/Target/X86/X86Subtarget.h	2022-09-09 03:44:05.718786523 +0100
 @@ -286,6 +286,7 @@
@@ -3441,7 +3380,6 @@ diff -Naur llvm-project-15.0.0/llvm/lib/Target/X86/X86Subtarget.h llvm-project-1
  
    bool isTargetWindowsMSVC() const {
      return TargetTriple.isWindowsMSVCEnvironment();
-diff -Naur llvm-project-15.0.0/llvm/lib/Transforms/Instrumentation/AddressSanitizer.cpp llvm-project-15.0.0-patched/llvm/lib/Transforms/Instrumentation/AddressSanitizer.cpp
 --- llvm-project-15.0.0/llvm/lib/Transforms/Instrumentation/AddressSanitizer.cpp	2022-09-05 10:48:03.000000000 +0100
 +++ llvm-project-15.0.0-patched/llvm/lib/Transforms/Instrumentation/AddressSanitizer.cpp	2022-09-09 04:04:44.111635053 +0100
 @@ -486,6 +486,7 @@

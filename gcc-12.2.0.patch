@@ -10,7 +10,6 @@ diff -Naur gcc-12.2.0/config.sub gcc-12.2.0-patched/config.sub
  	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx* | zephyr* \
  	     | fiwix* )
  		;;
-diff -Naur gcc-12.2.0/fixincludes/mkfixinc.sh gcc-12.2.0-patched/fixincludes/mkfixinc.sh
 --- gcc-12.2.0/fixincludes/mkfixinc.sh	2022-08-19 09:09:52.160657095 +0100
 +++ gcc-12.2.0-patched/fixincludes/mkfixinc.sh	2022-09-10 02:54:03.707413936 +0100
 @@ -20,7 +20,8 @@
@@ -23,7 +22,6 @@ diff -Naur gcc-12.2.0/fixincludes/mkfixinc.sh gcc-12.2.0-patched/fixincludes/mkf
  	#  IF there is no include fixing,
  	#  THEN create a no-op fixer and exit
  	(echo "#! /bin/sh" ; echo "exit 0" ) > ${target}
-diff -Naur gcc-12.2.0/gcc/config/aarch64/aarch64-onyx.h gcc-12.2.0-patched/gcc/config/aarch64/aarch64-onyx.h
 --- gcc-12.2.0/gcc/config/aarch64/aarch64-onyx.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-12.2.0-patched/gcc/config/aarch64/aarch64-onyx.h	2022-09-10 02:54:03.707413936 +0100
 @@ -0,0 +1,16 @@
@@ -43,7 +41,6 @@ diff -Naur gcc-12.2.0/gcc/config/aarch64/aarch64-onyx.h gcc-12.2.0-patched/gcc/c
 +#undef ONYX_EXTRA_STARTFILE_SPEC
 +#define ONYX_EXTRA_STARTFILE_SPEC                                              \
 +  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
-diff -Naur gcc-12.2.0/gcc/config/aarch64/t-aarch64-onyx gcc-12.2.0-patched/gcc/config/aarch64/t-aarch64-onyx
 --- gcc-12.2.0/gcc/config/aarch64/t-aarch64-onyx	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-12.2.0-patched/gcc/config/aarch64/t-aarch64-onyx	2022-09-10 02:54:03.707413936 +0100
 @@ -0,0 +1,21 @@
@@ -68,7 +65,6 @@ diff -Naur gcc-12.2.0/gcc/config/aarch64/t-aarch64-onyx gcc-12.2.0-patched/gcc/c
 +
 +LIB1ASMSRC   = aarch64/lib1funcs.asm
 +LIB1ASMFUNCS = _aarch64_sync_cache_range
-diff -Naur gcc-12.2.0/gcc/config/i386/onyx64.h gcc-12.2.0-patched/gcc/config/i386/onyx64.h
 --- gcc-12.2.0/gcc/config/i386/onyx64.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-12.2.0-patched/gcc/config/i386/onyx64.h	2022-09-10 02:54:03.707413936 +0100
 @@ -0,0 +1,35 @@
@@ -107,7 +103,6 @@ diff -Naur gcc-12.2.0/gcc/config/i386/onyx64.h gcc-12.2.0-patched/gcc/config/i38
 +#undef LD_ONYX_PATH
 +
 +#define LD_ONYX_PATH  "/lib/ld-onyx-" ONYX_ARCH_SUFFIX ".so"
-diff -Naur gcc-12.2.0/gcc/config/i386/t-onyx gcc-12.2.0-patched/gcc/config/i386/t-onyx
 --- gcc-12.2.0/gcc/config/i386/t-onyx	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-12.2.0-patched/gcc/config/i386/t-onyx	2022-09-10 02:54:03.707413936 +0100
 @@ -0,0 +1,7 @@
@@ -118,7 +113,6 @@ diff -Naur gcc-12.2.0/gcc/config/i386/t-onyx gcc-12.2.0-patched/gcc/config/i386/
 +MULTILIB_OSDIRNAMES = m64=../lib$(call if_multiarch,:x86_64-onyx)
 +MULTILIB_OSDIRNAMES+= m32=../lib32$(call if_multiarch,:i386-onyx)
 +MULTILIB_OSDIRNAMES+= mx32=../libx32$(call if_multiarch,:x86_64-onyx-x32)
-diff -Naur gcc-12.2.0/gcc/config/onyx.h gcc-12.2.0-patched/gcc/config/onyx.h
 --- gcc-12.2.0/gcc/config/onyx.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-12.2.0-patched/gcc/config/onyx.h	2022-09-10 02:54:03.707413936 +0100
 @@ -0,0 +1,109 @@
@@ -231,7 +225,6 @@ diff -Naur gcc-12.2.0/gcc/config/onyx.h gcc-12.2.0-patched/gcc/config/onyx.h
 +#ifndef TARGET_ASM_FILE_END
 +#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 +#endif
-diff -Naur gcc-12.2.0/gcc/config/onyx.opt gcc-12.2.0-patched/gcc/config/onyx.opt
 --- gcc-12.2.0/gcc/config/onyx.opt	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-12.2.0-patched/gcc/config/onyx.opt	2022-09-10 02:54:03.707413936 +0100
 @@ -0,0 +1,38 @@
@@ -273,7 +266,6 @@ diff -Naur gcc-12.2.0/gcc/config/onyx.opt gcc-12.2.0-patched/gcc/config/onyx.opt
 +Driver
 +
 +; This comment is to ensure we retain the blank line above.
-diff -Naur gcc-12.2.0/gcc/config/riscv/onyx.h gcc-12.2.0-patched/gcc/config/riscv/onyx.h
 --- gcc-12.2.0/gcc/config/riscv/onyx.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-12.2.0-patched/gcc/config/riscv/onyx.h	2022-09-10 02:54:03.707413936 +0100
 @@ -0,0 +1,32 @@
@@ -309,14 +301,12 @@ diff -Naur gcc-12.2.0/gcc/config/riscv/onyx.h gcc-12.2.0-patched/gcc/config/risc
 +
 +#undef LD_ONYX_PATH
 +#define LD_ONYX_PATH "/lib/ld-onyx-riscv" XLEN_SPEC MUSL_ABI_SUFFIX ".so"
-diff -Naur gcc-12.2.0/gcc/config/riscv/t-onyx gcc-12.2.0-patched/gcc/config/riscv/t-onyx
 --- gcc-12.2.0/gcc/config/riscv/t-onyx	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-12.2.0-patched/gcc/config/riscv/t-onyx	2022-09-10 02:54:03.707413936 +0100
 @@ -0,0 +1,3 @@
 +# Only XLEN and ABI affect Linux multilib dir names, e.g. /lib32/ilp32d/
 +MULTILIB_DIRNAMES := $(patsubst rv32%,lib32,$(patsubst rv64%,lib,$(MULTILIB_DIRNAMES)))
 +MULTILIB_OSDIRNAMES := $(patsubst lib%,../lib%,$(MULTILIB_DIRNAMES))
-diff -Naur gcc-12.2.0/gcc/config/riscv/t-onyx-multilib gcc-12.2.0-patched/gcc/config/riscv/t-onyx-multilib
 --- gcc-12.2.0/gcc/config/riscv/t-onyx-multilib	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-12.2.0-patched/gcc/config/riscv/t-onyx-multilib	2022-09-10 02:54:03.707413936 +0100
 @@ -0,0 +1,24 @@
@@ -344,7 +334,6 @@ diff -Naur gcc-12.2.0/gcc/config/riscv/t-onyx-multilib gcc-12.2.0-patched/gcc/co
 +march.rv64imafdc/mabi.lp64d=march.rv64imafd/mabi.lp64d \
 +march.rv64imafdc/mabi.lp64d=march.rv64gc/mabi.lp64d \
 +march.rv64imafdc/mabi.lp64d=march.rv64g/mabi.lp64d
-diff -Naur gcc-12.2.0/gcc/config.gcc gcc-12.2.0-patched/gcc/config.gcc
 --- gcc-12.2.0/gcc/config.gcc	2022-08-19 09:09:52.552662114 +0100
 +++ gcc-12.2.0-patched/gcc/config.gcc	2022-09-10 02:54:03.707413936 +0100
 @@ -895,6 +895,15 @@
@@ -428,7 +417,6 @@ diff -Naur gcc-12.2.0/gcc/config.gcc gcc-12.2.0-patched/gcc/config.gcc
  	;;
  riscv*-*-elf* | riscv*-*-rtems*)
  	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
-diff -Naur gcc-12.2.0/gcc/config.host gcc-12.2.0-patched/gcc/config.host
 --- gcc-12.2.0/gcc/config.host	2022-08-19 09:09:52.552662114 +0100
 +++ gcc-12.2.0-patched/gcc/config.host	2022-09-10 03:14:30.677659931 +0100
 @@ -100,7 +100,7 @@
@@ -449,7 +437,6 @@ diff -Naur gcc-12.2.0/gcc/config.host gcc-12.2.0-patched/gcc/config.host
      case ${target} in
        arm*-*-*)
  	host_extra_gcc_objs="driver-arm.o"
-diff -Naur gcc-12.2.0/libgcc/config.host gcc-12.2.0-patched/libgcc/config.host
 --- gcc-12.2.0/libgcc/config.host	2022-08-19 09:09:54.664689148 +0100
 +++ gcc-12.2.0-patched/libgcc/config.host	2022-09-10 02:54:03.710747315 +0100
 @@ -271,6 +271,10 @@
@@ -500,7 +487,6 @@ diff -Naur gcc-12.2.0/libgcc/config.host gcc-12.2.0-patched/libgcc/config.host
  riscv*-*-freebsd*)
  	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
  	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
-diff -Naur gcc-12.2.0/libsanitizer/asan/asan_linux.cpp gcc-12.2.0-patched/libsanitizer/asan/asan_linux.cpp
 --- gcc-12.2.0/libsanitizer/asan/asan_linux.cpp	2022-08-19 09:09:55.340697802 +0100
 +++ gcc-12.2.0-patched/libsanitizer/asan/asan_linux.cpp	2022-09-10 03:10:11.010772355 +0100
 @@ -13,7 +13,7 @@
@@ -535,7 +521,6 @@ diff -Naur gcc-12.2.0/libsanitizer/asan/asan_linux.cpp gcc-12.2.0-patched/libsan
  #endif  // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
-diff -Naur gcc-12.2.0/libsanitizer/asan/asan_malloc_linux.cpp gcc-12.2.0-patched/libsanitizer/asan/asan_malloc_linux.cpp
 --- gcc-12.2.0/libsanitizer/asan/asan_malloc_linux.cpp	2022-08-19 09:09:55.340697802 +0100
 +++ gcc-12.2.0-patched/libsanitizer/asan/asan_malloc_linux.cpp	2022-09-10 03:10:11.010772355 +0100
 @@ -15,7 +15,7 @@
@@ -547,7 +532,6 @@ diff -Naur gcc-12.2.0/libsanitizer/asan/asan_malloc_linux.cpp gcc-12.2.0-patched
  
  #  include "asan_allocator.h"
  #  include "asan_interceptors.h"
-diff -Naur gcc-12.2.0/libsanitizer/builtins/assembly.h gcc-12.2.0-patched/libsanitizer/builtins/assembly.h
 --- gcc-12.2.0/libsanitizer/builtins/assembly.h	2022-08-19 09:09:55.344697852 +0100
 +++ gcc-12.2.0-patched/libsanitizer/builtins/assembly.h	2022-09-10 03:10:11.014105734 +0100
 @@ -43,7 +43,7 @@
@@ -559,7 +543,6 @@ diff -Naur gcc-12.2.0/libsanitizer/builtins/assembly.h gcc-12.2.0-patched/libsan
  #define NO_EXEC_STACK_DIRECTIVE .section .note.GNU-stack,"",%progbits
  #else
  #define NO_EXEC_STACK_DIRECTIVE
-diff -Naur gcc-12.2.0/libsanitizer/interception/interception.h gcc-12.2.0-patched/libsanitizer/interception/interception.h
 --- gcc-12.2.0/libsanitizer/interception/interception.h	2022-08-19 09:09:55.348697903 +0100
 +++ gcc-12.2.0-patched/libsanitizer/interception/interception.h	2022-09-10 03:10:11.014105734 +0100
 @@ -18,7 +18,7 @@
@@ -580,7 +563,6 @@ diff -Naur gcc-12.2.0/libsanitizer/interception/interception.h gcc-12.2.0-patche
  
  # include "interception_linux.h"
  # define INTERCEPT_FUNCTION(func) INTERCEPT_FUNCTION_LINUX_OR_FREEBSD(func)
-diff -Naur gcc-12.2.0/libsanitizer/interception/interception_linux.cpp gcc-12.2.0-patched/libsanitizer/interception/interception_linux.cpp
 --- gcc-12.2.0/libsanitizer/interception/interception_linux.cpp	2022-08-19 09:09:55.348697903 +0100
 +++ gcc-12.2.0-patched/libsanitizer/interception/interception_linux.cpp	2022-09-10 03:10:11.014105734 +0100
 @@ -14,7 +14,7 @@
@@ -598,7 +580,6 @@ diff -Naur gcc-12.2.0/libsanitizer/interception/interception_linux.cpp gcc-12.2.
  #endif  // SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
-diff -Naur gcc-12.2.0/libsanitizer/interception/interception_linux.h gcc-12.2.0-patched/libsanitizer/interception/interception_linux.h
 --- gcc-12.2.0/libsanitizer/interception/interception_linux.h	2022-08-19 09:09:55.348697903 +0100
 +++ gcc-12.2.0-patched/libsanitizer/interception/interception_linux.h	2022-09-10 03:10:11.014105734 +0100
 @@ -12,7 +12,7 @@
@@ -610,7 +591,6 @@ diff -Naur gcc-12.2.0/libsanitizer/interception/interception_linux.h gcc-12.2.0-
  
  #if !defined(INCLUDED_FROM_INTERCEPTION_LIB)
  # error "interception_linux.h should be included from interception library only"
-diff -Naur gcc-12.2.0/libsanitizer/lsan/lsan_common.h gcc-12.2.0-patched/libsanitizer/lsan/lsan_common.h
 --- gcc-12.2.0/libsanitizer/lsan/lsan_common.h	2022-08-19 09:09:55.348697903 +0100
 +++ gcc-12.2.0-patched/libsanitizer/lsan/lsan_common.h	2022-09-10 03:13:07.656525117 +0100
 @@ -44,7 +44,7 @@
@@ -622,7 +602,6 @@ diff -Naur gcc-12.2.0/libsanitizer/lsan/lsan_common.h gcc-12.2.0-patched/libsani
  #define CAN_SANITIZE_LEAKS 1
  #else
  #define CAN_SANITIZE_LEAKS 0
-diff -Naur gcc-12.2.0/libsanitizer/lsan/lsan_common_linux.cpp gcc-12.2.0-patched/libsanitizer/lsan/lsan_common_linux.cpp
 --- gcc-12.2.0/libsanitizer/lsan/lsan_common_linux.cpp	2022-08-19 09:09:55.348697903 +0100
 +++ gcc-12.2.0-patched/libsanitizer/lsan/lsan_common_linux.cpp	2022-09-10 03:10:11.014105734 +0100
 @@ -15,7 +15,7 @@
@@ -634,7 +613,6 @@ diff -Naur gcc-12.2.0/libsanitizer/lsan/lsan_common_linux.cpp gcc-12.2.0-patched
  #include <link.h>
  
  #include "sanitizer_common/sanitizer_common.h"
-diff -Naur gcc-12.2.0/libsanitizer/lsan/lsan_linux.cpp gcc-12.2.0-patched/libsanitizer/lsan/lsan_linux.cpp
 --- gcc-12.2.0/libsanitizer/lsan/lsan_linux.cpp	2022-08-19 09:09:55.348697903 +0100
 +++ gcc-12.2.0-patched/libsanitizer/lsan/lsan_linux.cpp	2022-09-10 03:10:11.014105734 +0100
 @@ -12,7 +12,7 @@
@@ -646,7 +624,6 @@ diff -Naur gcc-12.2.0/libsanitizer/lsan/lsan_linux.cpp gcc-12.2.0-patched/libsan
  
  #include "lsan_allocator.h"
  
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_asm.h gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_asm.h
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_asm.h	2022-08-19 09:09:55.348697903 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_asm.h	2022-09-10 03:10:11.014105734 +0100
 @@ -59,7 +59,7 @@
@@ -658,7 +635,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_asm.h gcc-12.2.0-p
  // clang-format off
  #define NO_EXEC_STACK_DIRECTIVE .section .note.GNU-stack,"",%progbits
  // clang-format on
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_errno_codes.h gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_errno_codes.h
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_errno_codes.h	2022-08-19 09:09:55.352697955 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_errno_codes.h	2022-09-10 03:10:11.014105734 +0100
 @@ -24,6 +24,7 @@
@@ -669,7 +645,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_errno_codes.h gcc-
  #define errno_ENAMETOOLONG 36
  
  // Those might not present or their value differ on different platforms.
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_getauxval.h gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_getauxval.h
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_getauxval.h	2022-08-19 09:09:55.352697955 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_getauxval.h	2022-09-10 03:10:11.017439113 +0100
 @@ -19,10 +19,10 @@
@@ -685,7 +660,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_getauxval.h gcc-12
       !SANITIZER_GO
  #  define SANITIZER_USE_GETAUXVAL 1
  # else
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_glibc_version.h gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_glibc_version.h
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_glibc_version.h	2022-08-19 09:09:55.352697955 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_glibc_version.h	2022-09-10 03:10:11.017439113 +0100
 @@ -15,7 +15,7 @@
@@ -697,7 +671,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_glibc_version.h gc
  #include <features.h>
  #endif
  
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_internal_defs.h gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_internal_defs.h
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_internal_defs.h	2022-08-19 09:09:55.352697955 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_internal_defs.h	2022-09-10 03:10:11.017439113 +0100
 @@ -39,7 +39,7 @@
@@ -717,7 +690,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_internal_defs.h gc
      (SANITIZER_SOLARIS && (defined(_LP64) || _FILE_OFFSET_BITS == 64)) || \
      (SANITIZER_LINUX && (defined(__x86_64__) || defined(__hexagon__)))
  typedef u64 OFF_T;
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_libignore.cpp gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_libignore.cpp
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_libignore.cpp	2022-08-19 09:09:55.352697955 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_libignore.cpp	2022-09-10 03:10:11.017439113 +0100
 @@ -9,7 +9,7 @@
@@ -729,7 +701,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_libignore.cpp gcc-
  
  #include "sanitizer_libignore.h"
  #include "sanitizer_flags.h"
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_linux.cpp gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.cpp
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_linux.cpp	2022-08-19 09:09:55.352697955 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.cpp	2022-09-10 03:10:11.017439113 +0100
 @@ -14,7 +14,7 @@
@@ -747,8 +718,8 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_linux.cpp gcc-12.2
  
 +#if SANITIZER_ONYX
 +
-+#include <onyx/public/handle.h>
-+#include <onyx/public/process.h>
++#include <uapi/handle.h>
++#include <uapi/process.h>
 +
 +#endif
  extern char **environ;
@@ -885,7 +856,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_linux.cpp gcc-12.2
  #else
    const char *default_module_name = "/proc/self/exe";
    uptr module_name_len = internal_readlink(
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_linux.h gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.h
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_linux.h	2022-08-19 09:09:55.352697955 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux.h	2022-09-10 03:10:11.020772492 +0100
 @@ -14,7 +14,7 @@
@@ -939,7 +909,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_linux.h gcc-12.2.0
  #endif  // SANITIZER_LINUX
  
  // This class reads thread IDs from /proc/<pid>/task using only syscalls.
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp	2022-08-19 09:09:55.352697955 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp	2022-09-10 03:11:08.118222010 +0100
 @@ -14,7 +14,7 @@
@@ -978,7 +947,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_linux_libcdep.cpp 
    uptr addr, size;
    GetTls(&addr, &size);
    return size;
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_onyx.h gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_onyx.h
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_onyx.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_onyx.h	2022-09-10 03:10:11.020772492 +0100
 @@ -0,0 +1,33 @@
@@ -1001,7 +969,7 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_onyx.h gcc-12.2.0-
 +
 +#include "sanitizer_common.h"
 +
-+#include <onyx/public/process.h>
++#include <uapi/process.h>
 +
 +namespace __sanitizer {
 +
@@ -1045,7 +1013,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_platform.h gcc-12.
  
  #if __LP64__ || defined(_WIN64)
  #  define SANITIZER_WORDSIZE 64
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h	2022-08-19 09:09:55.356698006 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_interceptors.h	2022-09-10 03:10:11.020772492 +0100
 @@ -138,6 +138,12 @@
@@ -1485,7 +1452,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_platform_intercept
  #define SANITIZER_INTERCEPT___CXA_ATEXIT SI_NETBSD
  #define SANITIZER_INTERCEPT_ATEXIT SI_NETBSD
  #define SANITIZER_INTERCEPT_PTHREAD_ATFORK SI_NETBSD
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp	2022-08-19 09:09:55.356698006 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp	2022-09-10 03:12:01.468952757 +0100
 @@ -11,7 +11,7 @@
@@ -1613,7 +1579,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_po
  // Compare against the union, because we can't reach into the union in a
  // compliant way.
  #ifdef ifa_dstaddr
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h	2022-08-19 09:09:55.356698006 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h	2022-09-10 03:10:11.024105871 +0100
 @@ -14,7 +14,7 @@
@@ -1939,7 +1904,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_platform_limits_po
 +#endif  // (SANITIZER_LINUX || SANITIZER_ONYX) || SANITIZER_MAC
  
  #endif
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp	2022-08-19 09:09:55.356698006 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp	2022-09-10 03:10:11.024105871 +0100
 @@ -295,7 +295,9 @@
@@ -1952,7 +1916,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp 
  }
  
  static bool MmapFixed(uptr fixed_addr, uptr size, int additional_flags,
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps.h gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps.h
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps.h	2022-08-19 09:09:55.356698006 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps.h	2022-09-10 03:10:11.024105871 +0100
 @@ -17,11 +17,12 @@
@@ -1969,7 +1932,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps.h gcc-12.
  #include "sanitizer_linux.h"
  #include "sanitizer_mac.h"
  #include "sanitizer_mutex.h"
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp	2022-09-10 03:10:11.024105871 +0100
 @@ -0,0 +1,120 @@
@@ -1987,8 +1949,8 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_procmaps_onyx.cpp 
 +
 +#include "sanitizer_platform.h"
 +#if SANITIZER_ONYX
-+#include <onyx/public/process.h>
-+#include <onyx/public/handle.h>
++#include <uapi/process.h>
++#include <uapi/handle.h>
 +
 +#include "sanitizer_errno.h"
 +#include "sanitizer_common.h"
@@ -2124,7 +2086,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_stoptheworld_onyx.
 +}
 +
 +#endif  // SANITIZER_ONYX
-diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp
 --- gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp	2022-08-19 09:09:55.360698057 +0100
 +++ gcc-12.2.0-patched/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp	2022-09-10 03:10:11.024105871 +0100
 @@ -12,7 +12,7 @@
@@ -2142,7 +2103,6 @@ diff -Naur gcc-12.2.0/libsanitizer/sanitizer_common/sanitizer_unwind_linux_libcd
  #endif  // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||
 -        // SANITIZER_SOLARIS
 +        // SANITIZER_SOLARIS || SANITIZER_ONYX
-diff -Naur gcc-12.2.0/libsanitizer/tsan/tsan_interceptors_posix.cpp gcc-12.2.0-patched/libsanitizer/tsan/tsan_interceptors_posix.cpp
 --- gcc-12.2.0/libsanitizer/tsan/tsan_interceptors_posix.cpp	2022-08-19 09:09:55.360698057 +0100
 +++ gcc-12.2.0-patched/libsanitizer/tsan/tsan_interceptors_posix.cpp	2022-09-10 03:10:11.024105871 +0100
 @@ -1088,7 +1088,7 @@
@@ -2163,7 +2123,6 @@ diff -Naur gcc-12.2.0/libsanitizer/tsan/tsan_interceptors_posix.cpp gcc-12.2.0-p
    TSAN_INTERCEPT(pthread_tryjoin_np);
    TSAN_INTERCEPT(pthread_timedjoin_np);
    #endif
-diff -Naur gcc-12.2.0/libsanitizer/tsan/tsan_platform_linux.cpp gcc-12.2.0-patched/libsanitizer/tsan/tsan_platform_linux.cpp
 --- gcc-12.2.0/libsanitizer/tsan/tsan_platform_linux.cpp	2022-08-19 09:09:55.360698057 +0100
 +++ gcc-12.2.0-patched/libsanitizer/tsan/tsan_platform_linux.cpp	2022-09-10 03:10:11.024105871 +0100
 @@ -12,7 +12,7 @@
@@ -2202,7 +2161,6 @@ diff -Naur gcc-12.2.0/libsanitizer/tsan/tsan_platform_linux.cpp gcc-12.2.0-patch
  # ifdef __aarch64__
  #  define LONG_JMP_SP_ENV_SLOT 13
  # elif defined(__mips64)
-diff -Naur gcc-12.2.0/libsanitizer/tsan/tsan_rtl_amd64.S gcc-12.2.0-patched/libsanitizer/tsan/tsan_rtl_amd64.S
 --- gcc-12.2.0/libsanitizer/tsan/tsan_rtl_amd64.S	2022-08-19 09:09:55.360698057 +0100
 +++ gcc-12.2.0-patched/libsanitizer/tsan/tsan_rtl_amd64.S	2022-09-10 03:10:11.024105871 +0100
 @@ -269,7 +269,7 @@
@@ -2232,7 +2190,6 @@ diff -Naur gcc-12.2.0/libsanitizer/tsan/tsan_rtl_amd64.S gcc-12.2.0-patched/libs
    lea 32(%rsp), %rdi
  #else
  # error "Unknown platform"
-diff -Naur gcc-12.2.0/libsanitizer/ubsan/ubsan_platform.h gcc-12.2.0-patched/libsanitizer/ubsan/ubsan_platform.h
 --- gcc-12.2.0/libsanitizer/ubsan/ubsan_platform.h	2022-08-19 09:09:55.364698109 +0100
 +++ gcc-12.2.0-patched/libsanitizer/ubsan/ubsan_platform.h	2022-09-10 03:10:11.024105871 +0100
 @@ -17,7 +17,7 @@
@@ -2244,7 +2201,6 @@ diff -Naur gcc-12.2.0/libsanitizer/ubsan/ubsan_platform.h gcc-12.2.0-patched/lib
  #define CAN_SANITIZE_UB 1
  #else
  # define CAN_SANITIZE_UB 0
-diff -Naur gcc-12.2.0/libstdc++-v3/aclocal.m4 gcc-12.2.0-patched/libstdc++-v3/aclocal.m4
 --- gcc-12.2.0/libstdc++-v3/aclocal.m4	2022-08-19 09:09:55.380698313 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/aclocal.m4	2022-09-10 03:15:40.305277451 +0100
 @@ -1,6 +1,6 @@
@@ -2487,7 +2443,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/aclocal.m4 gcc-12.2.0-patched/libstdc++-v3/ac
  #
  # This file is free software; the Free Software Foundation
  # gives unlimited permission to copy and/or distribute it,
-diff -Naur gcc-12.2.0/libstdc++-v3/configure gcc-12.2.0-patched/libstdc++-v3/configure
 --- gcc-12.2.0/libstdc++-v3/configure	2022-08-19 09:09:55.416698774 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/configure	2022-09-10 03:16:57.302994798 +0100
 @@ -831,6 +831,9 @@
@@ -8661,7 +8616,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/configure gcc-12.2.0-patched/libstdc++-v3/con
    *-mingw32*)
  
    # If we're not using GNU ld, then there's no point in even trying these
-diff -Naur gcc-12.2.0/libstdc++-v3/crossconfig.m4 gcc-12.2.0-patched/libstdc++-v3/crossconfig.m4
 --- gcc-12.2.0/libstdc++-v3/crossconfig.m4	2022-08-19 09:09:55.420698825 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/crossconfig.m4	2022-09-10 02:54:03.774081500 +0100
 @@ -198,6 +198,12 @@
@@ -8677,7 +8631,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/crossconfig.m4 gcc-12.2.0-patched/libstdc++-v
    *-mingw32*)
      GLIBCXX_CHECK_LINKER_FEATURES
      GLIBCXX_CHECK_MATH_SUPPORT
-diff -Naur gcc-12.2.0/libstdc++-v3/doc/Makefile.in gcc-12.2.0-patched/libstdc++-v3/doc/Makefile.in
 --- gcc-12.2.0/libstdc++-v3/doc/Makefile.in	2022-08-19 09:09:55.420698825 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/doc/Makefile.in	2022-09-10 03:15:49.278733275 +0100
 @@ -1,7 +1,7 @@
@@ -8728,7 +8681,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/doc/Makefile.in gcc-12.2.0-patched/libstdc++-
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-12.2.0/libstdc++-v3/include/Makefile.in gcc-12.2.0-patched/libstdc++-v3/include/Makefile.in
 --- gcc-12.2.0/libstdc++-v3/include/Makefile.in	2022-08-19 09:09:55.472699492 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/include/Makefile.in	2022-09-10 03:15:49.345400852 +0100
 @@ -1,7 +1,7 @@
@@ -8779,7 +8731,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/include/Makefile.in gcc-12.2.0-patched/libstd
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-12.2.0/libstdc++-v3/libsupc++/Makefile.in gcc-12.2.0-patched/libstdc++-v3/libsupc++/Makefile.in
 --- gcc-12.2.0/libstdc++-v3/libsupc++/Makefile.in	2022-08-19 09:09:55.520700106 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/libsupc++/Makefile.in	2022-09-10 03:15:49.392068156 +0100
 @@ -1,7 +1,7 @@
@@ -8839,7 +8790,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/libsupc++/Makefile.in gcc-12.2.0-patched/libs
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-12.2.0/libstdc++-v3/Makefile.in gcc-12.2.0-patched/libstdc++-v3/Makefile.in
 --- gcc-12.2.0/libstdc++-v3/Makefile.in	2022-08-19 09:09:55.380698313 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/Makefile.in	2022-09-10 03:15:49.202065562 +0100
 @@ -1,7 +1,7 @@
@@ -8911,7 +8861,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/Makefile.in gcc-12.2.0-patched/libstdc++-v3/M
  	esac;
  $(top_srcdir)/fragment.am $(top_srcdir)/../multilib.am $(am__empty):
  
-diff -Naur gcc-12.2.0/libstdc++-v3/po/Makefile.in gcc-12.2.0-patched/libstdc++-v3/po/Makefile.in
 --- gcc-12.2.0/libstdc++-v3/po/Makefile.in	2022-08-19 09:09:55.524700157 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/po/Makefile.in	2022-09-10 03:15:49.412068429 +0100
 @@ -1,7 +1,7 @@
@@ -8962,7 +8911,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/po/Makefile.in gcc-12.2.0-patched/libstdc++-v
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-12.2.0/libstdc++-v3/python/Makefile.in gcc-12.2.0-patched/libstdc++-v3/python/Makefile.in
 --- gcc-12.2.0/libstdc++-v3/python/Makefile.in	2022-08-19 09:09:55.524700157 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/python/Makefile.in	2022-09-10 03:15:49.435402080 +0100
 @@ -1,7 +1,7 @@
@@ -9013,7 +8961,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/python/Makefile.in gcc-12.2.0-patched/libstdc
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-12.2.0/libstdc++-v3/src/c++11/Makefile.in gcc-12.2.0-patched/libstdc++-v3/src/c++11/Makefile.in
 --- gcc-12.2.0/libstdc++-v3/src/c++11/Makefile.in	2022-08-19 09:09:55.528700207 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/src/c++11/Makefile.in	2022-09-10 03:15:49.508736415 +0100
 @@ -1,7 +1,7 @@
@@ -9073,7 +9020,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/src/c++11/Makefile.in gcc-12.2.0-patched/libs
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-12.2.0/libstdc++-v3/src/c++17/Makefile.in gcc-12.2.0-patched/libstdc++-v3/src/c++17/Makefile.in
 --- gcc-12.2.0/libstdc++-v3/src/c++17/Makefile.in	2022-08-19 09:09:55.528700207 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/src/c++17/Makefile.in	2022-09-10 03:15:49.538736824 +0100
 @@ -1,7 +1,7 @@
@@ -9133,7 +9079,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/src/c++17/Makefile.in gcc-12.2.0-patched/libs
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-12.2.0/libstdc++-v3/src/c++20/Makefile.in gcc-12.2.0-patched/libstdc++-v3/src/c++20/Makefile.in
 --- gcc-12.2.0/libstdc++-v3/src/c++20/Makefile.in	2022-08-19 09:09:55.536700310 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/src/c++20/Makefile.in	2022-09-10 03:15:49.565403855 +0100
 @@ -1,7 +1,7 @@
@@ -9193,7 +9138,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/src/c++20/Makefile.in gcc-12.2.0-patched/libs
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-12.2.0/libstdc++-v3/src/c++98/Makefile.in gcc-12.2.0-patched/libstdc++-v3/src/c++98/Makefile.in
 --- gcc-12.2.0/libstdc++-v3/src/c++98/Makefile.in	2022-08-19 09:09:55.536700310 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/src/c++98/Makefile.in	2022-09-10 03:15:49.612071158 +0100
 @@ -1,7 +1,7 @@
@@ -9253,7 +9197,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/src/c++98/Makefile.in gcc-12.2.0-patched/libs
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-12.2.0/libstdc++-v3/src/filesystem/Makefile.in gcc-12.2.0-patched/libstdc++-v3/src/filesystem/Makefile.in
 --- gcc-12.2.0/libstdc++-v3/src/filesystem/Makefile.in	2022-08-19 09:09:55.540700361 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/src/filesystem/Makefile.in	2022-09-10 03:15:49.645404947 +0100
 @@ -1,7 +1,7 @@
@@ -9313,7 +9256,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/src/filesystem/Makefile.in gcc-12.2.0-patched
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-12.2.0/libstdc++-v3/src/libbacktrace/Makefile.in gcc-12.2.0-patched/libstdc++-v3/src/libbacktrace/Makefile.in
 --- gcc-12.2.0/libstdc++-v3/src/libbacktrace/Makefile.in	2022-08-19 09:09:55.540700361 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/src/libbacktrace/Makefile.in	2022-09-10 03:15:49.698739008 +0100
 @@ -1,7 +1,7 @@
@@ -9373,7 +9315,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/src/libbacktrace/Makefile.in gcc-12.2.0-patch
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-12.2.0/libstdc++-v3/src/Makefile.in gcc-12.2.0-patched/libstdc++-v3/src/Makefile.in
 --- gcc-12.2.0/libstdc++-v3/src/Makefile.in	2022-08-19 09:09:55.528700207 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/src/Makefile.in	2022-09-10 03:15:49.475402626 +0100
 @@ -1,7 +1,7 @@
@@ -9433,7 +9374,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/src/Makefile.in gcc-12.2.0-patched/libstdc++-
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-12.2.0/libstdc++-v3/testsuite/Makefile.in gcc-12.2.0-patched/libstdc++-v3/testsuite/Makefile.in
 --- gcc-12.2.0/libstdc++-v3/testsuite/Makefile.in	2022-08-19 09:09:55.708702512 +0100
 +++ gcc-12.2.0-patched/libstdc++-v3/testsuite/Makefile.in	2022-09-10 03:15:49.725406039 +0100
 @@ -1,7 +1,7 @@
@@ -9484,7 +9424,6 @@ diff -Naur gcc-12.2.0/libstdc++-v3/testsuite/Makefile.in gcc-12.2.0-patched/libs
  	esac;
  $(top_srcdir)/fragment.am $(am__empty):
  
-diff -Naur gcc-12.2.0/libtool.m4 gcc-12.2.0-patched/libtool.m4
 --- gcc-12.2.0/libtool.m4	2022-08-19 09:09:55.756703126 +0100
 +++ gcc-12.2.0-patched/libtool.m4	2022-09-10 02:54:03.780748257 +0100
 @@ -2490,7 +2490,17 @@
@@ -9517,7 +9456,6 @@ diff -Naur gcc-12.2.0/libtool.m4 gcc-12.2.0-patched/libtool.m4
  haiku*)
    lt_cv_deplibs_check_method=pass_all
    ;;
-diff -Naur gcc-12.2.0/PKGBUILD gcc-12.2.0-patched/PKGBUILD
 --- gcc-12.2.0/PKGBUILD	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-12.2.0-patched/PKGBUILD	2022-09-10 02:54:03.780748257 +0100
 @@ -0,0 +1,19 @@

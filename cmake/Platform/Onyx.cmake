@@ -38,9 +38,6 @@ include(Platform/UnixPaths)
 # "CMakeSystemSpecificInformation.cmake" already included it.
 # The extra inclusion is a work-around documented next to the include()
 # call, so this can be removed when the work-around is removed.
-if(__UNIX_PATHS_INCLUDED)
-  return()
-endif()
 set(__UNIX_PATHS_INCLUDED 1)
 
 set(UNIX 1)
@@ -80,6 +77,9 @@ endif()
 list(APPEND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
   /lib /usr/lib
   )
+
+set(CMAKE_SYSROOT $ENV{SYSROOT})
+message(STATUS "CMAKE_SYSROOT: ${CMAKE_SYSROOT}")
 
 if(CMAKE_SYSROOT_COMPILE)
   set(_cmake_sysroot_compile "${CMAKE_SYSROOT_COMPILE}")

@@ -13,8 +13,8 @@ if [ "$#" -ne "1" ]; then
 	exit 1
 fi
 
-BINUTILS_VER="2.39"
-GCC_VER="12.2.0"
+BINUTILS_VER="2.43.1"
+GCC_VER="14.2.0"
 
 STAGING_DIR=$1
 PATCHES=$PWD/toolchains

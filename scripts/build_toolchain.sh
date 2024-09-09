@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2021 - 2022 Pedro Falcato
+# Copyright (c) 2021 - 2024 Pedro Falcato
 # This file is part of Onyx, and is released under the terms of the MIT License
 # check LICENSE at the root directory for more information
 #
@@ -137,8 +137,8 @@ esac
 
 GNU_TARGET="$ARCH-onyx"
 LLVM_VER="15.0.0"
-BINUTILS_VER="2.39"
-GCC_VER="12.2.0"
+BINUTILS_VER="2.43.1"
+GCC_VER="14.2.0"
 
 if [ "$toolchain" = "GNU" ]; then
     echo "Building binutils $BINUTILS_VER and gcc $GCC_VER for target $GNU_TARGET"
@@ -195,7 +195,7 @@ echo "Using $NR_THREADS threads"
 if [ "$toolchain" = "GNU" ]; then
     mkdir -p binutils-build
 
-    GOLD_CONFIGURE_OPTIONS="--enable-gold=default"
+    GOLD_CONFIGURE_OPTIONS="--enable-gold"
 
     case "${ARCH}" in 
     "riscv64")
@@ -240,7 +240,7 @@ if [ "$toolchain" = "GNU" ]; then
     $GCC_SRCDIR/configure --target="$GNU_TARGET" --prefix=$target_dir \
     --with-sysroot=$ONYX_SRCDIR/sysroot --enable-languages=c,c++ --disable-nls \
     $libc_options --enable-symvers=gnu --enable-default-pie \
-    --enable-lto --enable-default-ssp --enable-checking=release \
+    --enable-lto --enable-default-ssp --enable-checking=release --enable-initfini-array \
     --with-bugurl=https://github.com/heatd/toolchains/issues "$target_extra_gcc_options"
 
     make all-gcc all-target-libgcc $extra_make_targets -j $NR_THREADS

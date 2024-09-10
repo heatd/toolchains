@@ -408,7 +408,7 @@ Index: gcc-14.2.0/gcc/config.gcc
          tm_defines="${tm_defines}  TARGET_DEFAULT_ASYNC_UNWIND_TABLES=1"
  	;;
 +aarch64*-*-onyx*)
-+	tm_file="${tm_file} dbxelf.h elfos.h glibc-stdint.h"
++	tm_file="${tm_file} elfos.h glibc-stdint.h"
 +	tm_file="${tm_file} onyx.h aarch64/aarch64-elf.h aarch64/aarch64-errata.h aarch64/aarch64-onyx.h"
 +	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-onyx"
 +	tm_defines="${tm_defines}  TARGET_DEFAULT_ASYNC_UNWIND_TABLES=1"

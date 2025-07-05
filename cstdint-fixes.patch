@@ -1,0 +1,24 @@
+Index: llvm-project-15.0.7/llvm/include/llvm/ADT/SmallVector.h
+===================================================================
+--- llvm-project-15.0.7.orig/llvm/include/llvm/ADT/SmallVector.h
++++ llvm-project-15.0.7/llvm/include/llvm/ADT/SmallVector.h
+@@ -29,6 +29,7 @@
+ #include <new>
+ #include <type_traits>
+ #include <utility>
++#include <cstdint>
+ 
+ namespace llvm {
+ 
+Index: llvm-project-15.0.7/llvm/lib/Target/X86/MCTargetDesc/X86MCTargetDesc.h
+===================================================================
+--- llvm-project-15.0.7.orig/llvm/lib/Target/X86/MCTargetDesc/X86MCTargetDesc.h
++++ llvm-project-15.0.7/llvm/lib/Target/X86/MCTargetDesc/X86MCTargetDesc.h
+@@ -15,6 +15,7 @@
+ 
+ #include <memory>
+ #include <string>
++#include <cstdint>
+ 
+ namespace llvm {
+ class formatted_raw_ostream;

@@ -13,7 +13,7 @@ if [ "$#" -ne "1" ]; then
 	exit 1
 fi
 
-LLVM_VER="15.0.0"
+LLVM_VER="15.0.7"
 
 STAGING_DIR=$1
 PATCHES=$PWD/toolchains
@@ -33,4 +33,6 @@ tar xf ${TARBALL_NAME}
 mv llvm-project-${LLVM_VER}.src llvm-project-${LLVM_VER}
 cd llvm-project-${LLVM_VER}
 patch -p1 < $PATCHES/llvm-project-${LLVM_VER}.patch
+# For 15.0.7
+patch -p1 < $PATCHES/cstdint-fixes.patch
 cd ..

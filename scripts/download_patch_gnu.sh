@@ -14,7 +14,7 @@ if [ "$#" -ne "1" ]; then
 fi
 
 BINUTILS_VER="2.43.1"
-GCC_VER="14.2.0"
+GCC_VER="15.1.0"
 
 STAGING_DIR=$1
 PATCHES=$PWD/toolchains

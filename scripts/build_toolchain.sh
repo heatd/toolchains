@@ -138,7 +138,7 @@ esac
 GNU_TARGET="$ARCH-onyx"
 LLVM_VER="15.0.7"
 BINUTILS_VER="2.43.1"
-GCC_VER="14.2.0"
+GCC_VER="15.1.0"
 
 if [ "$toolchain" = "GNU" ]; then
     echo "Building binutils $BINUTILS_VER and gcc $GCC_VER for target $GNU_TARGET"

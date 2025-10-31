@@ -1,0 +1,2780 @@
+---
+ clang/cmake/caches/Onyx-stage2.cmake                                 |  276 ++++++
+ clang/cmake/caches/Onyx.cmake                                        |  151 +++
+ clang/lib/Basic/Targets.cpp                                          |   11 
+ clang/lib/Basic/Targets/OSTargets.h                                  |   47 +
+ clang/lib/Driver/CMakeLists.txt                                      |    1 
+ clang/lib/Driver/Driver.cpp                                          |    4 
+ clang/lib/Driver/SanitizerArgs.cpp                                   |    3 
+ clang/lib/Driver/ToolChains/Onyx.cpp                                 |  437 ++++++++++
+ clang/lib/Driver/ToolChains/Onyx.h                                   |   98 ++
+ compiler-rt/cmake/config-ix.cmake                                    |   16 
+ compiler-rt/lib/asan/asan_linux.cpp                                  |    5 
+ compiler-rt/lib/asan/asan_malloc_linux.cpp                           |    3 
+ compiler-rt/lib/builtins/assembly.h                                  |    2 
+ compiler-rt/lib/interception/interception.h                          |    5 
+ compiler-rt/lib/interception/interception_linux.cpp                  |    4 
+ compiler-rt/lib/interception/interception_linux.h                    |    2 
+ compiler-rt/lib/lsan/lsan_common.h                                   |    2 
+ compiler-rt/lib/lsan/lsan_common_linux.cpp                           |    2 
+ compiler-rt/lib/lsan/lsan_linux.cpp                                  |    2 
+ compiler-rt/lib/orc/endianness.h                                     |    2 
+ compiler-rt/lib/profile/InstrProfilingPlatformLinux.c                |    2 
+ compiler-rt/lib/profile/InstrProfilingPlatformOther.c                |    2 
+ compiler-rt/lib/sanitizer_common/sanitizer_asm.h                     |    2 
+ compiler-rt/lib/sanitizer_common/sanitizer_getauxval.h               |    4 
+ compiler-rt/lib/sanitizer_common/sanitizer_glibc_version.h           |    2 
+ compiler-rt/lib/sanitizer_common/sanitizer_internal_defs.h           |    4 
+ compiler-rt/lib/sanitizer_common/sanitizer_libignore.cpp             |    2 
+ compiler-rt/lib/sanitizer_common/sanitizer_linux.cpp                 |   39 
+ compiler-rt/lib/sanitizer_common/sanitizer_linux.h                   |    2 
+ compiler-rt/lib/sanitizer_common/sanitizer_linux_libcdep.cpp         |   10 
+ compiler-rt/lib/sanitizer_common/sanitizer_mallinfo.h                |    2 
+ compiler-rt/lib/sanitizer_common/sanitizer_onyx.h                    |   22 
+ compiler-rt/lib/sanitizer_common/sanitizer_platform.h                |   11 
+ compiler-rt/lib/sanitizer_common/sanitizer_platform_interceptors.h   |   90 +-
+ compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp |   43 
+ compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.h   |  103 +-
+ compiler-rt/lib/sanitizer_common/sanitizer_posix.h                   |    2 
+ compiler-rt/lib/sanitizer_common/sanitizer_posix_libcdep.cpp         |    2 
+ compiler-rt/lib/sanitizer_common/sanitizer_procmaps.h                |    3 
+ compiler-rt/lib/sanitizer_common/sanitizer_procmaps_linux.cpp        |    2 
+ compiler-rt/lib/sanitizer_common/sanitizer_stoptheworld_onyx.cpp     |   27 
+ compiler-rt/lib/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp  |    4 
+ compiler-rt/lib/tsan/rtl/tsan_interceptors_posix.cpp                 |    4 
+ compiler-rt/lib/tsan/rtl/tsan_platform_linux.cpp                     |    8 
+ compiler-rt/lib/tsan/rtl/tsan_rtl_amd64.S                            |    6 
+ compiler-rt/lib/ubsan/ubsan_platform.h                               |    2 
+ libcxx/include/__config                                              |    5 
+ libcxx/include/__locale_dir/locale_base_api.h                        |    2 
+ libcxx/src/include/config_elast.h                                    |    2 
+ llvm/include/llvm/IR/RuntimeLibcalls.h                               |    2 
+ llvm/include/llvm/TargetParser/Triple.h                              |    5 
+ llvm/lib/Target/X86/X86ISelDAGToDAG.cpp                              |    2 
+ llvm/lib/Target/X86/X86ISelLoweringCall.cpp                          |    3 
+ llvm/lib/Target/X86/X86Subtarget.h                                   |    1 
+ llvm/lib/TargetParser/Triple.cpp                                     |    2 
+ llvm/lib/Transforms/Instrumentation/AddressSanitizer.cpp             |    3 
+ 56 files changed, 1334 insertions(+), 166 deletions(-)
+
+--- /dev/null
++++ b/clang/cmake/caches/Onyx-stage2.cmake
+@@ -0,0 +1,276 @@
++# This file sets up a CMakeCache for the second stage of a Onyx toolchain build.
++
++set(LLVM_TARGETS_TO_BUILD X86;RISCV;AArch64 CACHE STRING "")
++
++set(PACKAGE_VENDOR Onyx CACHE STRING "")
++
++set(LLVM_ENABLE_PROJECTS "clang;clang-tools-extra;lld;llvm" CACHE STRING "")
++set(LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
++
++set(LLVM_ENABLE_BACKTRACES OFF CACHE BOOL "")
++if(NOT APPLE)
++  set(LLVM_ENABLE_LLD ON CACHE BOOL "")
++endif()
++set(LLVM_ENABLE_LTO ON CACHE BOOL "")
++set(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR ON CACHE BOOL "")
++set(LLVM_ENABLE_TERMINFO ON CACHE BOOL "")
++set(LLVM_ENABLE_UNWIND_TABLES OFF CACHE BOOL "")
++set(LLVM_ENABLE_ZLIB ON CACHE BOOL "")
++set(LLVM_INCLUDE_DOCS OFF CACHE BOOL "")
++set(LLVM_INCLUDE_EXAMPLES OFF CACHE BOOL "")
++set(LLVM_INCLUDE_GO_TESTS OFF CACHE BOOL "")
++set(LLVM_USE_RELATIVE_PATHS_IN_FILES ON CACHE BOOL "")
++set(LLVM_ENABLE_Z3_SOLVER OFF CACHE BOOL "")
++
++if(MSVC)
++  set(LLVM_USE_CRT_RELEASE "MT" CACHE STRING "")
++endif()
++
++set(CLANG_DEFAULT_CXX_STDLIB libc++ CACHE STRING "")
++if(NOT APPLE)
++  set(CLANG_DEFAULT_LINKER lld CACHE STRING "")
++  set(CLANG_DEFAULT_OBJCOPY llvm-objcopy CACHE STRING "")
++endif()
++set(CLANG_DEFAULT_RTLIB compiler-rt CACHE STRING "")
++set(CLANG_ENABLE_ARCMT OFF CACHE BOOL "")
++set(CLANG_ENABLE_STATIC_ANALYZER ON CACHE BOOL "")
++set(CLANG_PLUGIN_SUPPORT OFF CACHE BOOL "")
++
++set(ENABLE_EXPERIMENTAL_NEW_PASS_MANAGER ON CACHE BOOL "")
++set(ENABLE_LINKER_BUILD_ID ON CACHE BOOL "")
++set(ENABLE_X86_RELAX_RELOCATIONS ON CACHE BOOL "")
++
++set(CMAKE_BUILD_TYPE Release CACHE STRING "")
++if (APPLE)
++  set(MACOSX_DEPLOYMENT_TARGET 10.7 CACHE STRING "")
++elseif(MSVC)
++  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded" CACHE STRING "")
++endif()
++
++if(APPLE)
++  list(APPEND BUILTIN_TARGETS "default")
++  list(APPEND RUNTIME_TARGETS "default")
++
++  set(COMPILER_RT_ENABLE_TVOS OFF CACHE BOOL "")
++  set(COMPILER_RT_ENABLE_WATCHOS OFF CACHE BOOL "")
++  set(COMPILER_RT_USE_BUILTINS_LIBRARY ON CACHE BOOL "")
++
++  set(LIBUNWIND_ENABLE_SHARED OFF CACHE BOOL "")
++  set(LIBUNWIND_INSTALL_LIBRARY OFF CACHE BOOL "")
++  set(LIBUNWIND_USE_COMPILER_RT ON CACHE BOOL "")
++  set(LIBCXXABI_ENABLE_SHARED OFF CACHE BOOL "")
++  set(LIBCXXABI_ENABLE_STATIC_UNWINDER ON CACHE BOOL "")
++  set(LIBCXXABI_INSTALL_LIBRARY OFF CACHE BOOL "")
++  set(LIBCXXABI_USE_COMPILER_RT ON CACHE BOOL "")
++  set(LIBCXXABI_USE_LLVM_UNWINDER ON CACHE BOOL "")
++  set(LIBCXX_USE_COMPILER_RT ON CACHE BOOL "")
++  set(LIBCXX_ENABLE_SHARED OFF CACHE BOOL "")
++  set(LIBCXX_ENABLE_STATIC_ABI_LIBRARY ON CACHE BOOL "")
++  set(LIBCXX_ABI_VERSION 2 CACHE STRING "")
++  set(DARWIN_ios_ARCHS armv7;armv7s;arm64 CACHE STRING "")
++  set(DARWIN_iossim_ARCHS i386;x86_64 CACHE STRING "")
++  set(DARWIN_osx_ARCHS x86_64 CACHE STRING "")
++  set(SANITIZER_MIN_OSX_VERSION 10.7 CACHE STRING "")
++endif()
++
++if(WIN32)
++  set(target "x86_64-pc-windows-msvc")
++
++  list(APPEND BUILTIN_TARGETS "${target}")
++  set(BUILTINS_${target}_CMAKE_SYSTEM_NAME Windows CACHE STRING "")
++  set(BUILTINS_${target}_CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "")
++
++  list(APPEND RUNTIME_TARGETS "${target}")
++  set(RUNTIMES_${target}_CMAKE_SYSTEM_NAME Windows CACHE STRING "")
++  set(RUNTIMES_${target}_CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "")
++  set(RUNTIMES_${target}_LIBCXX_ABI_VERSION 2 CACHE STRING "")
++  set(RUNTIMES_${target}_LIBCXX_HAS_WIN32_THREAD_API ON CACHE BOOL "")
++  set(RUNTIMES_${target}_LIBCXX_ENABLE_EXPERIMENTAL_LIBRARY OFF CACHE BOOL "")
++  set(RUNTIMES_${target}_LIBCXX_ENABLE_FILESYSTEM OFF CACHE BOOL "")
++  set(RUNTIMES_${target}_LIBCXX_ENABLE_ABI_LINKER_SCRIPT OFF CACHE BOOL "")
++  set(RUNTIMES_${target}_LIBCXX_ENABLE_SHARED OFF CACHE BOOL "")
++  set(RUNTIMES_${target}_LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx" CACHE STRING "")
++endif()
++
++foreach(target aarch64-unknown-linux-gnu;armv7-unknown-linux-gnueabihf;i386-unknown-linux-gnu;x86_64-unknown-linux-gnu)
++  if(LINUX_${target}_SYSROOT)
++    # Set the per-target builtins options.
++    list(APPEND BUILTIN_TARGETS "${target}")
++    set(BUILTINS_${target}_CMAKE_SYSTEM_NAME Linux CACHE STRING "")
++    set(BUILTINS_${target}_CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "")
++    set(BUILTINS_${target}_CMAKE_C_FLAGS "--target=${target}" CACHE STRING "")
++    set(BUILTINS_${target}_CMAKE_CXX_FLAGS "--target=${target}" CACHE STRING "")
++    set(BUILTINS_${target}_CMAKE_ASM_FLAGS "--target=${target}" CACHE STRING "")
++    set(BUILTINS_${target}_CMAKE_SYSROOT ${LINUX_${target}_SYSROOT} CACHE STRING "")
++    set(BUILTINS_${target}_CMAKE_SHARED_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
++    set(BUILTINS_${target}_CMAKE_MODULE_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
++    set(BUILTINS_${target}_CMAKE_EXE_LINKER_FLAG "-fuse-ld=lld" CACHE STRING "")
++
++    # Set the per-target runtimes options.
++    list(APPEND RUNTIME_TARGETS "${target}")
++    set(RUNTIMES_${target}_CMAKE_SYSTEM_NAME Linux CACHE STRING "")
++    set(RUNTIMES_${target}_CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "")
++    set(RUNTIMES_${target}_CMAKE_C_FLAGS "--target=${target}" CACHE STRING "")
++    set(RUNTIMES_${target}_CMAKE_CXX_FLAGS "--target=${target}" CACHE STRING "")
++    set(RUNTIMES_${target}_CMAKE_ASM_FLAGS "--target=${target}" CACHE STRING "")
++    set(RUNTIMES_${target}_CMAKE_SYSROOT ${LINUX_${target}_SYSROOT} CACHE STRING "")
++    set(RUNTIMES_${target}_CMAKE_SHARED_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
++    set(RUNTIMES_${target}_CMAKE_MODULE_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
++    set(RUNTIMES_${target}_CMAKE_EXE_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
++    set(RUNTIMES_${target}_COMPILER_RT_USE_BUILTINS_LIBRARY ON CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBUNWIND_ENABLE_SHARED OFF CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBUNWIND_USE_COMPILER_RT ON CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBUNWIND_INSTALL_LIBRARY OFF CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXXABI_USE_COMPILER_RT ON CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXXABI_ENABLE_SHARED OFF CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXXABI_USE_LLVM_UNWINDER ON CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXXABI_ENABLE_STATIC_UNWINDER ON CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXXABI_INSTALL_LIBRARY OFF CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXX_USE_COMPILER_RT ON CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXX_ENABLE_SHARED OFF CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXX_ENABLE_STATIC_ABI_LIBRARY ON CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXX_ABI_VERSION 2 CACHE STRING "")
++    set(RUNTIMES_${target}_LLVM_ENABLE_ASSERTIONS ON CACHE BOOL "")
++    set(RUNTIMES_${target}_SANITIZER_CXX_ABI "libc++" CACHE STRING "")
++    set(RUNTIMES_${target}_SANITIZER_CXX_ABI_INTREE ON CACHE BOOL "")
++    set(RUNTIMES_${target}_SANITIZER_TEST_CXX "libc++" CACHE STRING "")
++    set(RUNTIMES_${target}_SANITIZER_TEST_CXX_INTREE ON CACHE BOOL "")
++    set(RUNTIMES_${target}_LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
++
++    # Use .build-id link.
++    list(APPEND RUNTIME_BUILD_ID_LINK "${target}")
++  endif()
++endforeach()
++
++if(ONYX_SRCDIR)
++  set(ONYX_aarch64_NAME arm64)
++  set(ONYX_i386_NAME x86_64)
++  set(ONYX_x86_64_NAME x86_64)
++  set(ONYX_riscv64_NAME riscv64)
++  set(ONYX_riscv64_CFLAGS "-mno-relax")
++  foreach(target i386;x86_64;aarch64;riscv64)
++    set(ONYX_${target}_COMPILER_FLAGS "--target=${target}-unknown-onyx ${ONYX_${target}_CFLAGS}")
++    set(ONYX_${target}_SYSROOT "${ONYX_SRCDIR}/sysroots/${ONYX_${target}_NAME}")
++    set(ONYX_${target}_TOOLCHAIN_DIR "${ONYX_SRCDIR}/toolchains/cmake")
++  endforeach()
++
++  foreach(target i386;x86_64;riscv64;aarch64)
++    # Set the per-target builtins options.
++    list(APPEND BUILTIN_TARGETS "${target}-unknown-onyx")
++    set(BUILTINS_${target}-unknown-onyx_CMAKE_SYSTEM_NAME Onyx CACHE STRING "")
++    set(BUILTINS_${target}-unknown-onyx_CMAKE_MODULE_PATH ${BUILTINS_${target}-unknown-onyx_CMAKE_MODULE_PATH} "${ONYX_${target}_TOOLCHAIN_DIR}" CACHE STRING "")
++    set(BUILTINS_${target}-unknown-onyx_CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "")
++    set(BUILTINS_${target}-unknown-onyx_CMAKE_ASM_FLAGS ${ONYX_${target}_COMPILER_FLAGS} CACHE STRING "")
++    set(BUILTINS_${target}-unknown-onyx_CMAKE_C_FLAGS ${ONYX_${target}_COMPILER_FLAGS} CACHE STRING "")
++    set(BUILTINS_${target}-unknown-onyx_CMAKE_CXX_FLAGS ${ONYX_${target}_COMPILER_FLAGS} CACHE STRING "")
++    set(BUILTINS_${target}-unknown-onyx_CMAKE_SHARED_LINKER_FLAGS ${ONYX_${target}_LINKER_FLAGS} CACHE STRING "")
++    set(BUILTINS_${target}-unknown-onyx_CMAKE_MODULE_LINKER_FLAGS ${ONYX_${target}_LINKER_FLAGS} CACHE STRING "")
++    set(BUILTINS_${target}-unknown-onyx_CMAKE_EXE_LINKER_FLAGS ${ONYX_${target}_LINKER_FLAGS} CACHE STRING "")
++    set(BUILTINS_${target}-unknown-onyx_CMAKE_SYSROOT ${ONYX_${target}_SYSROOT} CACHE PATH "")
++  endforeach()
++
++  foreach(target x86_64;riscv64;aarch64)
++    # Set the per-target runtimes options.
++    list(APPEND RUNTIME_TARGETS "${target}-unknown-onyx")
++    set(RUNTIMES_${target}-unknown-onyx_CMAKE_SYSTEM_NAME Onyx CACHE STRING "")
++    set(RUNTIMES_${target}-unknown-onyx_CMAKE_MODULE_PATH ${RUNTIMES_${target}-unknown-onyx_CMAKE_MODULE_PATH} "${ONYX_${target}_TOOLCHAIN_DIR}" CACHE STRING "")
++    set(RUNTIMES_${target}-unknown-onyx_CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "")
++    set(RUNTIMES_${target}-unknown-onyx_CMAKE_BUILD_WITH_INSTALL_RPATH ON CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx_CMAKE_ASM_FLAGS ${ONYX_${target}_COMPILER_FLAGS} CACHE STRING "")
++    set(RUNTIMES_${target}-unknown-onyx_CMAKE_C_FLAGS ${ONYX_${target}_COMPILER_FLAGS} CACHE STRING "")
++    set(RUNTIMES_${target}-unknown-onyx_CMAKE_CXX_FLAGS ${ONYX_${target}_COMPILER_FLAGS} CACHE STRING "")
++    set(RUNTIMES_${target}-unknown-onyx_CMAKE_SHARED_LINKER_FLAGS ${ONYX_${target}_LINKER_FLAGS} CACHE STRING "")
++    set(RUNTIMES_${target}-unknown-onyx_CMAKE_MODULE_LINKER_FLAGS ${ONYX_${target}_LINKER_FLAGS} CACHE STRING "")
++    set(RUNTIMES_${target}-unknown-onyx_CMAKE_EXE_LINKER_FLAGS ${ONYX_${target}_LINKER_FLAGS} CACHE STRING "")
++    set(RUNTIMES_${target}-unknown-onyx_CMAKE_SYSROOT ${ONYX_${target}_SYSROOT} CACHE PATH "")
++    set(RUNTIMES_${target}-unknown-onyx_COMPILER_RT_USE_BUILTINS_LIBRARY ON CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx_LIBUNWIND_USE_COMPILER_RT ON CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx_LIBUNWIND_HERMETIC_STATIC_LIBRARY ON CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx_LIBUNWIND_INSTALL_STATIC_LIBRARY OFF CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx_LIBCXXABI_USE_COMPILER_RT ON CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx_LIBCXXABI_USE_LLVM_UNWINDER ON CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx_LIBCXXABI_ENABLE_STATIC_UNWINDER ON CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx_LIBCXXABI_HERMETIC_STATIC_LIBRARY ON CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx_LIBCXXABI_INSTALL_STATIC_LIBRARY OFF CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx_LIBCXXABI_STATICALLY_LINK_UNWINDER_IN_SHARED_LIBRARY OFF CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx_LIBCXX_USE_COMPILER_RT ON CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx_LIBCXX_ENABLE_STATIC_ABI_LIBRARY ON CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx_LIBCXX_HERMETIC_STATIC_LIBRARY ON CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx_LIBCXX_STATICALLY_LINK_ABI_IN_SHARED_LIBRARY OFF CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx_LIBCXX_ABI_VERSION 2 CACHE STRING "")
++    set(RUNTIMES_${target}-unknown-onyx_LLVM_ENABLE_ASSERTIONS ON CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx_LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
++
++    set(RUNTIMES_${target}-unknown-onyx+asan_LLVM_BUILD_COMPILER_RT OFF CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx+asan_LLVM_USE_SANITIZER "Address" CACHE STRING "")
++    set(RUNTIMES_${target}-unknown-onyx+asan_LIBCXXABI_ENABLE_NEW_DELETE_DEFINITIONS OFF CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx+asan_LIBCXX_ENABLE_NEW_DELETE_DEFINITIONS OFF CACHE BOOL "")
++
++    set(RUNTIMES_${target}-unknown-onyx+noexcept_LLVM_BUILD_COMPILER_RT OFF CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx+noexcept_LIBCXXABI_ENABLE_EXCEPTIONS OFF CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx+noexcept_LIBCXX_ENABLE_EXCEPTIONS OFF CACHE BOOL "")
++
++    set(RUNTIMES_${target}-unknown-onyx+asan+noexcept_LLVM_BUILD_COMPILER_RT OFF CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx+asan+noexcept_LLVM_USE_SANITIZER "Address" CACHE STRING "")
++    set(RUNTIMES_${target}-unknown-onyx+asan+noexcept_LIBCXXABI_ENABLE_NEW_DELETE_DEFINITIONS OFF CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx+asan+noexcept_LIBCXX_ENABLE_NEW_DELETE_DEFINITIONS OFF CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx+asan+noexcept_LIBCXXABI_ENABLE_EXCEPTIONS OFF CACHE BOOL "")
++    set(RUNTIMES_${target}-unknown-onyx+asan+noexcept_LIBCXX_ENABLE_EXCEPTIONS OFF CACHE BOOL "")
++
++    # Use .build-id link.
++    list(APPEND RUNTIME_BUILD_ID_LINK "${target}-unknown-onyx")
++  endforeach()
++
++  set(LLVM_RUNTIME_MULTILIBS "asan;noexcept;asan+noexcept" CACHE STRING "")
++  set(LLVM_RUNTIME_MULTILIB_asan_TARGETS "x86_64-unknown-onyx" CACHE STRING "")
++  set(LLVM_RUNTIME_MULTILIB_noexcept_TARGETS "x86_64-unknown-onyx" CACHE STRING "")
++  set(LLVM_RUNTIME_MULTILIB_asan+noexcept_TARGETS "x86_64-unknown-onyx" CACHE STRING "")
++endif()
++
++set(LLVM_BUILTIN_TARGETS "${BUILTIN_TARGETS}" CACHE STRING "")
++set(LLVM_RUNTIME_TARGETS "${RUNTIME_TARGETS}" CACHE STRING "")
++set(LLVM_RUNTIME_BUILD_ID_LINK_TARGETS "${RUNTIME_BUILD_ID_LINK}" CACHE STRING "")
++
++# Setup toolchain.
++set(LLVM_INSTALL_TOOLCHAIN_ONLY ON CACHE BOOL "")
++set(LLVM_TOOLCHAIN_TOOLS
++  dsymutil
++  llvm-ar
++  llvm-cov
++  llvm-cxxfilt
++  llvm-dwarfdump
++  llvm-dwp
++  llvm-gsymutil
++  llvm-lib
++  llvm-nm
++  llvm-objcopy
++  llvm-objdump
++  llvm-profdata
++  llvm-ranlib
++  llvm-readelf
++  llvm-readobj
++  llvm-size
++  llvm-strip
++  llvm-symbolizer
++  llvm-xray
++  llvm-config
++  sancov
++  CACHE STRING "")
++
++set(LLVM_DISTRIBUTION_COMPONENTS
++  clang
++  lld
++  LTO
++  clang-apply-replacements
++  clang-doc
++  clang-format
++  clang-resource-headers
++  clang-include-fixer
++  clang-refactor
++  clang-scan-deps
++  clang-tidy
++  clangd
++  builtins
++  runtimes
++  ${LLVM_TOOLCHAIN_TOOLS}
++  CACHE STRING "")
+--- /dev/null
++++ b/clang/cmake/caches/Onyx.cmake
+@@ -0,0 +1,151 @@
++# This file sets up a CMakeCache for a Onyx toolchain build.
++
++set(LLVM_TARGETS_TO_BUILD X86 CACHE STRING "")
++
++set(PACKAGE_VENDOR Onyx CACHE STRING "")
++
++set(LLVM_ENABLE_PROJECTS "clang;clang-tools-extra;lld;llvm" CACHE STRING "")
++
++set(LLVM_ENABLE_BACKTRACES OFF CACHE BOOL "")
++set(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR ON CACHE BOOL "")
++set(LLVM_ENABLE_TERMINFO OFF CACHE BOOL "")
++set(LLVM_ENABLE_UNWIND_TABLES OFF CACHE BOOL "")
++set(LLVM_ENABLE_ZLIB OFF CACHE BOOL "")
++set(LLVM_INCLUDE_DOCS OFF CACHE BOOL "")
++set(LLVM_INCLUDE_EXAMPLES OFF CACHE BOOL "")
++set(LLVM_INCLUDE_GO_TESTS OFF CACHE BOOL "")
++
++if(MSVC)
++  set(LLVM_USE_CRT_RELEASE "MT" CACHE STRING "")
++endif()
++
++set(CLANG_DEFAULT_CXX_STDLIB libc++ CACHE STRING "")
++if(NOT APPLE)
++  set(CLANG_DEFAULT_LINKER lld CACHE STRING "")
++  set(CLANG_DEFAULT_OBJCOPY llvm-objcopy CACHE STRING "")
++endif()
++set(CLANG_DEFAULT_RTLIB compiler-rt CACHE STRING "")
++set(CLANG_ENABLE_ARCMT OFF CACHE BOOL "")
++set(CLANG_ENABLE_STATIC_ANALYZER ON CACHE BOOL "")
++set(CLANG_PLUGIN_SUPPORT OFF CACHE BOOL "")
++
++set(ENABLE_EXPERIMENTAL_NEW_PASS_MANAGER ON CACHE BOOL "")
++set(ENABLE_LINKER_BUILD_ID ON CACHE BOOL "")
++set(ENABLE_X86_RELAX_RELOCATIONS ON CACHE BOOL "")
++
++set(LLVM_ENABLE_ASSERTIONS ON CACHE BOOL "")
++set(CMAKE_BUILD_TYPE Release CACHE STRING "")
++if(APPLE)
++  set(MACOSX_DEPLOYMENT_TARGET 10.7 CACHE STRING "")
++elseif(MSVC)
++  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded" CACHE STRING "")
++endif()
++
++if(APPLE)
++  set(COMPILER_RT_ENABLE_IOS OFF CACHE BOOL "")
++  set(COMPILER_RT_ENABLE_TVOS OFF CACHE BOOL "")
++  set(COMPILER_RT_ENABLE_WATCHOS OFF CACHE BOOL "")
++endif()
++
++set(LIBUNWIND_ENABLE_SHARED OFF CACHE BOOL "")
++set(LIBUNWIND_INSTALL_LIBRARY OFF CACHE BOOL "")
++set(LIBUNWIND_USE_COMPILER_RT ON CACHE BOOL "")
++set(LIBCXXABI_ENABLE_SHARED OFF CACHE BOOL "")
++set(LIBCXXABI_ENABLE_STATIC_UNWINDER ON CACHE BOOL "")
++set(LIBCXXABI_INSTALL_LIBRARY OFF CACHE BOOL "")
++set(LIBCXXABI_USE_COMPILER_RT ON CACHE BOOL "")
++set(LIBCXXABI_USE_LLVM_UNWINDER ON CACHE BOOL "")
++set(LIBCXX_ABI_VERSION 2 CACHE STRING "")
++set(LIBCXX_ENABLE_SHARED OFF CACHE BOOL "")
++if(WIN32)
++  set(LIBCXX_HAS_WIN32_THREAD_API ON CACHE BOOL "")
++  set(LIBCXX_ENABLE_EXPERIMENTAL_LIBRARY OFF CACHE BOOL "")
++  set(LIBCXX_ENABLE_FILESYSTEM OFF CACHE BOOL "")
++  set(LIBCXX_ENABLE_ABI_LINKER_SCRIPT OFF CACHE BOOL "")
++  set(LIBCXX_ENABLE_STATIC_ABI_LIBRARY OFF CACHE BOOL "")
++  set(BUILTINS_CMAKE_ARGS -DCMAKE_SYSTEM_NAME=Windows CACHE STRING "")
++  set(RUNTIMES_CMAKE_ARGS -DCMAKE_SYSTEM_NAME=Windows CACHE STRING "")
++  set(LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx" CACHE STRING "")
++else()
++  set(LIBCXX_ENABLE_STATIC_ABI_LIBRARY ON CACHE BOOL "")
++  set(LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
++endif()
++
++if(BOOTSTRAP_CMAKE_SYSTEM_NAME)
++  set(target "${BOOTSTRAP_CMAKE_CXX_COMPILER_TARGET}")
++  if(STAGE2_LINUX_${target}_SYSROOT)
++    set(LLVM_BUILTIN_TARGETS "${target}" CACHE STRING "")
++    set(BUILTINS_${target}_CMAKE_SYSTEM_NAME Linux CACHE STRING "")
++    set(BUILTINS_${target}_CMAKE_BUILD_TYPE Release CACHE STRING "")
++    set(BUILTINS_${target}_CMAKE_SYSROOT ${STAGE2_LINUX_${target}_SYSROOT} CACHE STRING "")
++
++    set(LLVM_RUNTIME_TARGETS "${target}" CACHE STRING "")
++    set(RUNTIMES_${target}_CMAKE_SYSTEM_NAME Linux CACHE STRING "")
++    set(RUNTIMES_${target}_CMAKE_BUILD_TYPE Release CACHE STRING "")
++    set(RUNTIMES_${target}_CMAKE_SYSROOT ${STAGE2_LINUX_${target}_SYSROOT} CACHE STRING "")
++    set(RUNTIMES_${target}_COMPILER_RT_USE_BUILTINS_LIBRARY ON CACHE BOOL "")
++    set(RUNTIMES_${target}_LLVM_ENABLE_ASSERTIONS ON CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBUNWIND_ENABLE_SHARED OFF CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBUNWIND_USE_COMPILER_RT ON CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBUNWIND_INSTALL_LIBRARY OFF CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXXABI_USE_COMPILER_RT ON CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXXABI_ENABLE_SHARED OFF CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXXABI_USE_LLVM_UNWINDER ON CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXXABI_ENABLE_STATIC_UNWINDER ON CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXXABI_INSTALL_LIBRARY OFF CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXX_USE_COMPILER_RT ON CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXX_ENABLE_SHARED OFF CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXX_ENABLE_STATIC_ABI_LIBRARY ON CACHE BOOL "")
++    set(RUNTIMES_${target}_LIBCXX_ABI_VERSION 2 CACHE STRING "")
++    set(RUNTIMES_${target}_LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
++    set(RUNTIMES_${target}_SANITIZER_CXX_ABI "libc++" CACHE STRING "")
++    set(RUNTIMES_${target}_SANITIZER_CXX_ABI_INTREE ON CACHE BOOL "")
++  endif()
++endif()
++
++if(UNIX)
++  set(BOOTSTRAP_CMAKE_SHARED_LINKER_FLAGS "-ldl -lpthread" CACHE STRING "")
++  set(BOOTSTRAP_CMAKE_MODULE_LINKER_FLAGS "-ldl -lpthread" CACHE STRING "")
++  set(BOOTSTRAP_CMAKE_EXE_LINKER_FLAGS "-ldl -lpthread" CACHE STRING "")
++endif()
++
++set(BOOTSTRAP_LLVM_ENABLE_LTO ON CACHE BOOL "")
++if(NOT APPLE)
++  set(BOOTSTRAP_LLVM_ENABLE_LLD ON CACHE BOOL "")
++endif()
++
++set(CLANG_BOOTSTRAP_TARGETS
++  check-all
++  check-llvm
++  check-clang
++  check-lld
++  llvm-config
++  test-suite
++  test-depends
++  llvm-test-depends
++  clang-test-depends
++  lld-test-depends
++  distribution
++  install-distribution
++  install-distribution-stripped
++  install-distribution-toolchain
++  clang CACHE STRING "")
++
++get_cmake_property(variableNames VARIABLES)
++foreach(variableName ${variableNames})
++  if(variableName MATCHES "^STAGE2_")
++    string(REPLACE "STAGE2_" "" new_name ${variableName})
++    list(APPEND EXTRA_ARGS "-D${new_name}=${${variableName}}")
++  endif()
++endforeach()
++
++# Setup the bootstrap build.
++set(CLANG_ENABLE_BOOTSTRAP ON CACHE BOOL "")
++set(CLANG_BOOTSTRAP_EXTRA_DEPS
++  builtins
++  runtimes
++  CACHE STRING "")
++set(CLANG_BOOTSTRAP_CMAKE_ARGS
++  ${EXTRA_ARGS}
++  -C ${CMAKE_CURRENT_LIST_DIR}/Onyx-stage2.cmake
++  CACHE STRING "")
+--- a/clang/lib/Basic/Targets.cpp
++++ b/clang/lib/Basic/Targets.cpp
+@@ -167,6 +167,9 @@ std::unique_ptr<TargetInfo> AllocateTarg
+     case llvm::Triple::Managarm:
+       return std::make_unique<ManagarmTargetInfo<AArch64leTargetInfo>>(Triple,
+                                                                        Opts);
++    case llvm::Triple::Onyx:
++      return std::make_unique<OnyxTargetInfo<AArch64leTargetInfo>>(Triple, Opts);
++
+     case llvm::Triple::NetBSD:
+       return std::make_unique<NetBSDTargetInfo<AArch64leTargetInfo>>(Triple,
+                                                                      Opts);
+@@ -196,6 +199,8 @@ std::unique_ptr<TargetInfo> AllocateTarg
+     case llvm::Triple::Linux:
+       return std::make_unique<LinuxTargetInfo<AArch64beTargetInfo>>(Triple,
+                                                                     Opts);
++    case llvm::Triple::Onyx:
++      return std::make_unique<OnyxTargetInfo<AArch64beTargetInfo>>(Triple, Opts);
+     case llvm::Triple::NetBSD:
+       return std::make_unique<NetBSDTargetInfo<AArch64beTargetInfo>>(Triple,
+                                                                      Opts);
+@@ -472,6 +477,8 @@ std::unique_ptr<TargetInfo> AllocateTarg
+     case llvm::Triple::Managarm:
+       return std::make_unique<ManagarmTargetInfo<RISCV64TargetInfo>>(Triple,
+                                                                      Opts);
++    case llvm::Triple::Onyx:
++      return std::make_unique<OnyxTargetInfo<RISCV64TargetInfo>>(Triple, Opts);
+     default:
+       return std::make_unique<RISCV64TargetInfo>(Triple, Opts);
+     }
+@@ -556,6 +563,8 @@ std::unique_ptr<TargetInfo> AllocateTarg
+         return std::make_unique<AndroidX86_32TargetInfo>(Triple, Opts);
+       }
+     }
++    case llvm::Triple::Onyx:
++      return std::make_unique<OnyxTargetInfo<X86_32TargetInfo>>(Triple, Opts);
+     case llvm::Triple::DragonFly:
+       return std::make_unique<DragonFlyBSDTargetInfo<X86_32TargetInfo>>(Triple,
+                                                                         Opts);
+@@ -617,6 +626,8 @@ std::unique_ptr<TargetInfo> AllocateTarg
+         return std::make_unique<OHOSX86_64TargetInfo>(Triple, Opts);
+       }
+     }
++    case llvm::Triple::Onyx:
++      return std::make_unique<OnyxTargetInfo<X86_64TargetInfo>>(Triple, Opts);
+     case llvm::Triple::DragonFly:
+       return std::make_unique<DragonFlyBSDTargetInfo<X86_64TargetInfo>>(Triple,
+                                                                         Opts);
+--- a/clang/lib/Basic/Targets/OSTargets.h
++++ b/clang/lib/Basic/Targets/OSTargets.h
+@@ -942,6 +942,53 @@ public:
+   }
+ };
+ 
++// Onyx target
++template <typename Target>
++class LLVM_LIBRARY_VISIBILITY OnyxTargetInfo : public OSTargetInfo<Target> {
++protected:
++  void getOSDefines(const LangOptions &Opts, const llvm::Triple &Triple,
++                    MacroBuilder &Builder) const override {
++    Builder.defineMacro("__Onyx__");
++    Builder.defineMacro("__ONYX__");
++    Builder.defineMacro("__onyx__");
++    Builder.defineMacro("__onyx");
++    DefineStd(Builder, "unix", Opts);
++    Builder.defineMacro("__ELF__");
++
++    if (this->HasFloat128) 
++      Builder.defineMacro("__FLOAT128__");
++    if (Opts.POSIXThreads)
++      Builder.defineMacro("_REENTRANT");
++    // Required by the libc++ locale support.
++    if (Opts.CPlusPlus)
++      Builder.defineMacro("_GNU_SOURCE");
++  }
++
++public:
++  OnyxTargetInfo(const llvm::Triple &Triple, const TargetOptions &Opts)
++      : OSTargetInfo<Target>(Triple, Opts) {
++    this->WIntType = TargetInfo::UnsignedInt;
++
++    switch (Triple.getArch()) {
++    default:
++      break;
++    case llvm::Triple::mips:
++    case llvm::Triple::mipsel:
++    case llvm::Triple::mips64:
++    case llvm::Triple::mips64el:
++    case llvm::Triple::ppc:
++    case llvm::Triple::ppc64:
++    case llvm::Triple::ppc64le:
++      this->MCountName = "_mcount";
++      break;
++    case llvm::Triple::x86:
++    case llvm::Triple::x86_64:
++      this->HasFloat128 = true;
++      break;
++    }
++  }
++};
++
+ // WebAssembly target
+ template <typename Target>
+ class LLVM_LIBRARY_VISIBILITY WebAssemblyOSTargetInfo
+--- a/clang/lib/Driver/CMakeLists.txt
++++ b/clang/lib/Driver/CMakeLists.txt
+@@ -57,6 +57,7 @@ add_clang_library(clangDriver
+   ToolChains/Flang.cpp
+   ToolChains/FreeBSD.cpp
+   ToolChains/Fuchsia.cpp
++  ToolChains/Onyx.cpp
+   ToolChains/Gnu.cpp
+   ToolChains/Haiku.cpp
+   ToolChains/HIPUtility.cpp
+--- a/clang/lib/Driver/Driver.cpp
++++ b/clang/lib/Driver/Driver.cpp
+@@ -22,6 +22,7 @@
+ #include "ToolChains/DragonFly.h"
+ #include "ToolChains/FreeBSD.h"
+ #include "ToolChains/Fuchsia.h"
++#include "ToolChains/Onyx.h"
+ #include "ToolChains/Gnu.h"
+ #include "ToolChains/HIPAMD.h"
+ #include "ToolChains/HIPSPV.h"
+@@ -6850,6 +6851,9 @@ const ToolChain &Driver::getToolChain(co
+     case llvm::Triple::Managarm:
+       TC = std::make_unique<toolchains::Managarm>(*this, Target, Args);
+       break;
++     case llvm::Triple::Onyx:
++      TC = std::make_unique<toolchains::Onyx>(*this, Target, Args);
++      break;
+     case llvm::Triple::Solaris:
+       TC = std::make_unique<toolchains::Solaris>(*this, Target, Args);
+       break;
+--- a/clang/lib/Driver/SanitizerArgs.cpp
++++ b/clang/lib/Driver/SanitizerArgs.cpp
+@@ -1008,7 +1008,8 @@ SanitizerArgs::SanitizerArgs(const ToolC
+   SharedRuntime = Args.hasFlag(
+       options::OPT_shared_libsan, options::OPT_static_libsan,
+       TC.getTriple().isAndroid() || TC.getTriple().isOSFuchsia() ||
+-          TC.getTriple().isOSDarwin() || TC.getTriple().isOSWindows());
++          TC.getTriple().isOSDarwin() || TC.getTriple().isOSWindows() ||
++	  TC.getTriple().isOSOnyx());
+   if (!SharedRuntime && TC.getTriple().isOSWindows()) {
+     Arg *A =
+         Args.getLastArg(options::OPT_shared_libsan, options::OPT_static_libsan);
+--- /dev/null
++++ b/clang/lib/Driver/ToolChains/Onyx.cpp
+@@ -0,0 +1,437 @@
++//===--- Onyx.cpp - Onyx ToolChain Implementations --------*- C++ -*-===//
++//
++// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
++// See https://llvm.org/LICENSE.txt for license information.
++// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
++//
++//===----------------------------------------------------------------------===//
++
++#include "Onyx.h"
++#include "clang/Config/config.h"
++#include "clang/Driver/CommonArgs.h"
++#include "clang/Driver/MultilibBuilder.h"
++#include "clang/Driver/Compilation.h"
++#include "clang/Driver/Driver.h"
++#include "clang/Driver/Options.h"
++#include "clang/Driver/SanitizerArgs.h"
++#include "llvm/Option/ArgList.h"
++#include "llvm/Support/FileSystem.h"
++#include "llvm/Support/Path.h"
++#include "llvm/Support/VirtualFileSystem.h"
++
++using namespace clang::driver;
++using namespace clang::driver::toolchains;
++using namespace clang::driver::tools;
++using namespace clang;
++using namespace llvm::opt;
++
++using tools::addMultilibFlag;
++
++static bool getStatic(const ArgList &Args) {
++  return Args.hasArg(options::OPT_static) &&
++         !Args.hasArg(options::OPT_static_pie);
++}
++
++static bool getPIE(const ArgList &Args, const ToolChain &TC) {
++  if (Args.hasArg(options::OPT_shared) || Args.hasArg(options::OPT_static) ||
++      Args.hasArg(options::OPT_r) || Args.hasArg(options::OPT_static_pie))
++    return false;
++
++  Arg *A = Args.getLastArg(options::OPT_pie, options::OPT_no_pie,
++                           options::OPT_nopie);
++  if (!A)
++    return TC.isPIEDefault(Args);
++  return A->getOption().matches(options::OPT_pie);
++}
++
++static bool getStaticPIE(const ArgList &Args, const ToolChain &TC) {
++  bool HasStaticPIE = Args.hasArg(options::OPT_static_pie);
++  // -no-pie is an alias for -nopie. So, handling -nopie takes care of
++  // -no-pie as well.
++  if (HasStaticPIE && Args.hasArg(options::OPT_nopie)) {
++    const Driver &D = TC.getDriver();
++    const llvm::opt::OptTable &Opts = D.getOpts();
++    StringRef StaticPIEName = Opts.getOptionName(options::OPT_static_pie);
++    StringRef NoPIEName = Opts.getOptionName(options::OPT_nopie);
++    D.Diag(diag::err_drv_cannot_mix_options) << StaticPIEName << NoPIEName;
++  }
++  return HasStaticPIE;
++}
++
++void onyx::Linker::ConstructJob(Compilation &C, const JobAction &JA,
++                                const InputInfo &Output,
++                                const InputInfoList &Inputs,
++                                const ArgList &Args,
++                                const char *LinkingOutput) const {
++  const auto &ToolChain =
++      static_cast<const toolchains::Onyx &>(getToolChain());
++  const Driver &D = ToolChain.getDriver();
++
++  ArgStringList CmdArgs;
++
++  // Silence warning for "clang -g foo.o -o foo"
++  Args.ClaimAllArgs(options::OPT_g_Group);
++  // and "clang -emit-llvm foo.o -o foo"
++  Args.ClaimAllArgs(options::OPT_emit_llvm);
++  // and for "clang -w foo.o -o foo". Other warning options are already
++  // handled somewhere else.
++  Args.ClaimAllArgs(options::OPT_w);
++
++  bool IsPie = getPIE(Args, ToolChain);
++  bool IsStaticPie = getStaticPIE(Args, ToolChain);
++
++  CmdArgs.push_back("-z");
++  CmdArgs.push_back("now");
++
++  CmdArgs.push_back("-z");
++  CmdArgs.push_back("start-stop-visibility=hidden");
++  if (ToolChain.getTriple().isRISCV64()) {
++    CmdArgs.push_back("-X");
++    if (Args.hasArg(options::OPT_mno_relax))
++      CmdArgs.push_back("--no-relax");
++  }
++
++  const char *Exec = Args.MakeArgString(ToolChain.GetLinkerPath());
++  if (llvm::sys::path::filename(Exec).equals_insensitive("ld.lld") ||
++      llvm::sys::path::stem(Exec).equals_insensitive("ld.lld")) {
++    CmdArgs.push_back("-z");
++    CmdArgs.push_back("rodynamic");
++    CmdArgs.push_back("-z");
++    CmdArgs.push_back("separate-loadable-segments");
++  }
++
++  CmdArgs.push_back("-z");
++  CmdArgs.push_back("noexecstack");
++
++  if (!D.SysRoot.empty())
++    CmdArgs.push_back(Args.MakeArgString("--sysroot=" + D.SysRoot));
++
++  if (IsPie)
++    CmdArgs.push_back("-pie");
++
++  if (IsStaticPie) {
++    CmdArgs.push_back("-static");
++    CmdArgs.push_back("-pie");
++    CmdArgs.push_back("--no-dynamic-linker");
++    CmdArgs.push_back("-z");
++    CmdArgs.push_back("text");
++  }
++
++  if (Args.hasArg(options::OPT_rdynamic))
++    CmdArgs.push_back("-export-dynamic");
++
++  if (Args.hasArg(options::OPT_s))
++    CmdArgs.push_back("-s");
++
++  if (Args.hasArg(options::OPT_r)) {
++    CmdArgs.push_back("-r");
++  } else {
++    CmdArgs.push_back("--build-id");
++    CmdArgs.push_back("--hash-style=gnu");
++  }
++
++  CmdArgs.push_back("--eh-frame-hdr");
++
++  if (Args.hasArg(options::OPT_static))
++    CmdArgs.push_back("-static");
++  else if (Args.hasArg(options::OPT_shared))
++    CmdArgs.push_back("-shared");
++
++  const SanitizerArgs &SanArgs = ToolChain.getSanitizerArgs(Args);
++  bool is_static = getStatic(Args);
++
++  if (!is_static) {
++    if (!Args.hasArg(options::OPT_shared) && !IsStaticPie) {
++      std::string Dyld = D.DyldPrefix;
++      // TODO: Is this needed?
++#if 0
++		if (SanArgs.needsAsanRt() && SanArgs.needsSharedRt())
++      		Dyld += "asan/";
++#endif
++      std::string DyldSuffix =
++          std::string("-") + ToolChain.getTriple().getArchName().str();
++
++      Dyld += std::string("/lib/ld-onyx") + DyldSuffix + ".so";
++      CmdArgs.push_back("-dynamic-linker");
++      CmdArgs.push_back(Args.MakeArgString(Dyld));
++    }
++  }
++
++  CmdArgs.push_back("-o");
++  CmdArgs.push_back(Output.getFilename());
++
++  if (!Args.hasArg(options::OPT_nostdlib, options::OPT_nostartfiles)) {
++    const char *crt1 = nullptr;
++    if (!Args.hasArg(options::OPT_shared)) {
++      if (IsPie)
++        crt1 = "Scrt1.o";
++      else if (IsStaticPie)
++        crt1 = "rcrt1.o";
++      else
++        crt1 = "crt1.o";
++    }
++
++    if (crt1)
++      CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath(crt1)));
++
++    // CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crti.o")));
++  }
++
++  Args.addAllArgs(CmdArgs, {options::OPT_L, options::OPT_u});
++
++  ToolChain.AddFilePathLibArgs(Args, CmdArgs);
++
++  if (D.isUsingLTO())
++    addLTOOptions(ToolChain, Args, CmdArgs, Output, Inputs,
++                  D.getLTOMode() == LTOK_Thin);
++
++  bool NeedsSanitizerDeps = addSanitizerRuntimes(ToolChain, Args, CmdArgs);
++  bool NeedsXRayDeps = addXRayRuntime(ToolChain, Args, CmdArgs);
++  AddLinkerInputs(ToolChain, Inputs, Args, CmdArgs, JA);
++  ToolChain.addProfileRTLibs(Args, CmdArgs);
++
++  if (!Args.hasArg(options::OPT_nostdlib, options::OPT_nodefaultlibs)) {
++
++    if (D.CCCIsCXX()) {
++      if (ToolChain.ShouldLinkCXXStdlib(Args)) {
++        bool OnlyLibstdcxxStatic = Args.hasArg(options::OPT_static_libstdcxx) &&
++                                   !Args.hasArg(options::OPT_static);
++        CmdArgs.push_back("--push-state");
++        CmdArgs.push_back("--as-needed");
++        if (OnlyLibstdcxxStatic)
++          CmdArgs.push_back("-Bstatic");
++        ToolChain.AddCXXStdlibLibArgs(Args, CmdArgs);
++        if (OnlyLibstdcxxStatic)
++          CmdArgs.push_back("-Bdynamic");
++        CmdArgs.push_back("-lm");
++        CmdArgs.push_back("--pop-state");
++      }
++    }
++
++    if (NeedsSanitizerDeps)
++      linkSanitizerRuntimeDeps(ToolChain, Args, CmdArgs);
++
++    if (NeedsXRayDeps)
++      linkXRayRuntimeDeps(ToolChain, Args, CmdArgs);
++
++    AddRunTimeLibs(ToolChain, D, CmdArgs, Args);
++
++    if (Args.hasArg(options::OPT_pthread) || Args.hasArg(options::OPT_pthreads))
++      CmdArgs.push_back("-lpthread");
++
++    if (Args.hasArg(options::OPT_fsplit_stack))
++      CmdArgs.push_back("--wrap=pthread_create");
++
++    if (!Args.hasArg(options::OPT_nolibc))
++      CmdArgs.push_back("-lc");
++
++    // CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crtn.o")));
++  }
++
++  C.addCommand(std::make_unique<Command>(JA, *this, ResponseFileSupport::None(),
++                                         Exec, CmdArgs, Inputs));
++}
++
++/// Onyx - Onyx tool chain which can call as(1) and ld(1) directly.
++
++Onyx::Onyx(const Driver &D, const llvm::Triple &Triple, const ArgList &Args)
++    : ToolChain(D, Triple, Args) {
++  getProgramPaths().push_back(getDriver().Dir);
++
++  if (!D.SysRoot.empty()) {
++    SmallString<128> P(D.SysRoot);
++    llvm::sys::path::append(P, "usr/lib");
++    getFilePaths().push_back(std::string(P));
++  }
++
++  auto FilePaths = [&](const Multilib &M) -> std::vector<std::string> {
++    std::vector<std::string> FP;
++    if (std::optional<std::string> Path = getStdlibPath()) {
++      SmallString<128> P(*Path);
++      llvm::sys::path::append(P, M.gccSuffix());
++      FP.push_back(std::string(P));
++    }
++    return FP;
++  };
++
++  Multilibs.push_back(Multilib());
++  // Use the noexcept variant with -fno-exceptions to avoid the extra overhead.
++  Multilibs.push_back(MultilibBuilder("noexcept", {}, {})
++                          .flag("-fexceptions", true)
++                          .flag("-fno-exceptions")
++			  .makeMultilib());
++  // ASan has higher priority because we always want the instrumentated version.
++  Multilibs.push_back(MultilibBuilder("asan", {}, {}).flag("-fsanitize=address")
++		      .makeMultilib());
++  // Use the asan+noexcept variant with ASan and -fno-exceptions.
++  Multilibs.push_back(MultilibBuilder("asan+noexcept", {}, {})
++                          .flag("-fsanitize=address")
++                          .flag("-fexceptions", true)
++                          .flag("-fno-exceptions")
++			  .makeMultilib());
++  Multilibs.FilterOut([&](const Multilib &M) {
++    std::vector<std::string> RD = FilePaths(M);
++    return std::all_of(RD.begin(), RD.end(),
++                       [&](std::string P) { return !getVFS().exists(P); });
++  });
++
++  Multilib::flags_list Flags;
++  bool Exceptions =
++      Args.hasFlag(options::OPT_fexceptions, options::OPT_fno_exceptions, true);
++  addMultilibFlag(Exceptions, "-fexceptions", Flags);
++  addMultilibFlag(!Exceptions, "-fno-exceptions", Flags);
++  addMultilibFlag(getSanitizerArgs(Args).needsAsanRt(), "-fsanitize=address", Flags);
++  Multilibs.setFilePathsCallback(FilePaths);
++
++  if (Multilibs.select(D, Flags, SelectedMultilibs)) {
++    Multilib LastSelected = SelectedMultilibs.back();
++    SelectedMultilibs = {LastSelected};
++    if (!SelectedMultilibs.back().isDefault())
++      if (const auto &PathsCallback = Multilibs.filePathsCallback())
++        for (const auto &Path : PathsCallback(SelectedMultilibs.back()))
++          // Prepend the multilib path to ensure it takes the precedence.
++          getFilePaths().insert(getFilePaths().begin(), Path);
++  }
++}
++
++std::string Onyx::ComputeEffectiveClangTriple(const ArgList &Args,
++                                              types::ID InputType) const {
++  llvm::Triple Triple(ComputeLLVMTriple(Args, InputType));
++  return Triple.str();
++}
++
++Tool *Onyx::buildLinker() const { return new tools::onyx::Linker(*this); }
++
++void Onyx::addClangTargetOptions(const ArgList &DriverArgs,
++                                 ArgStringList &CC1Args,
++                                 Action::OffloadKind) const {
++  if (!DriverArgs.hasFlag(options::OPT_fuse_init_array,
++                          options::OPT_fno_use_init_array, true))
++    CC1Args.push_back("-fno-use-init-array");
++}
++
++void Onyx::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
++                                     ArgStringList &CC1Args) const {
++  const Driver &D = getDriver();
++
++  if (DriverArgs.hasArg(options::OPT_nostdinc))
++    return;
++
++  if (!DriverArgs.hasArg(options::OPT_nobuiltininc)) {
++    SmallString<128> P(D.ResourceDir);
++    llvm::sys::path::append(P, "include");
++    addSystemInclude(DriverArgs, CC1Args, P);
++  }
++
++  if (DriverArgs.hasArg(options::OPT_nostdlibinc))
++    return;
++
++  // Check for configure-time C include directories.
++  StringRef CIncludeDirs(C_INCLUDE_DIRS);
++  if (CIncludeDirs != "") {
++    SmallVector<StringRef, 5> dirs;
++    CIncludeDirs.split(dirs, ":");
++    for (StringRef dir : dirs) {
++      StringRef Prefix =
++          llvm::sys::path::is_absolute(dir) ? StringRef(D.SysRoot) : "";
++      addExternCSystemInclude(DriverArgs, CC1Args, Prefix + dir);
++    }
++    return;
++  }
++
++  if (!D.SysRoot.empty()) {
++    SmallString<128> P(D.SysRoot);
++    llvm::sys::path::append(P, "include");
++    addExternCSystemInclude(DriverArgs, CC1Args, P.str());
++  }
++}
++
++void Onyx::AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
++                                        ArgStringList &CC1Args) const {
++  if (DriverArgs.hasArg(options::OPT_nostdlibinc, options::OPT_nostdinc,
++			options::OPT_nostdincxx))
++    return;
++
++  const Driver &D = getDriver();
++  std::string Target = getTripleString();
++
++  auto AddCXXIncludePath = [&](StringRef Path) {
++    std::string Version = detectLibcxxVersion(Path);
++    if (Version.empty())
++      return;
++
++    // First add the per-target include path.
++    SmallString<128> TargetDir(Path);
++    llvm::sys::path::append(TargetDir, Target, "c++", Version);
++    if (getVFS().exists(TargetDir))
++      addSystemInclude(DriverArgs, CC1Args, TargetDir);
++
++    // Second add the generic one.
++    SmallString<128> Dir(Path);
++    llvm::sys::path::append(Dir, "c++", Version);
++    addSystemInclude(DriverArgs, CC1Args, Dir);
++  };
++
++  switch (GetCXXStdlibType(DriverArgs)) {
++  case ToolChain::CST_Libcxx: {
++    SmallString<128> P(D.Dir);
++    llvm::sys::path::append(P, "..", "include");
++    AddCXXIncludePath(P);
++    break;
++  }
++
++  default:
++    llvm_unreachable("invalid stdlib name");
++  }
++}
++
++void Onyx::AddCXXStdlibLibArgs(const ArgList &Args,
++                               ArgStringList &CmdArgs) const {
++  switch (GetCXXStdlibType(Args)) {
++  case ToolChain::CST_Libcxx:
++    CmdArgs.push_back("-lc++");
++    break;
++
++  case ToolChain::CST_Libstdcxx:
++    CmdArgs.push_back("-lstdc++");
++    break;
++  }
++}
++
++SanitizerMask Onyx::getSupportedSanitizers() const {
++  SanitizerMask Res = ToolChain::getSupportedSanitizers();
++  Res |= SanitizerKind::Address;
++  Res |= SanitizerKind::KernelAddress;
++  Res |= SanitizerKind::PointerCompare;
++  Res |= SanitizerKind::PointerSubtract;
++  Res |= SanitizerKind::Fuzzer;
++  Res |= SanitizerKind::FuzzerNoLink;
++  Res |= SanitizerKind::Leak;
++  Res |= SanitizerKind::SafeStack;
++  Res |= SanitizerKind::Scudo;
++  Res |= SanitizerKind::Thread;
++  Res |= SanitizerKind::Memory;
++  Res |= SanitizerKind::KernelMemory;
++  return Res;
++}
++
++SanitizerMask Onyx::getDefaultSanitizers() const {
++  SanitizerMask Res;
++
++  // TODO: Enable this stuff by default, like Fuchsia
++#if 0
++  switch (getTriple().getArch()) {
++  case llvm::Triple::aarch64:
++    Res |= SanitizerKind::ShadowCallStack;
++    break;
++  case llvm::Triple::x86_64:
++    Res |= SanitizerKind::SafeStack;
++    break;
++  default:
++    // TODO: Enable SafeStack on RISC-V once tested.
++    break;
++  }
++#endif
++
++  return Res;
++}
+--- /dev/null
++++ b/clang/lib/Driver/ToolChains/Onyx.h
+@@ -0,0 +1,98 @@
++//===--- Onyx.h - Onyx ToolChain Implementations ----------*- C++ -*-===//
++//
++// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
++// See https://llvm.org/LICENSE.txt for license information.
++// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
++//
++//===----------------------------------------------------------------------===//
++
++#ifndef LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_ONYX_H
++#define LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_ONYX_H
++
++#include "Gnu.h"
++#include "clang/Driver/Tool.h"
++#include "clang/Driver/ToolChain.h"
++
++namespace clang {
++namespace driver {
++namespace tools {
++namespace onyx {
++class LLVM_LIBRARY_VISIBILITY Linker : public Tool {
++public:
++  Linker(const ToolChain &TC) : Tool("onyx::Linker", "ld.lld", TC) {}
++
++  bool hasIntegratedCPP() const override { return false; }
++  bool isLinkJob() const override { return true; }
++
++  void ConstructJob(Compilation &C, const JobAction &JA,
++                    const InputInfo &Output, const InputInfoList &Inputs,
++                    const llvm::opt::ArgList &TCArgs,
++                    const char *LinkingOutput) const override;
++};
++} // end namespace onyx
++} // end namespace tools
++
++namespace toolchains {
++
++class LLVM_LIBRARY_VISIBILITY Onyx : public ToolChain {
++public:
++  Onyx(const Driver &D, const llvm::Triple &Triple,
++          const llvm::opt::ArgList &Args);
++
++  bool HasNativeLLVMSupport() const override { return true; }
++  bool IsIntegratedAssemblerDefault() const override { return true; }
++  bool IsMathErrnoDefault() const override { return false; }
++  bool useRelaxRelocations() const override { return true; };
++  RuntimeLibType GetDefaultRuntimeLibType() const override {
++    return ToolChain::RLT_CompilerRT;
++  }
++  CXXStdlibType GetDefaultCXXStdlibType() const override {
++    return ToolChain::CST_Libcxx;
++  }
++  bool isPICDefault() const override { return false; }
++  
++  bool isPIEDefault(const llvm::opt::ArgList &Args) const override {
++    return true;
++  }
++
++  bool isPICDefaultForced() const override { return false; }
++  llvm::DebuggerKind getDefaultDebuggerTuning() const override {
++    return llvm::DebuggerKind::GDB;
++  }
++
++  LangOptions::StackProtectorMode GetDefaultStackProtectorLevel(bool KernelOrKext) const override {
++    return LangOptions::SSPStrong; // SSPStrong
++  }
++
++  std::string ComputeEffectiveClangTriple(const llvm::opt::ArgList &Args,
++                                          types::ID InputType) const override;
++
++  SanitizerMask getSupportedSanitizers() const override;
++  SanitizerMask getDefaultSanitizers() const override;
++
++  void addClangTargetOptions(const llvm::opt::ArgList &DriverArgs,
++                             llvm::opt::ArgStringList &CC1Args,
++                             Action::OffloadKind DeviceOffloadKind) const override;
++  void
++  AddClangSystemIncludeArgs(const llvm::opt::ArgList &DriverArgs,
++                            llvm::opt::ArgStringList &CC1Args) const override;
++  void
++  AddClangCXXStdlibIncludeArgs(const llvm::opt::ArgList &DriverArgs,
++                               llvm::opt::ArgStringList &CC1Args) const override;
++  void AddCXXStdlibLibArgs(const llvm::opt::ArgList &Args,
++                           llvm::opt::ArgStringList &CmdArgs) const override;
++
++  const char *getDefaultLinker() const override {
++    // TODO: Consider switching to ld.lld
++	return "ld.lld";
++  }
++
++protected:
++  Tool *buildLinker() const override;
++};
++
++} // end namespace toolchains
++} // end namespace driver
++} // end namespace clang
++
++#endif // LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_ONYX_H
+--- a/compiler-rt/cmake/config-ix.cmake
++++ b/compiler-rt/cmake/config-ix.cmake
+@@ -760,7 +760,7 @@ set(COMPILER_RT_SANITIZERS_TO_BUILD all
+ list_replace(COMPILER_RT_SANITIZERS_TO_BUILD all "${ALL_SANITIZERS}")
+ 
+ if (SANITIZER_COMMON_SUPPORTED_ARCH AND NOT LLVM_USE_SANITIZER AND
+-    (OS_NAME MATCHES "Android|Darwin|Linux|FreeBSD|NetBSD|Fuchsia|SunOS|Haiku" OR
++    (OS_NAME MATCHES "Android|Darwin|Linux|FreeBSD|NetBSD|Fuchsia|SunOS|Haiku|Onyx" OR
+     (OS_NAME MATCHES "Windows" AND NOT CYGWIN AND
+         (NOT MINGW OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"))))
+   set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)
+@@ -799,7 +799,7 @@ else()
+   set(COMPILER_RT_HAS_RTSAN FALSE)
+ endif()
+ 
+-if (OS_NAME MATCHES "Linux|FreeBSD|Windows|NetBSD|SunOS")
++if (OS_NAME MATCHES "Linux|FreeBSD|Windows|NetBSD|SunOS|Onyx")
+   set(COMPILER_RT_ASAN_HAS_STATIC_RUNTIME TRUE)
+ else()
+   set(COMPILER_RT_ASAN_HAS_STATIC_RUNTIME FALSE)
+@@ -815,7 +815,7 @@ else()
+ endif()
+ 
+ if (COMPILER_RT_HAS_SANITIZER_COMMON AND LSAN_SUPPORTED_ARCH AND
+-    OS_NAME MATCHES "Android|Darwin|Linux|NetBSD|Fuchsia")
++    OS_NAME MATCHES "Android|Darwin|Linux|NetBSD|Fuchsia|Onyx")
+   set(COMPILER_RT_HAS_LSAN TRUE)
+ else()
+   set(COMPILER_RT_HAS_LSAN FALSE)
+@@ -836,7 +836,7 @@ else()
+ endif()
+ 
+ if (PROFILE_SUPPORTED_ARCH AND NOT LLVM_USE_SANITIZER AND
+-    OS_NAME MATCHES "Darwin|Linux|FreeBSD|Windows|Android|Fuchsia|SunOS|NetBSD|AIX|WASI|Haiku")
++    OS_NAME MATCHES "Darwin|Linux|FreeBSD|Windows|Android|Fuchsia|SunOS|NetBSD|AIX|WASI|Haiku|Onyx")
+   set(COMPILER_RT_HAS_PROFILE TRUE)
+ else()
+   set(COMPILER_RT_HAS_PROFILE FALSE)
+@@ -857,7 +857,7 @@ else()
+ endif()
+ 
+ if (COMPILER_RT_HAS_SANITIZER_COMMON AND TSAN_SUPPORTED_ARCH)
+-  if (OS_NAME MATCHES "Linux|Darwin|FreeBSD|NetBSD")
++  if (OS_NAME MATCHES "Linux|Darwin|FreeBSD|NetBSD|Onyx")
+     set(COMPILER_RT_HAS_TSAN TRUE)
+   elseif (OS_NAME MATCHES "Android" AND ANDROID_PLATFORM_LEVEL GREATER 23)
+     set(COMPILER_RT_HAS_TSAN TRUE)
+@@ -868,14 +868,14 @@ else()
+   set(COMPILER_RT_HAS_TSAN FALSE)
+ endif()
+ 
+-if (OS_NAME MATCHES "Linux|FreeBSD|Windows|NetBSD|SunOS")
++if (OS_NAME MATCHES "Linux|FreeBSD|Windows|NetBSD|SunOS|Onyx")
+   set(COMPILER_RT_TSAN_HAS_STATIC_RUNTIME TRUE)
+ else()
+   set(COMPILER_RT_TSAN_HAS_STATIC_RUNTIME FALSE)
+ endif()
+ 
+ if (COMPILER_RT_HAS_SANITIZER_COMMON AND UBSAN_SUPPORTED_ARCH AND
+-    OS_NAME MATCHES "Darwin|Linux|FreeBSD|NetBSD|Windows|Android|Fuchsia|SunOS|Haiku")
++    OS_NAME MATCHES "Darwin|Linux|FreeBSD|NetBSD|Windows|Android|Fuchsia|SunOS|Haiku|Onyx")
+   set(COMPILER_RT_HAS_UBSAN TRUE)
+ else()
+   set(COMPILER_RT_HAS_UBSAN FALSE)
+@@ -913,7 +913,7 @@ else()
+ endif()
+ 
+ if (COMPILER_RT_HAS_SANITIZER_COMMON AND XRAY_SUPPORTED_ARCH AND
+-    OS_NAME MATCHES "Darwin|Linux|FreeBSD|NetBSD|Fuchsia")
++    OS_NAME MATCHES "Darwin|Linux|FreeBSD|NetBSD|Fuchsia|Onyx")
+   set(COMPILER_RT_HAS_XRAY TRUE)
+ else()
+   set(COMPILER_RT_HAS_XRAY FALSE)
+--- a/compiler-rt/lib/asan/asan_linux.cpp
++++ b/compiler-rt/lib/asan/asan_linux.cpp
+@@ -13,8 +13,7 @@
+ 
+ #include "sanitizer_common/sanitizer_platform.h"
+ #if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD || \
+-    SANITIZER_SOLARIS || SANITIZER_HAIKU
+-
++    SANITIZER_SOLARIS || SANITIZER_HAIKU || SANITIZER_ONYX
+ #  if SANITIZER_HAIKU
+ #    define _DEFAULT_SOURCE
+ #  endif
+@@ -288,4 +287,4 @@ bool HandleDlopenInit() {
+ }  // namespace __asan
+ 
+ #endif  // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||
+-        // SANITIZER_SOLARIS || SANITIZER_HAIKU
++        // SANITIZER_SOLARIS || SANITIZER_HAIKU || SANITIZER_ONYX
+--- a/compiler-rt/lib/asan/asan_malloc_linux.cpp
++++ b/compiler-rt/lib/asan/asan_malloc_linux.cpp
+@@ -15,7 +15,8 @@
+ 
+ #include "sanitizer_common/sanitizer_platform.h"
+ #if SANITIZER_FREEBSD || SANITIZER_FUCHSIA || SANITIZER_LINUX || \
+-    SANITIZER_NETBSD || SANITIZER_SOLARIS || SANITIZER_HAIKU
++    SANITIZER_NETBSD || SANITIZER_SOLARIS || SANITIZER_HAIKU || \
++    SANITIZER_ONYX
+ 
+ #  include "asan_allocator.h"
+ #  include "asan_interceptors.h"
+--- a/compiler-rt/lib/builtins/assembly.h
++++ b/compiler-rt/lib/builtins/assembly.h
+@@ -49,7 +49,7 @@
+ #define CONST_SECTION .section .rodata
+ 
+ #if defined(__GNU__) || defined(__FreeBSD__) || defined(__Fuchsia__) ||        \
+-    defined(__linux__)
++    defined(__linux__) || defined(__onyx__)
+ #define NO_EXEC_STACK_DIRECTIVE .section .note.GNU-stack,"",%progbits
+ #else
+ #define NO_EXEC_STACK_DIRECTIVE
+--- a/compiler-rt/lib/interception/interception.h
++++ b/compiler-rt/lib/interception/interception.h
+@@ -19,7 +19,8 @@
+ 
+ #if !SANITIZER_LINUX && !SANITIZER_FREEBSD && !SANITIZER_APPLE &&    \
+     !SANITIZER_NETBSD && !SANITIZER_WINDOWS && !SANITIZER_FUCHSIA && \
+-    !SANITIZER_SOLARIS && !SANITIZER_HAIKU && !SANITIZER_AIX
++    !SANITIZER_SOLARIS && !SANITIZER_HAIKU && !SANITIZER_AIX && \
++    !SANITIZER_ONYX
+ #  error "Interception doesn't work on this operating system."
+ #endif
+ 
+@@ -383,7 +384,7 @@ inline void DoesNotSupportStaticLinking(
+ #  define INTERCEPT_FUNCTION_VER(func, symver) INTERCEPT_FUNCTION_AIX(func)
+ 
+ #elif SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD || \
+-    SANITIZER_SOLARIS || SANITIZER_HAIKU
++    SANITIZER_SOLARIS || SANITIZER_HAIKU || SANITIZER_ONYX
+ 
+ #  include "interception_linux.h"
+ #  define INTERCEPT_FUNCTION(func) INTERCEPT_FUNCTION_LINUX_OR_FREEBSD(func)
+--- a/compiler-rt/lib/interception/interception_linux.cpp
++++ b/compiler-rt/lib/interception/interception_linux.cpp
+@@ -14,7 +14,7 @@
+ #include "interception.h"
+ 
+ #if SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD || \
+-    SANITIZER_SOLARIS || SANITIZER_HAIKU
++    SANITIZER_SOLARIS || SANITIZER_HAIKU || SANITIZER_ONYX
+ 
+ #include <dlfcn.h>   // for dlsym() and dlvsym()
+ 
+@@ -80,4 +80,4 @@ bool InterceptFunction(const char *name,
+ }  // namespace __interception
+ 
+ #endif  // SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD ||
+-        // SANITIZER_SOLARIS || SANITIZER_HAIKU
++        // SANITIZER_SOLARIS || SANITIZER_HAIKU || SANITIZER_ONYX
+--- a/compiler-rt/lib/interception/interception_linux.h
++++ b/compiler-rt/lib/interception/interception_linux.h
+@@ -12,7 +12,7 @@
+ //===----------------------------------------------------------------------===//
+ 
+ #if SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD || \
+-    SANITIZER_SOLARIS || SANITIZER_HAIKU
++    SANITIZER_SOLARIS || SANITIZER_HAIKU || SANITIZER_ONYX
+ 
+ #if !defined(INCLUDED_FROM_INTERCEPTION_LIB)
+ # error interception_linux.h should be included from interception library only
+--- a/compiler-rt/lib/lsan/lsan_common.h
++++ b/compiler-rt/lib/lsan/lsan_common.h
+@@ -48,7 +48,7 @@
+ #  define CAN_SANITIZE_LEAKS 1
+ #elif SANITIZER_RISCV64 && SANITIZER_LINUX
+ #  define CAN_SANITIZE_LEAKS 1
+-#elif SANITIZER_NETBSD || SANITIZER_FUCHSIA
++#elif SANITIZER_NETBSD || SANITIZER_FUCHSIA || SANITIZER_ONYX
+ #  define CAN_SANITIZE_LEAKS 1
+ #else
+ #  define CAN_SANITIZE_LEAKS 0
+--- a/compiler-rt/lib/lsan/lsan_common_linux.cpp
++++ b/compiler-rt/lib/lsan/lsan_common_linux.cpp
+@@ -15,7 +15,7 @@
+ #include "sanitizer_common/sanitizer_platform.h"
+ #include "lsan_common.h"
+ 
+-#if CAN_SANITIZE_LEAKS && (SANITIZER_LINUX || SANITIZER_NETBSD)
++#if CAN_SANITIZE_LEAKS && (SANITIZER_LINUX || SANITIZER_NETBSD || SANITIZER_ONYX)
+ #include <link.h>
+ 
+ #include "sanitizer_common/sanitizer_common.h"
+--- a/compiler-rt/lib/lsan/lsan_linux.cpp
++++ b/compiler-rt/lib/lsan/lsan_linux.cpp
+@@ -12,7 +12,7 @@
+ 
+ #include "sanitizer_common/sanitizer_platform.h"
+ 
+-#if SANITIZER_LINUX || SANITIZER_NETBSD || SANITIZER_FUCHSIA
++#if SANITIZER_LINUX || SANITIZER_NETBSD || SANITIZER_FUCHSIA || SANITIZER_ONYX
+ 
+ #  include "lsan_allocator.h"
+ #  include "lsan_thread.h"
+--- a/compiler-rt/lib/orc/endianness.h
++++ b/compiler-rt/lib/orc/endianness.h
+@@ -22,7 +22,7 @@
+ #endif
+ 
+ #if defined(__linux__) || defined(__GNU__) || defined(__HAIKU__) ||            \
+-    defined(__Fuchsia__) || defined(__EMSCRIPTEN__)
++    defined(__Fuchsia__) || defined(__EMSCRIPTEN__) || defined(__onyx__)
+ #include <endian.h>
+ #elif defined(_AIX)
+ #include <sys/machine.h>
+--- a/compiler-rt/lib/profile/InstrProfilingPlatformLinux.c
++++ b/compiler-rt/lib/profile/InstrProfilingPlatformLinux.c
+@@ -8,7 +8,7 @@
+ 
+ #if defined(__linux__) || defined(__FreeBSD__) || defined(__Fuchsia__) ||      \
+     (defined(__sun__) && defined(__svr4__)) || defined(__NetBSD__) ||          \
+-    defined(_AIX) || defined(__wasm__) || defined(__HAIKU__)
++    defined(_AIX) || defined(__wasm__) || defined(__HAIKU__) || defined(__onyx__)
+ 
+ #if !defined(_AIX) && !defined(__wasm__)
+ #include <elf.h>
+--- a/compiler-rt/lib/profile/InstrProfilingPlatformOther.c
++++ b/compiler-rt/lib/profile/InstrProfilingPlatformOther.c
+@@ -9,7 +9,7 @@
+ #if !defined(__APPLE__) && !defined(__linux__) && !defined(__FreeBSD__) &&     \
+     !defined(__Fuchsia__) && !(defined(__sun__) && defined(__svr4__)) &&       \
+     !defined(__NetBSD__) && !defined(_WIN32) && !defined(_AIX) &&              \
+-    !defined(__wasm__) && !defined(__HAIKU__)
++    !defined(__wasm__) && !defined(__HAIKU__) && !defined(__onyx__)
+ 
+ #include <stdlib.h>
+ #include <stdio.h>
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_asm.h
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_asm.h
+@@ -140,7 +140,7 @@
+ #endif
+ 
+ #if defined(__ELF__) && (defined(__GNU__) || defined(__FreeBSD__) || \
+-                         defined(__Fuchsia__) || defined(__linux__))
++                         defined(__Fuchsia__) || defined(__linux__) || defined(__onyx__))
+ // clang-format off
+ #define NO_EXEC_STACK_DIRECTIVE .section .note.GNU-stack,"",%progbits
+ // clang-format on
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_getauxval.h
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_getauxval.h
+@@ -19,9 +19,9 @@
+ #include "sanitizer_platform.h"
+ #include "sanitizer_glibc_version.h"
+ 
+-#if SANITIZER_LINUX || SANITIZER_FUCHSIA
++#if SANITIZER_LINUX || SANITIZER_FUCHSIA || SANITIZER_ONYX
+ 
+-#  if (__GLIBC_PREREQ(2, 16) || SANITIZER_ANDROID || SANITIZER_FUCHSIA) && \
++#  if (__GLIBC_PREREQ(2, 16) || SANITIZER_ANDROID || SANITIZER_FUCHSIA || SANITIZER_ONYX) && \
+       !SANITIZER_GO
+ #    define SANITIZER_USE_GETAUXVAL 1
+ #  else
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_glibc_version.h
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_glibc_version.h
+@@ -15,7 +15,7 @@
+ 
+ #include "sanitizer_platform.h"
+ 
+-#if SANITIZER_LINUX || SANITIZER_FUCHSIA
++#if SANITIZER_LINUX || SANITIZER_FUCHSIA || SANITIZER_ONYX
+ #include <features.h>
+ #endif
+ 
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_internal_defs.h
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_internal_defs.h
+@@ -108,7 +108,7 @@
+ //
+ // FIXME: do we have anything like this on Mac?
+ #ifndef SANITIZER_CAN_USE_PREINIT_ARRAY
+-#if (SANITIZER_LINUX || SANITIZER_FUCHSIA || SANITIZER_NETBSD) && !defined(PIC)
++#if (SANITIZER_LINUX || SANITIZER_FUCHSIA || SANITIZER_NETBSD || SANITIZER_ONYX) && !defined(PIC)
+ #define SANITIZER_CAN_USE_PREINIT_ARRAY 1
+ // Before Solaris 11.4, .preinit_array is fully supported only with GNU ld.
+ // FIXME: Check for those conditions.
+@@ -187,7 +187,7 @@ typedef long pid_t;
+ typedef int pid_t;
+ #endif
+ 
+-#if SANITIZER_FREEBSD || SANITIZER_NETBSD || SANITIZER_APPLE ||             \
++#if SANITIZER_FREEBSD || SANITIZER_NETBSD || SANITIZER_APPLE || SANITIZER_ONYX || \
+     (SANITIZER_SOLARIS && (defined(_LP64) || _FILE_OFFSET_BITS == 64)) || \
+     (SANITIZER_LINUX && !SANITIZER_GLIBC && !SANITIZER_ANDROID) ||        \
+     (SANITIZER_LINUX && (defined(__x86_64__) || defined(__hexagon__)))
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_libignore.cpp
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_libignore.cpp
+@@ -9,7 +9,7 @@
+ #include "sanitizer_platform.h"
+ 
+ #if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_APPLE || \
+-    SANITIZER_NETBSD
++    SANITIZER_NETBSD || SANITIZER_ONYX
+ 
+ #include "sanitizer_libignore.h"
+ #include "sanitizer_flags.h"
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_linux.cpp
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_linux.cpp
+@@ -14,7 +14,7 @@
+ #include "sanitizer_platform.h"
+ 
+ #if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD || \
+-    SANITIZER_SOLARIS || SANITIZER_HAIKU
++    SANITIZER_SOLARIS || SANITIZER_HAIKU || SANITIZER_ONYX
+ 
+ #  include "sanitizer_common.h"
+ #  include "sanitizer_flags.h"
+@@ -135,7 +135,7 @@ extern "C" char **__libc_argv;
+ 
+ extern char **environ;
+ 
+-#  if SANITIZER_LINUX
++#  if SANITIZER_LINUX || SANITIZER_ONYX
+ // <linux/time.h>
+ struct kernel_timeval {
+   long tv_sec;
+@@ -148,7 +148,7 @@ const int FUTEX_WAKE = 1;
+ const int FUTEX_PRIVATE_FLAG = 128;
+ const int FUTEX_WAIT_PRIVATE = FUTEX_WAIT | FUTEX_PRIVATE_FLAG;
+ const int FUTEX_WAKE_PRIVATE = FUTEX_WAKE | FUTEX_PRIVATE_FLAG;
+-#  endif  // SANITIZER_LINUX
++#  endif  // SANITIZER_LINUX || SANITIZER_ONYX
+ 
+ // Are we using 32-bit or 64-bit Linux syscalls?
+ // x32 (which defines __x86_64__) has SANITIZER_WORDSIZE == 32
+@@ -267,7 +267,7 @@ uptr internal_mmap(void *addr, uptr leng
+                    u64 offset) {
+ #      if SANITIZER_FREEBSD
+   return (uptr)__sys_mmap(addr, length, prot, flags, fd, offset);
+-#      elif SANITIZER_LINUX_USES_64BIT_SYSCALLS
++#      elif SANITIZER_LINUX_USES_64BIT_SYSCALLS || SANITIZER_ONYX
+   return internal_syscall(SYSCALL(mmap), (uptr)addr, length, prot, flags, fd,
+                           offset);
+ #      else
+@@ -283,7 +283,7 @@ uptr internal_munmap(void *addr, uptr le
+   return internal_syscall(SYSCALL(munmap), (uptr)addr, length);
+ }
+ 
+-#    if SANITIZER_LINUX
++#    if SANITIZER_LINUX || SANITIZER_ONYX
+ uptr internal_mremap(void *old_address, uptr old_size, uptr new_size, int flags,
+                      void *new_address) {
+   return internal_syscall(SYSCALL(mremap), (uptr)old_address, old_size,
+@@ -307,7 +307,7 @@ uptr internal_close_range(fd_t lowfd, fd
+ uptr internal_close(fd_t fd) { return internal_syscall(SYSCALL(close), fd); }
+ 
+ uptr internal_open(const char *filename, int flags) {
+-#    if SANITIZER_LINUX
++#    if SANITIZER_LINUX || SANITIZER_ONYX
+   return internal_syscall(SYSCALL(openat), AT_FDCWD, (uptr)filename, flags);
+ #    else
+   return internal_syscall(SYSCALL(open), (uptr)filename, flags);
+@@ -315,7 +315,7 @@ uptr internal_open(const char *filename,
+ }
+ 
+ uptr internal_open(const char *filename, int flags, u32 mode) {
+-#    if SANITIZER_LINUX
++#    if SANITIZER_LINUX || SANITIZER_ONYX
+   return internal_syscall(SYSCALL(openat), AT_FDCWD, (uptr)filename, flags,
+                           mode);
+ #    else
+@@ -440,7 +440,7 @@ static void kernel_stat_to_stat(kstat_t
+ #    endif
+ 
+ uptr internal_stat(const char *path, void *buf) {
+-#    if SANITIZER_FREEBSD
++#    if SANITIZER_FREEBSD || SANITIZER_ONYX
+   return internal_syscall(SYSCALL(fstatat), AT_FDCWD, (uptr)path, (uptr)buf, 0);
+ #    elif SANITIZER_LINUX
+ #      if defined(__loongarch__)
+@@ -477,7 +477,7 @@ uptr internal_stat(const char *path, voi
+ }
+ 
+ uptr internal_lstat(const char *path, void *buf) {
+-#    if SANITIZER_FREEBSD
++#    if SANITIZER_FREEBSD || SANITIZER_ONYX
+   return internal_syscall(SYSCALL(fstatat), AT_FDCWD, (uptr)path, (uptr)buf,
+                           AT_SYMLINK_NOFOLLOW);
+ #    elif SANITIZER_LINUX
+@@ -516,7 +516,7 @@ uptr internal_lstat(const char *path, vo
+ }
+ 
+ uptr internal_fstat(fd_t fd, void *buf) {
+-#    if SANITIZER_FREEBSD || SANITIZER_LINUX_USES_64BIT_SYSCALLS
++#    if SANITIZER_FREEBSD || SANITIZER_LINUX_USES_64BIT_SYSCALLS || SANITIZER_ONYX
+ #      if SANITIZER_MIPS64
+   // For mips64, fstat syscall fills buffer in the format of kernel_stat
+   kstat_t kbuf;
+@@ -556,7 +556,7 @@ uptr internal_filesize(fd_t fd) {
+ uptr internal_dup(int oldfd) { return internal_syscall(SYSCALL(dup), oldfd); }
+ 
+ uptr internal_dup2(int oldfd, int newfd) {
+-#    if SANITIZER_LINUX
++#    if SANITIZER_LINUX || SANITIZER_ONYX
+   return internal_syscall(SYSCALL(dup3), oldfd, newfd, 0);
+ #    else
+   return internal_syscall(SYSCALL(dup2), oldfd, newfd);
+@@ -564,7 +564,7 @@ uptr internal_dup2(int oldfd, int newfd)
+ }
+ 
+ uptr internal_readlink(const char *path, char *buf, uptr bufsize) {
+-#    if SANITIZER_LINUX
++#    if SANITIZER_LINUX || SANITIZER_ONYX
+   return internal_syscall(SYSCALL(readlinkat), AT_FDCWD, (uptr)path, (uptr)buf,
+                           bufsize);
+ #    else
+@@ -573,7 +573,7 @@ uptr internal_readlink(const char *path,
+ }
+ 
+ uptr internal_unlink(const char *path) {
+-#    if SANITIZER_LINUX
++#    if SANITIZER_LINUX || SANITIZER_ONYX
+   return internal_syscall(SYSCALL(unlinkat), AT_FDCWD, (uptr)path, 0);
+ #    else
+   return internal_syscall(SYSCALL(unlink), (uptr)path);
+@@ -653,7 +653,7 @@ tid_t GetTid() {
+ }
+ 
+ int TgKill(pid_t pid, tid_t tid, int sig) {
+-#    if SANITIZER_LINUX
++#    if SANITIZER_LINUX || SANITIZER_ONYX
+   return internal_syscall(SYSCALL(tgkill), pid, tid, sig);
+ #    elif SANITIZER_FREEBSD
+   return internal_syscall(SYSCALL(thr_kill2), pid, tid, sig);
+@@ -692,7 +692,8 @@ u64 NanoTime() {
+ // should be called first inside __asan_init.
+ const char *GetEnv(const char *name) {
+ #  if SANITIZER_FREEBSD || SANITIZER_NETBSD || SANITIZER_SOLARIS || \
+-      SANITIZER_HAIKU
++      SANITIZER_HAIKU || SANITIZER_ONYX
++  /* ONYX PORTING DETAIL: we don't support /proc/self/environ yet */
+   if (::environ != 0) {
+     uptr NameLen = internal_strlen(name);
+     for (char **Env = ::environ; *Env != 0; Env++) {
+@@ -1336,7 +1337,7 @@ uptr ReadBinaryName(/*out*/ char *buf, u
+ }
+ 
+ uptr ReadLongProcessName(/*out*/ char *buf, uptr buf_len) {
+-#  if SANITIZER_LINUX
++#  if SANITIZER_LINUX || SANITIZER_ONYX
+   char *tmpbuf;
+   uptr tmpsize;
+   uptr tmplen;
+@@ -1405,7 +1406,7 @@ void ForEachMappedRegion(link_map *map,
+ }
+ #  endif
+ 
+-#  if SANITIZER_LINUX
++#  if SANITIZER_LINUX || SANITIZER_ONYX
+ #    if defined(__x86_64__)
+ // We cannot use glibc's clone wrapper, because it messes with the child
+ // task's TLS. It writes the PID and TID of the child task to its thread
+@@ -1895,7 +1896,7 @@ uptr internal_clone(int (*fn)(void *), v
+ #    endif
+ #  endif  // SANITIZER_LINUX
+ 
+-#  if SANITIZER_LINUX
++#  if SANITIZER_LINUX || SANITIZER_ONYX
+ int internal_uname(struct utsname *buf) {
+   return internal_syscall(SYSCALL(uname), buf);
+ }
+@@ -1947,7 +1948,7 @@ void *internal_start_thread(void *(*func
+ void internal_join_thread(void *th) {}
+ #  endif
+ 
+-#  if SANITIZER_LINUX && defined(__aarch64__)
++#  if (SANITIZER_LINUX || SANITIZER_ONYX) && defined(__aarch64__)
+ // Android headers in the older NDK releases miss this definition.
+ struct __sanitizer_esr_context {
+   struct _aarch64_ctx head;
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_linux.h
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_linux.h
+@@ -14,7 +14,7 @@
+ 
+ #include "sanitizer_platform.h"
+ #if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD || \
+-    SANITIZER_SOLARIS || SANITIZER_HAIKU
++    SANITIZER_SOLARIS || SANITIZER_HAIKU || SANITIZER_ONYX
+ #  include "sanitizer_common.h"
+ #  include "sanitizer_internal_defs.h"
+ #  include "sanitizer_platform_limits_freebsd.h"
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_linux_libcdep.cpp
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_linux_libcdep.cpp
+@@ -14,7 +14,7 @@
+ #include "sanitizer_platform.h"
+ 
+ #if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD || \
+-    SANITIZER_SOLARIS || SANITIZER_HAIKU
++    SANITIZER_SOLARIS || SANITIZER_HAIKU || SANITIZER_ONYX
+ 
+ #  include "sanitizer_allocator_internal.h"
+ #  include "sanitizer_atomic.h"
+@@ -399,7 +399,7 @@ void InitTlsSize() {}
+ uptr ThreadDescriptorSize() { return 0; }
+ #  endif  // (SANITIZER_FREEBSD || SANITIZER_GLIBC) && !SANITIZER_GO
+ 
+-#  if (SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_SOLARIS) && \
++#  if (SANITIZER_FREEBSD || SANITIZER_ONYX || SANITIZER_LINUX || SANITIZER_SOLARIS) && \
+       !SANITIZER_ANDROID && !SANITIZER_GO
+ namespace {
+ struct TlsBlock {
+@@ -592,7 +592,7 @@ static void GetTls(uptr *addr, uptr *siz
+   const uptr pre_tcb_size = TlsPreTcbSize();
+   *addr = tp - pre_tcb_size;
+   *size = g_tls_size + pre_tcb_size;
+-#    elif SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_SOLARIS
++#    elif SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_ONYX || SANITIZER_SOLARIS
+   uptr align;
+   GetStaticTlsBoundary(addr, size, &align);
+ #      if defined(__x86_64__) || defined(__i386__) || defined(__s390__) || \
+@@ -664,7 +664,7 @@ static void GetTls(uptr *addr, uptr *siz
+ #  if !SANITIZER_GO
+ uptr GetTlsSize() {
+ #    if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD || \
+-        SANITIZER_SOLARIS
++        SANITIZER_SOLARIS || SANITIZER_ONYX
+   uptr addr, size;
+   GetTls(&addr, &size);
+   return size;
+@@ -1032,7 +1032,7 @@ static uptr MmapSharedNoReserve(uptr add
+ 
+ static uptr MremapCreateAlias(uptr base_addr, uptr alias_addr,
+                               uptr alias_size) {
+-#  if SANITIZER_LINUX
++#  if SANITIZER_LINUX || SANITIZER_ONYX
+   return internal_mremap(reinterpret_cast<void *>(base_addr), 0, alias_size,
+                          MREMAP_MAYMOVE | MREMAP_FIXED,
+                          reinterpret_cast<void *>(alias_addr));
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_mallinfo.h
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_mallinfo.h
+@@ -25,7 +25,7 @@ struct __sanitizer_struct_mallinfo {
+   uptr v[10];
+ };
+ 
+-#elif SANITIZER_LINUX || SANITIZER_APPLE || SANITIZER_FUCHSIA
++#elif SANITIZER_LINUX || SANITIZER_APPLE || SANITIZER_FUCHSIA || SANITIZER_ONYX
+ 
+ struct __sanitizer_struct_mallinfo {
+   int v[10];
+--- /dev/null
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_onyx.h
+@@ -0,0 +1,22 @@
++//===-- sanitizer_onyx.h ------------------------------------*- C++ -*-===//
++//
++// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
++// See https://llvm.org/LICENSE.txt for license information.
++// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
++//
++//===---------------------------------------------------------------------===//
++//
++// Onyx-specific sanitizer support.
++//
++//===---------------------------------------------------------------------===//
++#ifndef SANITIZER_ONYX_H
++#define SANITIZER_ONYX_H
++
++#include "sanitizer_platform.h"
++#if SANITIZER_ONYX
++
++#include "sanitizer_common.h"
++
++#endif
++
++#endif
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_platform.h
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_platform.h
+@@ -15,7 +15,7 @@
+ #if !defined(__linux__) && !defined(__FreeBSD__) && !defined(__NetBSD__) && \
+     !defined(__APPLE__) && !defined(_WIN32) && !defined(__Fuchsia__) &&     \
+     !(defined(__sun__) && defined(__svr4__)) && !defined(__HAIKU__) &&      \
+-    !defined(__wasi__)
++    !defined(__wasi__) && !defined(__onyx__)
+ #  error "This operating system is not supported"
+ #endif
+ 
+@@ -142,6 +142,12 @@
+ #  define SANITIZER_FUCHSIA 0
+ #endif
+ 
++#if defined(__onyx__)
++#  define SANITIZER_ONYX 1
++#else
++#  define SANITIZER_ONYX 0
++#endif
++
+ // Assume linux that is not glibc or android is musl libc.
+ #if SANITIZER_LINUX && !SANITIZER_GLIBC && !SANITIZER_ANDROID
+ #  define SANITIZER_MUSL 1
+@@ -151,7 +157,8 @@
+ 
+ #define SANITIZER_POSIX                                       \
+   (SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_APPLE || \
+-   SANITIZER_NETBSD || SANITIZER_SOLARIS || SANITIZER_HAIKU)
++   SANITIZER_NETBSD || SANITIZER_SOLARIS || SANITIZER_HAIKU || \
++   SANITIZER_ONYX)
+ 
+ #if __LP64__ || defined(_WIN64)
+ #  define SANITIZER_WORDSIZE 64
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_platform_interceptors.h
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_platform_interceptors.h
+@@ -165,6 +165,12 @@ SANITIZER_WEAK_IMPORT void *aligned_allo
+ #define SI_LINUX_NOT_FREEBSD 0
+ #endif
+ 
++#if SANITIZER_ONYX
++# define SI_ONYX 1
++#else
++# define SI_ONYX 0
++#endif
++
+ #define SANITIZER_INTERCEPT_STRLEN SI_NOT_FUCHSIA
+ #define SANITIZER_INTERCEPT_STRNLEN (SI_NOT_MAC && SI_NOT_FUCHSIA)
+ #define SANITIZER_INTERCEPT_STRCMP (SI_NOT_FUCHSIA && SI_NOT_AIX)
+@@ -176,7 +182,7 @@ SANITIZER_WEAK_IMPORT void *aligned_allo
+ #define SANITIZER_INTERCEPT_STRRCHR SI_NOT_FUCHSIA
+ #define SANITIZER_INTERCEPT_STRSPN SI_NOT_FUCHSIA
+ #define SANITIZER_INTERCEPT_STRPBRK SI_NOT_FUCHSIA
+-#define SANITIZER_INTERCEPT_TEXTDOMAIN SI_LINUX_NOT_ANDROID || SI_SOLARIS
++#define SANITIZER_INTERCEPT_TEXTDOMAIN (SI_LINUX_NOT_ANDROID || SI_ONYX) || SI_SOLARIS
+ #define SANITIZER_INTERCEPT_STRCASECMP SI_POSIX
+ #define SANITIZER_INTERCEPT_MEMSET 1
+ #define SANITIZER_INTERCEPT_MEMMOVE SI_NOT_AIX
+@@ -197,7 +203,7 @@ SANITIZER_WEAK_IMPORT void *aligned_allo
+ // FIXME: enable memmem on Windows.
+ #define SANITIZER_INTERCEPT_MEMMEM (SI_POSIX && !SI_MAC_DEPLOYMENT_BELOW_10_7)
+ #define SANITIZER_INTERCEPT_MEMCHR SI_NOT_FUCHSIA
+-#define SANITIZER_INTERCEPT_MEMRCHR (SI_FREEBSD || SI_LINUX || SI_NETBSD)
++#define SANITIZER_INTERCEPT_MEMRCHR (SI_FREEBSD || SI_LINUX || SI_ONYX || SI_NETBSD)
+ 
+ #define SANITIZER_INTERCEPT_READ SI_POSIX
+ #define SANITIZER_INTERCEPT_PREAD SI_POSIX
+@@ -224,9 +230,9 @@ SANITIZER_WEAK_IMPORT void *aligned_allo
+ #define SANITIZER_INTERCEPT_WRITEV SI_POSIX
+ 
+ #define SANITIZER_INTERCEPT_PREADV \
+-  (SI_FREEBSD || SI_NETBSD || SI_LINUX_NOT_ANDROID)
++  (SI_FREEBSD || SI_NETBSD || SI_LINUX_NOT_ANDROID || SI_ONYX)
+ #define SANITIZER_INTERCEPT_PWRITEV \
+-  (SI_FREEBSD || SI_NETBSD || SI_LINUX_NOT_ANDROID)
++  (SI_FREEBSD || SI_NETBSD || SI_LINUX_NOT_ANDROID || SI_ONYX)
+ #define SANITIZER_INTERCEPT_PREADV64 SI_GLIBC
+ #define SANITIZER_INTERCEPT_PWRITEV64 SI_GLIBC
+ 
+@@ -258,20 +264,20 @@ SANITIZER_WEAK_IMPORT void *aligned_allo
+ 
+ #define SANITIZER_INTERCEPT_GETPWNAM_AND_FRIENDS SI_POSIX
+ #define SANITIZER_INTERCEPT_GETPWNAM_R_AND_FRIENDS \
+-  (SI_FREEBSD || SI_NETBSD || SI_MAC || SI_LINUX_NOT_ANDROID || SI_SOLARIS)
++  (SI_FREEBSD || SI_NETBSD || SI_MAC || SI_LINUX_NOT_ANDROID || SI_ONYX || SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_GETPWENT \
+-  (SI_FREEBSD || SI_NETBSD || SI_MAC || SI_LINUX_NOT_ANDROID || SI_SOLARIS)
++  (SI_FREEBSD || SI_NETBSD || SI_MAC || SI_LINUX_NOT_ANDROID || SI_ONYX || SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_FGETGRENT_R (SI_GLIBC || SI_SOLARIS)
+-#define SANITIZER_INTERCEPT_FGETPWENT SI_LINUX_NOT_ANDROID || SI_SOLARIS
++#define SANITIZER_INTERCEPT_FGETPWENT SI_LINUX_NOT_ANDROID || SI_ONYX || SI_SOLARIS
+ #define SANITIZER_INTERCEPT_GETPWENT_R \
+   (SI_FREEBSD || SI_NETBSD || SI_GLIBC || SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_FGETPWENT_R (SI_FREEBSD || SI_GLIBC || SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_SETPWENT \
+-  (SI_MAC || SI_LINUX_NOT_ANDROID || SI_SOLARIS)
++  (SI_MAC || SI_LINUX_NOT_ANDROID || SI_ONYX || SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_CLOCK_GETTIME \
+-  (SI_FREEBSD || SI_NETBSD || SI_LINUX || SI_SOLARIS)
++  (SI_FREEBSD || SI_NETBSD || SI_LINUX || SI_ONYX || SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_CLOCK_GETCPUCLOCKID \
+-  (SI_LINUX || SI_FREEBSD || SI_NETBSD)
++  (SI_LINUX || SI_FREEBSD || SI_ONYX || SI_NETBSD)
+ // TODO: This should be SI_POSIX, adding glibc first until I have time
+ // to verify all timer_t typedefs on other platforms.
+ #define SANITIZER_INTERCEPT_TIMER_CREATE SI_GLIBC
+@@ -292,27 +298,27 @@ SANITIZER_WEAK_IMPORT void *aligned_allo
+ #define SANITIZER_INTERCEPT_GETHOSTBYNAME SI_POSIX
+ #define SANITIZER_INTERCEPT_GETHOSTBYNAME2 SI_POSIX && !SI_SOLARIS
+ #define SANITIZER_INTERCEPT_GETHOSTBYNAME_R \
+-  (SI_FREEBSD || SI_LINUX || SI_SOLARIS)
++  (SI_FREEBSD || SI_LINUX || SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_GETHOSTBYNAME2_R \
+-  (SI_FREEBSD || SI_LINUX_NOT_ANDROID)
++  (SI_FREEBSD || SI_LINUX_NOT_ANDROID || SI_ONYX)
+ #define SANITIZER_INTERCEPT_GETHOSTBYADDR_R \
+-  (SI_FREEBSD || SI_LINUX_NOT_ANDROID || SI_SOLARIS)
++  (SI_FREEBSD || SI_LINUX_NOT_ANDROID || SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_GETHOSTENT_R (SI_FREEBSD || SI_GLIBC || SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_GETSOCKOPT SI_POSIX
+ #define SANITIZER_INTERCEPT_ACCEPT SI_POSIX
+ #define SANITIZER_INTERCEPT_ACCEPT4 \
+-  (SI_LINUX_NOT_ANDROID || SI_NETBSD || SI_FREEBSD)
++  (SI_LINUX_NOT_ANDROID || SI_NETBSD || SI_FREEBSD || SI_ONYX)
+ #define SANITIZER_INTERCEPT_PACCEPT SI_NETBSD
+ #define SANITIZER_INTERCEPT_MODF (SI_POSIX && SI_NOT_AIX)
+ #define SANITIZER_INTERCEPT_RECVMSG SI_POSIX
+ #define SANITIZER_INTERCEPT_SENDMSG SI_POSIX
+-#define SANITIZER_INTERCEPT_RECVMMSG SI_LINUX
+-#define SANITIZER_INTERCEPT_SENDMMSG SI_LINUX
+-#define SANITIZER_INTERCEPT_SYSMSG SI_LINUX_NOT_ANDROID
++#define SANITIZER_INTERCEPT_RECVMMSG (SI_LINUX || SI_ONYX)
++#define SANITIZER_INTERCEPT_SENDMMSG (SI_LINUX || SI_ONYX)
++#define SANITIZER_INTERCEPT_SYSMSG (SI_LINUX_NOT_ANDROID || SI_ONYX)
+ #define SANITIZER_INTERCEPT_GETPEERNAME SI_POSIX
+ #define SANITIZER_INTERCEPT_IOCTL SI_POSIX
+ #define SANITIZER_INTERCEPT_INET_ATON SI_POSIX
+-#define SANITIZER_INTERCEPT_SYSINFO SI_LINUX
++#define SANITIZER_INTERCEPT_SYSINFO (SI_LINUX || SI_ONYX)
+ #define SANITIZER_INTERCEPT_READDIR SI_POSIX
+ #define SANITIZER_INTERCEPT_READDIR64 SI_GLIBC || SI_SOLARIS32
+ #if SI_LINUX_NOT_ANDROID &&                                                \
+@@ -445,27 +451,27 @@ SANITIZER_WEAK_IMPORT void *aligned_allo
+ 
+ // FIXME: getline seems to be available on OSX 10.7
+ #define SANITIZER_INTERCEPT_GETLINE \
+-  (SI_FREEBSD || SI_NETBSD || SI_LINUX_NOT_ANDROID || SI_SOLARIS)
++  (SI_FREEBSD || SI_NETBSD || SI_LINUX_NOT_ANDROID || SI_SOLARIS || SI_ONYX)
+ 
+ #define SANITIZER_INTERCEPT__EXIT \
+-  (SI_LINUX || SI_FREEBSD || SI_NETBSD || SI_MAC || SI_SOLARIS)
++  (SI_LINUX || SI_FREEBSD || SI_NETBSD || SI_MAC || SI_SOLARIS || SI_ONYX)
+ 
+ #define SANITIZER_INTERCEPT___LIBC_MUTEX SI_NETBSD
+ #define SANITIZER_INTERCEPT_PTHREAD_SETNAME_NP \
+-  (SI_FREEBSD || SI_NETBSD || SI_GLIBC || SI_SOLARIS)
++  (SI_FREEBSD || SI_NETBSD || SI_GLIBC || SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_PTHREAD_GETNAME_NP \
+-  (SI_FREEBSD || SI_NETBSD || SI_GLIBC || SI_SOLARIS)
++  (SI_FREEBSD || SI_NETBSD || SI_GLIBC || SI_SOLARIS || SI_ONYX)
+ 
+ #define SANITIZER_INTERCEPT_TLS_GET_ADDR \
+-  (SI_FREEBSD || SI_NETBSD || SI_LINUX_NOT_ANDROID)
++  (SI_FREEBSD || SI_NETBSD || SI_LINUX_NOT_ANDROID || SI_ONYX)
+ 
+ #define SANITIZER_INTERCEPT_LISTXATTR SI_LINUX
+ #define SANITIZER_INTERCEPT_GETXATTR SI_LINUX
+ #define SANITIZER_INTERCEPT_GETRESID SI_LINUX
+ #define SANITIZER_INTERCEPT_GETIFADDRS \
+-  (SI_FREEBSD || SI_NETBSD || SI_LINUX_NOT_ANDROID || SI_MAC || SI_SOLARIS)
++  (SI_FREEBSD || SI_NETBSD || SI_LINUX_NOT_ANDROID || SI_MAC || SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_IF_INDEXTONAME \
+-  (SI_FREEBSD || SI_NETBSD || SI_LINUX_NOT_ANDROID || SI_MAC || SI_SOLARIS)
++  (SI_FREEBSD || SI_NETBSD || SI_LINUX_NOT_ANDROID || SI_MAC || SI_SOLARIS || SI_ONYX)
+ #define SANITIZER_INTERCEPT_CAPGET SI_LINUX_NOT_ANDROID
+ #if SI_LINUX && defined(__arm__)
+ #define SANITIZER_INTERCEPT_AEABI_MEM 1
+@@ -473,44 +479,44 @@ SANITIZER_WEAK_IMPORT void *aligned_allo
+ #define SANITIZER_INTERCEPT_AEABI_MEM 0
+ #endif
+ #define SANITIZER_INTERCEPT___BZERO SI_MAC || SI_GLIBC
+-#define SANITIZER_INTERCEPT_BZERO SI_LINUX_NOT_ANDROID
++#define SANITIZER_INTERCEPT_BZERO SI_LINUX_NOT_ANDROID || SI_ONYX
+ #define SANITIZER_INTERCEPT_FTIME (!SI_FREEBSD && !SI_NETBSD && SI_POSIX)
+ #define SANITIZER_INTERCEPT_XDR (SI_GLIBC || SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_XDRREC SI_GLIBC
+ #define SANITIZER_INTERCEPT_TSEARCH \
+-  (SI_LINUX_NOT_ANDROID || SI_MAC || SI_NETBSD || SI_SOLARIS)
++  (SI_LINUX_NOT_ANDROID || SI_ONYX || SI_MAC || SI_NETBSD || SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_LIBIO_INTERNALS SI_GLIBC
+ #define SANITIZER_INTERCEPT_FOPEN SI_POSIX
+ #define SANITIZER_INTERCEPT_FOPEN64 (SI_GLIBC || SI_SOLARIS32)
+ #define SANITIZER_INTERCEPT_OPEN_MEMSTREAM \
+-  (SI_LINUX_NOT_ANDROID || SI_NETBSD || SI_SOLARIS)
++  (SI_LINUX_NOT_ANDROID || SI_ONYX || SI_NETBSD || SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_OBSTACK SI_GLIBC
+ #define SANITIZER_INTERCEPT_FFLUSH SI_POSIX
+ #define SANITIZER_INTERCEPT_FCLOSE SI_POSIX
+ 
+ #ifndef SANITIZER_INTERCEPT_DLOPEN_DLCLOSE
+ #define SANITIZER_INTERCEPT_DLOPEN_DLCLOSE \
+-  (SI_FREEBSD || SI_NETBSD || SI_LINUX_NOT_ANDROID || SI_MAC || SI_SOLARIS)
++  (SI_FREEBSD || SI_NETBSD || SI_LINUX_NOT_ANDROID || SI_ONYX || SI_MAC || SI_SOLARIS)
+ #endif
+ 
+ #define SANITIZER_INTERCEPT_GETPASS \
+-  (SI_LINUX_NOT_ANDROID || SI_MAC || SI_NETBSD)
+-#define SANITIZER_INTERCEPT_TIMERFD SI_LINUX_NOT_ANDROID
++  (SI_LINUX_NOT_ANDROID || SI_ONYX || SI_MAC || SI_NETBSD)
++#define SANITIZER_INTERCEPT_TIMERFD SI_LINUX_NOT_ANDROID || SI_ONYX
+ 
+ #define SANITIZER_INTERCEPT_MLOCKX SI_POSIX
+-#define SANITIZER_INTERCEPT_FOPENCOOKIE SI_LINUX_NOT_ANDROID
++#define SANITIZER_INTERCEPT_FOPENCOOKIE SI_LINUX_NOT_ANDROID || SI_ONYX
+ #define SANITIZER_INTERCEPT_SEM \
+-  (SI_LINUX || SI_FREEBSD || SI_NETBSD || SI_SOLARIS)
++  (SI_LINUX || SI_ONYX || SI_FREEBSD || SI_NETBSD || SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_PTHREAD_SETCANCEL SI_POSIX
+ #define SANITIZER_INTERCEPT_MINCORE \
+-  (SI_LINUX || SI_NETBSD || SI_FREEBSD || SI_SOLARIS)
++  (SI_LINUX || SI_ONYX || SI_NETBSD || SI_FREEBSD || SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_PROCESS_VM_READV SI_LINUX
+ #define SANITIZER_INTERCEPT_CTERMID \
+-  (SI_LINUX || SI_MAC || SI_FREEBSD || SI_NETBSD || SI_SOLARIS)
++  (SI_LINUX || SI_ONYX || SI_MAC || SI_FREEBSD || SI_NETBSD || SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_CTERMID_R (SI_MAC || SI_FREEBSD || SI_SOLARIS)
+ 
+ #define SANITIZER_INTERCEPTOR_HOOKS \
+-  (SI_LINUX || SI_MAC || SI_WINDOWS || SI_FREEBSD || SI_NETBSD || SI_SOLARIS)
++  (SI_LINUX || SI_ONYX || SI_MAC || SI_WINDOWS || SI_FREEBSD || SI_NETBSD || SI_SOLARIS)
+ #define SANITIZER_INTERCEPT_RECV_RECVFROM SI_POSIX
+ #define SANITIZER_INTERCEPT_SEND_SENDTO SI_POSIX
+ #define SANITIZER_INTERCEPT_EVENTFD_READ_WRITE (SI_LINUX || SI_FREEBSD)
+@@ -564,12 +570,12 @@ SANITIZER_WEAK_IMPORT void *aligned_allo
+ #define SANITIZER_INTERCEPT_ACCESS (SI_NETBSD || SI_FREEBSD)
+ #define SANITIZER_INTERCEPT_FACCESSAT (SI_NETBSD || SI_FREEBSD)
+ #define SANITIZER_INTERCEPT_GETGROUPLIST \
+-  (SI_NETBSD || SI_FREEBSD || SI_LINUX)
++  (SI_NETBSD || SI_FREEBSD || SI_LINUX || SI_ONYX)
+ #define SANITIZER_INTERCEPT_STRLCPY \
+   (SI_NETBSD || SI_FREEBSD || SI_MAC || SI_ANDROID)
+ 
+-#define SANITIZER_INTERCEPT_NAME_TO_HANDLE_AT SI_LINUX_NOT_ANDROID
+-#define SANITIZER_INTERCEPT_OPEN_BY_HANDLE_AT SI_LINUX_NOT_ANDROID
++#define SANITIZER_INTERCEPT_NAME_TO_HANDLE_AT (SI_LINUX_NOT_ANDROID || SI_ONYX)
++#define SANITIZER_INTERCEPT_OPEN_BY_HANDLE_AT (SI_LINUX_NOT_ANDROID || SI_ONYX)
+ 
+ #define SANITIZER_INTERCEPT_READLINK SI_POSIX
+ #if defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) && \
+@@ -587,15 +593,15 @@ SANITIZER_WEAK_IMPORT void *aligned_allo
+ #define SANITIZER_INTERCEPT_STRMODE (SI_NETBSD || SI_FREEBSD)
+ #define SANITIZER_INTERCEPT_TTYENT (SI_NETBSD || SI_FREEBSD)
+ #define SANITIZER_INTERCEPT_TTYENTPATH SI_NETBSD
+-#define SANITIZER_INTERCEPT_PROTOENT (SI_LINUX || SI_NETBSD || SI_FREEBSD)
++#define SANITIZER_INTERCEPT_PROTOENT (SI_LINUX || SI_ONYX || SI_NETBSD || SI_FREEBSD)
+ #define SANITIZER_INTERCEPT_PROTOENT_R SI_GLIBC
+ #define SANITIZER_INTERCEPT_NETENT (SI_LINUX || SI_NETBSD || SI_FREEBSD)
+ #define SANITIZER_INTERCEPT_SETVBUF \
+-  (SI_NETBSD || SI_FREEBSD || SI_LINUX || SI_MAC || !SI_NOT_AIX)
++  (SI_NETBSD || SI_FREEBSD || SI_LINUX || SI_MAC || !SI_NOT_AIX || SI_ONYX)
+ #define SANITIZER_INTERCEPT_GETMNTINFO (SI_NETBSD || SI_FREEBSD || SI_MAC)
+ #define SANITIZER_INTERCEPT_MI_VECTOR_HASH SI_NETBSD
+ #define SANITIZER_INTERCEPT_GETVFSSTAT SI_NETBSD
+-#define SANITIZER_INTERCEPT_REGEX (SI_NETBSD || SI_FREEBSD || SI_LINUX)
++#define SANITIZER_INTERCEPT_REGEX (SI_NETBSD || SI_FREEBSD || SI_LINUX || SI_ONYX)
+ #define SANITIZER_INTERCEPT_REGEXSUB SI_NETBSD
+ #define SANITIZER_INTERCEPT_FTS (SI_NETBSD || SI_FREEBSD)
+ #define SANITIZER_INTERCEPT_SYSCTL (SI_NETBSD || SI_FREEBSD || SI_MAC)
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp
+@@ -11,7 +11,7 @@
+ // Sizes and layouts of platform-specific POSIX data structures.
+ //===----------------------------------------------------------------------===//
+ 
+-#if defined(__linux__) || defined(__APPLE__)
++#if defined(__linux__) || defined(__onyx__) || defined(__APPLE__)
+ // Tests in this file assume that off_t-dependent data structures match the
+ // libc ABI. For example, struct dirent here is what readdir() function (as
+ // exported from libc) returns, and not the user-facing "dirent", which
+@@ -24,7 +24,7 @@
+ // Must go after undef _FILE_OFFSET_BITS.
+ #include "sanitizer_platform.h"
+ 
+-#if SANITIZER_LINUX || SANITIZER_APPLE || SANITIZER_HAIKU
++#if SANITIZER_LINUX || SANITIZER_APPLE || SANITIZER_HAIKU || SANITIZER_ONYX
+ // Must go after undef _FILE_OFFSET_BITS.
+ #include "sanitizer_glibc_version.h"
+ 
+@@ -167,7 +167,7 @@ typedef struct user_fpregs elf_fpregset_
+ #include <sys/vfs.h>
+ #include <sys/epoll.h>
+ #include <linux/capability.h>
+-#elif !SANITIZER_HAIKU
++#elif !SANITIZER_HAIKU && !SANITIZER_ONYX
+ #include <fstab.h>
+ #endif // SANITIZER_LINUX
+ 
+@@ -182,6 +182,29 @@ typedef struct user_fpregs elf_fpregset_
+ #include <sys/ioctl.h>
+ #endif
+ 
++#if SANITIZER_ONYX
++#include <mntent.h>
++#include <crypt.h>
++#include <sys/statvfs.h>
++#include <sys/statfs.h>
++#include <glob.h>
++#include <sys/ioctl.h>
++#include <utime.h>
++#include <stdio.h>
++#include <net/ethernet.h>
++#include <netinet/ether.h>
++#include <net/if.h>
++#include <sys/timeb.h>
++#include <sys/mount.h>
++#include <utmpx.h>
++#include <mqueue.h>
++#include <sys/mtio.h>
++#include <sys/msg.h>
++#include <sys/shm.h>
++#include <sys/timex.h>
++#include <sys/sysinfo.h>
++#endif
++
+ // Include these after system headers to avoid name clashes and ambiguities.
+ #  include "sanitizer_common.h"
+ #  include "sanitizer_internal_defs.h"
+@@ -250,6 +273,9 @@ namespace __sanitizer {
+   }
+ #  endif  // !SANITIZER_ANDROID
+ 
++#  if SANITIZER_ONYX
++  unsigned struct_sysinfo_sz = sizeof(struct sysinfo);
++#  endif
+ #  if SANITIZER_LINUX
+   unsigned struct_epoll_event_sz = sizeof(struct epoll_event);
+   unsigned struct_sysinfo_sz = sizeof(struct sysinfo);
+@@ -277,7 +303,7 @@ namespace __sanitizer {
+   unsigned struct_oldold_utsname_sz = sizeof(struct oldold_utsname);
+ #endif // SANITIZER_LINUX
+ 
+-#if SANITIZER_LINUX
++#if SANITIZER_LINUX || SANITIZER_ONYX
+   unsigned struct_rlimit_sz = sizeof(struct rlimit);
+   unsigned struct_timespec_sz = sizeof(struct timespec);
+   unsigned struct_utimbuf_sz = sizeof(struct utimbuf);
+@@ -307,7 +333,7 @@ namespace __sanitizer {
+   unsigned struct_statvfs64_sz = sizeof(struct statvfs64);
+ #endif // SANITIZER_GLIBC
+ 
+-#if SANITIZER_LINUX && !SANITIZER_ANDROID
++#if SANITIZER_LINUX || SANITIZER_ONYX && !SANITIZER_ANDROID
+   unsigned struct_timex_sz = sizeof(struct timex);
+   unsigned struct_msqid_ds_sz = sizeof(struct msqid_ds);
+   unsigned struct_mq_attr_sz = sizeof(struct mq_attr);
+@@ -324,7 +350,7 @@ namespace __sanitizer {
+ #endif
+ 
+ 
+-#if SANITIZER_LINUX && !SANITIZER_ANDROID
++#if SANITIZER_LINUX || SANITIZER_ONYX && !SANITIZER_ANDROID
+   unsigned struct_shminfo_sz = sizeof(struct shminfo);
+   unsigned struct_shm_info_sz = sizeof(struct shm_info);
+   int shmctl_ipc_stat = (int)IPC_STAT;
+@@ -546,7 +572,7 @@ unsigned struct_ElfW_Phdr_sz = sizeof(El
+   unsigned struct_sock_fprog_sz = sizeof(struct sock_fprog);
+ #  endif  // SANITIZER_GLIBC
+ 
+-#  if !SANITIZER_ANDROID && !SANITIZER_APPLE && !SANITIZER_HAIKU
++#  if !SANITIZER_ANDROID && !SANITIZER_APPLE && !SANITIZER_HAIKU && !SANITIZER_ONYX
+   unsigned struct_sioc_sg_req_sz = sizeof(struct sioc_sg_req);
+   unsigned struct_sioc_vif_req_sz = sizeof(struct sioc_vif_req);
+ #endif
+@@ -607,6 +633,7 @@ unsigned struct_ElfW_Phdr_sz = sizeof(El
+   unsigned IOCTL_TIOCSCTTY = TIOCSCTTY;
+   unsigned IOCTL_TIOCSPGRP = TIOCSPGRP;
+   unsigned IOCTL_TIOCSWINSZ = TIOCSWINSZ;
++
+ #if SANITIZER_LINUX && !SANITIZER_ANDROID
+   unsigned IOCTL_SIOCGETSGCNT = SIOCGETSGCNT;
+   unsigned IOCTL_SIOCGETVIFCNT = SIOCGETVIFCNT;
+@@ -1264,7 +1291,7 @@ CHECK_SIZE_AND_OFFSET(ifaddrs, ifa_next)
+ CHECK_SIZE_AND_OFFSET(ifaddrs, ifa_name);
+ CHECK_SIZE_AND_OFFSET(ifaddrs, ifa_addr);
+ CHECK_SIZE_AND_OFFSET(ifaddrs, ifa_netmask);
+-#if SANITIZER_LINUX || SANITIZER_FREEBSD
++#if SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_ONYX
+ // Compare against the union, because we can't reach into the union in a
+ // compliant way.
+ #ifdef ifa_dstaddr
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.h
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.h
+@@ -14,7 +14,7 @@
+ #ifndef SANITIZER_PLATFORM_LIMITS_POSIX_H
+ #define SANITIZER_PLATFORM_LIMITS_POSIX_H
+ 
+-#if SANITIZER_LINUX || SANITIZER_APPLE || SANITIZER_HAIKU
++#if SANITIZER_LINUX || SANITIZER_APPLE || SANITIZER_HAIKU || SANITIZER_ONYX
+ 
+ #  include "sanitizer_internal_defs.h"
+ #  include "sanitizer_mallinfo.h"
+@@ -71,13 +71,15 @@ extern unsigned struct_regex_sz;
+ extern unsigned struct_regmatch_sz;
+ 
+ #  if !SANITIZER_ANDROID
++#    if !SANITIZER_ONYX
+ extern unsigned struct_fstab_sz;
++#    endif
+ extern unsigned struct_statfs_sz;
+ extern unsigned struct_sockaddr_sz;
+ unsigned ucontext_t_sz(void *uctx);
+ #  endif  // !SANITIZER_ANDROID
+ 
+-#  if SANITIZER_LINUX
++#  if SANITIZER_LINUX || SANITIZER_ONYX
+ 
+ #    if defined(__x86_64__)
+ const unsigned struct_kernel_stat_sz = 144;
+@@ -149,8 +151,7 @@ extern unsigned struct_oldold_utsname_sz
+ const unsigned struct_kexec_segment_sz = 4 * sizeof(unsigned long);
+ #  endif  // SANITIZER_LINUX
+ 
+-#  if SANITIZER_LINUX
+-
++#  if SANITIZER_LINUX || SANITIZER_ONYX
+ #    if defined(__powerpc64__) || defined(__s390__) || defined(__loongarch__)
+ const unsigned struct___old_kernel_stat_sz = 0;
+ #    elif !defined(__sparc__)
+@@ -204,11 +205,11 @@ struct __sanitizer_sem_t {
+   int data[4];
+ #    elif SANITIZER_ANDROID && !defined(_LP64)
+   int data;
+-#    elif SANITIZER_LINUX
++#    elif SANITIZER_LINUX || SANITIZER_ONYX
+   uptr data[4];
+ #    endif
+ };
+-#  endif  // SANITIZER_LINUX
++#  endif // SANITIZER_LINUX || SANITIZER_ONYX
+ 
+ #  if SANITIZER_LINUX && !SANITIZER_ANDROID
+ extern unsigned struct_ustat_sz;
+@@ -309,7 +310,7 @@ struct __sanitizer_shmid_ds {
+ };
+ #  endif
+ 
+-#  if SANITIZER_LINUX && !SANITIZER_ANDROID
++#  if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ extern unsigned struct_msqid_ds_sz;
+ extern unsigned struct_mq_attr_sz;
+ extern unsigned struct_timex_sz;
+@@ -446,7 +447,7 @@ struct __sanitizer_tm {
+   const char *tm_zone;
+ };
+ 
+-#  if SANITIZER_LINUX
++#  if SANITIZER_LINUX || SANITIZER_ONYX
+ struct __sanitizer_mntent {
+   char *mnt_fsname;
+   char *mnt_dir;
+@@ -502,7 +503,43 @@ struct __sanitizer_cmsghdr {
+   int cmsg_level;
+   int cmsg_type;
+ };
+-#  else
++#elif SANITIZER_ONYX
++
++struct __sanitizer_msghdr {
++	void *msg_name;
++	unsigned int msg_namelen;
++	struct __sanitizer_iovec *msg_iov;
++#if __LONG_MAX > 0x7fffffff && __BYTE_ORDER == __BIG_ENDIAN
++	int __pad1;
++#endif
++	int msg_iovlen;
++#if __LONG_MAX > 0x7fffffff && __BYTE_ORDER == __LITTLE_ENDIAN
++	int __pad1;
++#endif
++	void *msg_control;
++#if __LONG_MAX > 0x7fffffff && __BYTE_ORDER == __BIG_ENDIAN
++	int __pad2;
++#endif
++	unsigned int msg_controllen;
++#if __LONG_MAX > 0x7fffffff && __BYTE_ORDER == __LITTLE_ENDIAN
++	int __pad2;
++#endif
++	int msg_flags;
++};
++
++struct __sanitizer_cmsghdr {
++#if __LONG_MAX > 0x7fffffff && __BYTE_ORDER == __BIG_ENDIAN
++	int __pad1;
++#endif
++	unsigned int cmsg_len;
++#if __LONG_MAX > 0x7fffffff && __BYTE_ORDER == __LITTLE_ENDIAN
++	int __pad1;
++#endif
++	int cmsg_level;
++	int cmsg_type;
++};
++
++#else
+ // In POSIX, int msg_iovlen; socklen_t msg_controllen; socklen_t cmsg_len; but
+ // many implementations don't conform to the standard.
+ struct __sanitizer_msghdr {
+@@ -521,7 +558,7 @@ struct __sanitizer_cmsghdr {
+ };
+ #  endif
+ 
+-#  if SANITIZER_LINUX
++#  if SANITIZER_LINUX || SANITIZER_ONYX
+ struct __sanitizer_mmsghdr {
+   __sanitizer_msghdr msg_hdr;
+   unsigned int msg_len;
+@@ -544,7 +581,7 @@ struct __sanitizer_dirent {
+   unsigned short d_reclen;
+   // more fields that we don't care about
+ };
+-#  elif (SANITIZER_LINUX && !SANITIZER_GLIBC) || defined(__x86_64__) || \
++#  elif ((SANITIZER_LINUX  || SANITIZER_ONYX) && !SANITIZER_GLIBC) || defined(__x86_64__) || \
+       defined(__hexagon__)
+ struct __sanitizer_dirent {
+   unsigned long long d_ino;
+@@ -561,7 +598,7 @@ struct __sanitizer_dirent {
+ };
+ #  endif
+ 
+-#  if SANITIZER_GLIBC
++#  if SANITIZER_GLIBC || SANITIZER_ONYX
+ struct __sanitizer_dirent64 {
+   unsigned long long d_ino;
+   unsigned long long d_off;
+@@ -579,12 +616,12 @@ typedef long long __sanitizer_clock_t;
+ typedef long __sanitizer_clock_t;
+ #  endif
+ 
+-#  if SANITIZER_LINUX || SANITIZER_HAIKU
++#  if SANITIZER_LINUX || SANITIZER_HAIKU || SANITIZER_ONYX
+ typedef int __sanitizer_clockid_t;
+ typedef unsigned long long __sanitizer_eventfd_t;
+ #  endif
+ 
+-#  if SANITIZER_LINUX
++#  if SANITIZER_LINUX || SANITIZER_ONYX
+ #    if defined(_LP64) || defined(__x86_64__) || defined(__powerpc__) || \
+         defined(__mips__) || defined(__hexagon__)
+ typedef unsigned __sanitizer___kernel_uid_t;
+@@ -630,7 +667,7 @@ typedef unsigned long __sanitizer_sigset
+ typedef unsigned __sanitizer_sigset_t;
+ #  elif SANITIZER_HAIKU
+ typedef unsigned long __sanitizer_sigset_t;
+-#  elif SANITIZER_LINUX
++#  elif (SANITIZER_LINUX || SANITIZER_ONYX)
+ struct __sanitizer_sigset_t {
+   // The size is determined by looking at sizeof of real sigset_t on linux.
+   uptr val[128 / sizeof(uptr)];
+@@ -739,7 +776,7 @@ struct __sanitizer_sigaction {
+ #        endif
+ #      endif
+ #    endif
+-#    if SANITIZER_LINUX || SANITIZER_HAIKU
++#    if SANITIZER_LINUX || SANITIZER_HAIKU || SANITIZER_ONYX
+   void (*sa_restorer)();
+ #    endif
+ #    if defined(__mips__) && (SANITIZER_WORDSIZE == 32) && !SANITIZER_MUSL
+@@ -789,7 +826,7 @@ extern const uptr sig_dfl;
+ extern const uptr sig_err;
+ extern const uptr sa_siginfo;
+ 
+-#  if SANITIZER_LINUX
++#  if (SANITIZER_LINUX || SANITIZER_ONYX)
+ extern int e_tabsz;
+ #  endif
+ 
+@@ -797,7 +834,7 @@ extern int af_inet;
+ extern int af_inet6;
+ uptr __sanitizer_in_addr_sz(int af);
+ 
+-#  if SANITIZER_LINUX
++#  if (SANITIZER_LINUX || SANITIZER_ONYX)
+ struct __sanitizer_dl_phdr_info {
+   uptr dlpi_addr;
+   const char *dlpi_name;
+@@ -859,7 +896,7 @@ typedef unsigned long __sanitizer_nfds_t
+ #  endif
+ 
+ #  if !SANITIZER_ANDROID
+-#    if SANITIZER_LINUX
++#    if (SANITIZER_LINUX || SANITIZER_ONYX)
+ struct __sanitizer_glob_t {
+   uptr gl_pathc;
+   char **gl_pathv;
+@@ -872,9 +909,9 @@ struct __sanitizer_glob_t {
+   int (*gl_lstat)(const char *, void *);
+   int (*gl_stat)(const char *, void *);
+ };
+-#    endif  // SANITIZER_LINUX
++#    endif  // SANITIZER_LINUX || SANITIZER_ONYX
+ 
+-#    if SANITIZER_LINUX
++#    if (SANITIZER_LINUX || SANITIZER_ONYX)
+ extern int glob_nomatch;
+ extern int glob_altdirfunc;
+ #    endif
+@@ -892,7 +929,7 @@ struct __sanitizer_wordexp_t {
+   uptr we_offs;
+ };
+ 
+-#  if SANITIZER_LINUX && !SANITIZER_ANDROID
++#  if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ struct __sanitizer_FILE {
+   int _flags;
+   char *_IO_read_ptr;
+@@ -959,7 +996,7 @@ inline T ptrace_data_arg(int request, T
+ }
+ #  endif
+ 
+-#  if SANITIZER_LINUX && !SANITIZER_ANDROID
++#  if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ extern unsigned struct_shminfo_sz;
+ extern unsigned struct_shm_info_sz;
+ extern int shmctl_ipc_stat;
+@@ -989,7 +1026,7 @@ struct __sanitizer_ifconf {
+ };
+ #  endif
+ 
+-#  if SANITIZER_LINUX && !SANITIZER_ANDROID
++#  if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ struct __sanitizer__obstack_chunk {
+   char *limit;
+   struct __sanitizer__obstack_chunk *prev;
+@@ -1066,7 +1103,7 @@ extern unsigned struct_ifreq_sz;
+ extern unsigned struct_termios_sz;
+ extern unsigned struct_winsize_sz;
+ 
+-#  if SANITIZER_LINUX
++#  if (SANITIZER_LINUX || SANITIZER_ONYX)
+ extern unsigned struct_arpreq_sz;
+ extern unsigned struct_cdrom_msf_sz;
+ extern unsigned struct_cdrom_multisession_sz;
+@@ -1093,9 +1130,9 @@ extern unsigned struct_mtpos_sz;
+ extern unsigned struct_vt_consize_sz;
+ extern unsigned struct_vt_sizes_sz;
+ extern unsigned struct_vt_stat_sz;
+-#  endif  // SANITIZER_LINUX
++#  endif  // (SANITIZER_LINUX || SANITIZER_ONYX)
+ 
+-#  if SANITIZER_LINUX
++#  if (SANITIZER_LINUX || SANITIZER_ONYX)
+ extern unsigned struct_copr_buffer_sz;
+ extern unsigned struct_copr_debug_buf_sz;
+ extern unsigned struct_copr_msg_sz;
+@@ -1107,9 +1144,9 @@ extern unsigned struct_sbi_instrument_sz
+ extern unsigned struct_seq_event_rec_sz;
+ extern unsigned struct_synth_info_sz;
+ extern unsigned struct_vt_mode_sz;
+-#  endif  // SANITIZER_LINUX
++#  endif // (SANITIZER_LINUX || SANITIZER_ONYX)
+ 
+-#  if SANITIZER_LINUX && !SANITIZER_ANDROID
++#  if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ extern unsigned struct_ax25_parms_struct_sz;
+ extern unsigned struct_input_keymap_entry_sz;
+ extern unsigned struct_ipx_config_data_sz;
+@@ -1130,7 +1167,7 @@ extern unsigned struct_unimapinit_sz;
+ 
+ extern const unsigned long __sanitizer_bufsiz;
+ 
+-#  if SANITIZER_LINUX && !SANITIZER_ANDROID
++#  if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ extern unsigned struct_audio_buf_info_sz;
+ extern unsigned struct_ppp_stats_sz;
+ #  endif  // (SANITIZER_LINUX || SANITIZER_FREEBSD) && !SANITIZER_ANDROID
+@@ -1194,11 +1231,11 @@ extern unsigned IOCTL_TIOCOUTQ;
+ extern unsigned IOCTL_TIOCSCTTY;
+ extern unsigned IOCTL_TIOCSPGRP;
+ extern unsigned IOCTL_TIOCSWINSZ;
+-#  if SANITIZER_LINUX && !SANITIZER_ANDROID
++#  if (SANITIZER_LINUX || SANITIZER_ONYX) && !SANITIZER_ANDROID
+ extern unsigned IOCTL_SIOCGETSGCNT;
+ extern unsigned IOCTL_SIOCGETVIFCNT;
+ #  endif
+-#  if SANITIZER_LINUX
++#  if SANITIZER_LINUX || SANITIZER_ONYX
+ extern unsigned IOCTL_EVIOCGABS;
+ extern unsigned IOCTL_EVIOCGBIT;
+ extern unsigned IOCTL_EVIOCGEFFECTS;
+@@ -1462,7 +1499,7 @@ extern unsigned IOCTL_VT_OPENQRY;
+ extern unsigned IOCTL_VT_RELDISP;
+ extern unsigned IOCTL_VT_SETMODE;
+ extern unsigned IOCTL_VT_WAITACTIVE;
+-#  endif  // SANITIZER_LINUX
++#  endif  // (SANITIZER_LINUX || SANITIZER_ONYX)
+ 
+ #  if SANITIZER_LINUX && !SANITIZER_ANDROID
+ extern unsigned IOCTL_EQL_EMANCIPATE;
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_posix.h
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_posix.h
+@@ -40,7 +40,7 @@ uptr internal_write(fd_t fd, const void
+ uptr internal_mmap(void *addr, uptr length, int prot, int flags,
+                    int fd, u64 offset);
+ uptr internal_munmap(void *addr, uptr length);
+-#if SANITIZER_LINUX
++#if SANITIZER_LINUX || SANITIZER_ONYX
+ uptr internal_mremap(void *old_address, uptr old_size, uptr new_size, int flags,
+                      void *new_address);
+ #endif
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_posix_libcdep.cpp
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_posix_libcdep.cpp
+@@ -375,7 +375,9 @@ void PlatformPrepareForSandboxing(void *
+   // to read the file mappings from /proc/self/maps. Luckily, neither the
+   // process will be able to load additional libraries, so it's fine to use the
+   // cached mappings.
++#if !SANITIZER_ONYX
+   MemoryMappingLayout::CacheMemoryMappings();
++#endif
+ }
+ 
+ static bool MmapFixed(uptr fixed_addr, uptr size, int additional_flags,
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_procmaps.h
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_procmaps.h
+@@ -17,12 +17,13 @@
+ 
+ #if SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD || \
+     SANITIZER_APPLE || SANITIZER_SOLARIS || SANITIZER_HAIKU ||  \
+-    SANITIZER_FUCHSIA
++    SANITIZER_FUCHSIA || SANITIZER_ONYX
+ 
+ #include "sanitizer_common.h"
+ #include "sanitizer_internal_defs.h"
+ #include "sanitizer_fuchsia.h"
+ #include "sanitizer_linux.h"
++#include "sanitizer_onyx.h"
+ #include "sanitizer_mac.h"
+ #include "sanitizer_mutex.h"
+ 
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_procmaps_linux.cpp
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_procmaps_linux.cpp
+@@ -10,7 +10,7 @@
+ //===----------------------------------------------------------------------===//
+ 
+ #include "sanitizer_platform.h"
+-#if SANITIZER_LINUX
++#if SANITIZER_LINUX || SANITIZER_ONYX
+ #include "sanitizer_common.h"
+ #include "sanitizer_procmaps.h"
+ 
+--- /dev/null
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_stoptheworld_onyx.cpp
+@@ -0,0 +1,27 @@
++//===-- sanitizer_stoptheworld_onyx.cpp -------------------------------===//
++//
++// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
++// See https://llvm.org/LICENSE.txt for license information.
++// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
++//
++//===---------------------------------------------------------------------===//
++//
++// See sanitizer_stoptheworld.h for details.
++//
++//===---------------------------------------------------------------------===//
++
++#include "sanitizer_platform.h"
++
++#if SANITIZER_ONYX
++
++#include "sanitizer_stoptheworld.h"
++
++namespace __sanitizer {
++
++void StopTheWorld(StopTheWorldCallback callback, void *argument) {
++    // TODO: Implement
++}  // namespace __sanitizer
++
++}
++
++#endif  // SANITIZER_ONYX
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_unwind_linux_libcdep.cpp
+@@ -12,7 +12,7 @@
+ 
+ #include "sanitizer_platform.h"
+ #if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD || \
+-    SANITIZER_SOLARIS || SANITIZER_HAIKU
++    SANITIZER_SOLARIS || SANITIZER_HAIKU || SANITIZER_ONYX
+ #include "sanitizer_common.h"
+ #include "sanitizer_stacktrace.h"
+ 
+@@ -139,4 +139,4 @@ void BufferedStackTrace::UnwindSlow(uptr
+ }  // namespace __sanitizer
+ 
+ #endif  // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||
+-        // SANITIZER_SOLARIS || SANITIZER_HAIKU
++        // SANITIZER_SOLARIS || SANITIZER_HAIKU || SANITIZER_ONYX
+--- a/compiler-rt/lib/tsan/rtl/tsan_interceptors_posix.cpp
++++ b/compiler-rt/lib/tsan/rtl/tsan_interceptors_posix.cpp
+@@ -1188,7 +1188,7 @@ TSAN_INTERCEPTOR(void, pthread_exit, voi
+   REAL(pthread_exit)(retval);
+ }
+ 
+-#if SANITIZER_LINUX
++#if SANITIZER_LINUX || SANITIZER_ONYX
+ TSAN_INTERCEPTOR(int, pthread_tryjoin_np, void *th, void **ret) {
+   SCOPED_INTERCEPTOR_RAW(pthread_tryjoin_np, th, ret);
+   Tid tid = ThreadConsumeTid(thr, pc, (uptr)th);
+@@ -3019,7 +3019,7 @@ void InitializeInterceptors() {
+   TSAN_INTERCEPT(pthread_join);
+   TSAN_INTERCEPT(pthread_detach);
+   TSAN_INTERCEPT(pthread_exit);
+-  #if SANITIZER_LINUX
++  #if SANITIZER_LINUX || SANITIZER_ONYX
+   TSAN_INTERCEPT(pthread_tryjoin_np);
+   TSAN_INTERCEPT(pthread_timedjoin_np);
+   #endif
+--- a/compiler-rt/lib/tsan/rtl/tsan_platform_linux.cpp
++++ b/compiler-rt/lib/tsan/rtl/tsan_platform_linux.cpp
+@@ -12,7 +12,7 @@
+ //===----------------------------------------------------------------------===//
+ 
+ #include "sanitizer_common/sanitizer_platform.h"
+-#if SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD
++#if SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD || SANITIZER_ONYX
+ 
+ #include "sanitizer_common/sanitizer_common.h"
+ #include "sanitizer_common/sanitizer_libc.h"
+@@ -35,7 +35,7 @@
+ #include <string.h>
+ #include <stdarg.h>
+ #include <sys/mman.h>
+-#if SANITIZER_LINUX
++#if SANITIZER_LINUX || SANITIZER_ONYX
+ #include <sys/personality.h>
+ #include <setjmp.h>
+ #endif
+@@ -487,7 +487,7 @@ int ExtractRecvmsgFDs(void *msgp, int *f
+ // Reverse operation of libc stack pointer mangling
+ static uptr UnmangleLongJmpSp(uptr mangled_sp) {
+ #if defined(__x86_64__)
+-# if SANITIZER_LINUX
++# if SANITIZER_LINUX || SANITIZER_ONYX
+   // Reverse of:
+   //   xor  %fs:0x30, %rsi
+   //   rol  $0x11, %rsi
+@@ -542,7 +542,7 @@ static uptr UnmangleLongJmpSp(uptr mangl
+ # else
+ #  define LONG_JMP_SP_ENV_SLOT 2
+ # endif
+-#elif SANITIZER_LINUX
++#elif SANITIZER_LINUX || SANITIZER_ONYX
+ # ifdef __aarch64__
+ #  define LONG_JMP_SP_ENV_SLOT 13
+ # elif defined(__loongarch__)
+--- a/compiler-rt/lib/tsan/rtl/tsan_rtl_amd64.S
++++ b/compiler-rt/lib/tsan/rtl/tsan_rtl_amd64.S
+@@ -33,7 +33,7 @@ ASM_SYMBOL_INTERCEPTOR(setjmp):
+   // obtain SP, store in %rdi, first argument to `void __tsan_setjmp(uptr sp)`
+ #if defined(__FreeBSD__) || defined(__NetBSD__)
+   lea 8(%rsp), %rdi
+-#elif defined(__linux__) || defined(__APPLE__)
++#elif defined(__linux__) || defined(__APPLE__) || defined(__onyx__)
+   lea 16(%rsp), %rdi
+ #else
+ # error "Unknown platform"
+@@ -75,7 +75,7 @@ ASM_SYMBOL_INTERCEPTOR(_setjmp):
+   // obtain SP, store in %rdi, first argument to `void __tsan_setjmp(uptr sp)`
+ #if defined(__FreeBSD__) || defined(__NetBSD__)
+   lea 8(%rsp), %rdi
+-#elif defined(__linux__) || defined(__APPLE__)
++#elif defined(__linux__) || defined(__APPLE__) || defined(__onyx__)
+   lea 16(%rsp), %rdi
+ #else
+ # error "Unknown platform"
+@@ -124,7 +124,7 @@ ASM_SYMBOL_INTERCEPTOR(sigsetjmp):
+   // obtain SP, store in %rdi, first argument to `void __tsan_setjmp(uptr sp)`
+ #if defined(__FreeBSD__) || defined(__NetBSD__)
+   lea 24(%rsp), %rdi
+-#elif defined(__linux__) || defined(__APPLE__)
++#elif defined(__linux__) || defined(__APPLE__) || defined(__onyx__)
+   lea 32(%rsp), %rdi
+ #else
+ # error "Unknown platform"
+--- a/compiler-rt/lib/ubsan/ubsan_platform.h
++++ b/compiler-rt/lib/ubsan/ubsan_platform.h
+@@ -16,7 +16,7 @@
+ #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__) ||        \
+     defined(__NetBSD__) || defined(__DragonFly__) ||                           \
+     (defined(__sun__) && defined(__svr4__)) || defined(_WIN32) ||              \
+-    defined(__Fuchsia__) || defined(__HAIKU__)
++    defined(__Fuchsia__) || defined(__HAIKU__) || defined(__onyx__)
+ #define CAN_SANITIZE_UB 1
+ #else
+ # define CAN_SANITIZE_UB 0
+--- a/libcxx/include/__config
++++ b/libcxx/include/__config
+@@ -842,7 +842,8 @@ typedef __char32_t char32_t;
+         defined(__APPLE__) ||                                                                                          \
+         defined(__MVS__) ||                                                                                            \
+         defined(_AIX) ||                                                                                               \
+-        defined(__EMSCRIPTEN__)
++        defined(__EMSCRIPTEN__) ||                                                                                     \
++        defined(__onyx__)
+ // clang-format on
+ #      undef _LIBCPP_HAS_THREAD_API_PTHREAD
+ #      define _LIBCPP_HAS_THREAD_API_PTHREAD 1
+@@ -925,7 +926,7 @@ typedef __char32_t char32_t;
+ #  endif
+ 
+ #  if defined(__BIONIC__) || defined(__NuttX__) || defined(__Fuchsia__) || defined(__wasi__) ||                        \
+-      _LIBCPP_HAS_MUSL_LIBC || defined(__OpenBSD__) || defined(__LLVM_LIBC__)
++      _LIBCPP_HAS_MUSL_LIBC || defined(__OpenBSD__) || defined(__LLVM_LIBC__) || defined(__onyx__)
+ #    define _LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
+ #  endif
+ 
+--- a/libcxx/include/__locale_dir/locale_base_api.h
++++ b/libcxx/include/__locale_dir/locale_base_api.h
+@@ -133,7 +133,7 @@
+ #      include <__locale_dir/locale_base_api/android.h>
+ #    elif defined(__OpenBSD__)
+ #      include <__locale_dir/locale_base_api/openbsd.h>
+-#    elif defined(__wasi__) || _LIBCPP_HAS_MUSL_LIBC
++#    elif defined(__wasi__) || _LIBCPP_HAS_MUSL_LIBC || defined(__onyx__)
+ #      include <__locale_dir/locale_base_api/musl.h>
+ #    endif
+ 
+--- a/libcxx/src/include/config_elast.h
++++ b/libcxx/src/include/config_elast.h
+@@ -33,7 +33,7 @@
+ // No _LIBCPP_ELAST needed on WASI
+ #elif defined(__EMSCRIPTEN__)
+ // No _LIBCPP_ELAST needed on Emscripten
+-#elif defined(__linux__) || _LIBCPP_HAS_MUSL_LIBC
++#elif defined(__linux__) || _LIBCPP_HAS_MUSL_LIBC || defined(__onyx__)
+ #  define _LIBCPP_ELAST 4095
+ #elif defined(__APPLE__)
+ // No _LIBCPP_ELAST needed on Apple
+--- a/llvm/include/llvm/IR/RuntimeLibcalls.h
++++ b/llvm/include/llvm/IR/RuntimeLibcalls.h
+@@ -170,7 +170,7 @@ private:
+ 
+   /// Return true if the target has sincosf/sincos/sincosl functions
+   static bool hasSinCos(const Triple &TT) {
+-    return TT.isGNUEnvironment() || TT.isOSFuchsia() ||
++    return TT.isGNUEnvironment() || TT.isOSFuchsia() || TT.isOSOnyx() ||
+            (TT.isAndroid() && !TT.isAndroidVersionLT(9));
+   }
+ 
+--- a/llvm/include/llvm/TargetParser/Triple.h
++++ b/llvm/include/llvm/TargetParser/Triple.h
+@@ -210,6 +210,7 @@ public:
+     KFreeBSD,
+     Linux,
+     Lv2, // PS3
++    Onyx,
+     MacOSX,
+     Managarm,
+     NetBSD,
+@@ -638,6 +639,10 @@ public:
+     return getOS() == Triple::Fuchsia;
+   }
+ 
++  bool isOSOnyx() const {
++    return getOS() == Triple::Onyx;
++  }
++
+   bool isOSDragonFly() const { return getOS() == Triple::DragonFly; }
+ 
+   bool isOSSolaris() const {
+--- a/llvm/lib/Target/X86/X86ISelDAGToDAG.cpp
++++ b/llvm/lib/Target/X86/X86ISelDAGToDAG.cpp
+@@ -1889,7 +1889,7 @@ bool X86DAGToDAGISel::matchLoadInAddress
+   if (isNullConstant(Address) && AM.Segment.getNode() == nullptr &&
+       !IndirectTlsSegRefs &&
+       (Subtarget->isTargetGlibc() || Subtarget->isTargetAndroid() ||
+-       Subtarget->isTargetFuchsia())) {
++       Subtarget->isTargetFuchsia() || Subtarget->isTargetOnyx())) {
+     if (Subtarget->isTarget64BitILP32() && !AllowSegmentRegForX32)
+       return true;
+     switch (N->getPointerInfo().getAddrSpace()) {
+--- a/llvm/lib/Target/X86/X86ISelLoweringCall.cpp
++++ b/llvm/lib/Target/X86/X86ISelLoweringCall.cpp
+@@ -547,7 +547,8 @@ unsigned X86TargetLowering::getAddressSp
+ 
+ static bool hasStackGuardSlotTLS(const Triple &TargetTriple) {
+   return TargetTriple.isOSGlibc() || TargetTriple.isOSFuchsia() ||
+-         (TargetTriple.isAndroid() && !TargetTriple.isAndroidVersionLT(17));
++         (TargetTriple.isAndroid() && !TargetTriple.isAndroidVersionLT(17)) ||
++	 TargetTriple.isOSOnyx();
+ }
+ 
+ static Constant* SegmentOffset(IRBuilderBase &IRB,
+--- a/llvm/lib/Target/X86/X86Subtarget.h
++++ b/llvm/lib/Target/X86/X86Subtarget.h
+@@ -304,6 +304,7 @@ public:
+   bool isTargetNaCl64() const { return isTargetNaCl() && is64Bit(); }
+   bool isTargetMCU() const { return TargetTriple.isOSIAMCU(); }
+   bool isTargetFuchsia() const { return TargetTriple.isOSFuchsia(); }
++  bool isTargetOnyx() const { return TargetTriple.isOSOnyx(); }
+ 
+   bool isTargetWindowsMSVC() const {
+     return TargetTriple.isWindowsMSVCEnvironment();
+--- a/llvm/lib/TargetParser/Triple.cpp
++++ b/llvm/lib/TargetParser/Triple.cpp
+@@ -298,6 +298,7 @@ StringRef Triple::getOSTypeName(OSType K
+   case IOS: return "ios";
+   case KFreeBSD: return "kfreebsd";
+   case Linux: return "linux";
++  case Onyx: return "onyx";
+   case Lv2: return "lv2";
+   case MacOSX: return "macosx";
+   case Managarm:
+@@ -681,6 +682,7 @@ static Triple::OSType parseOS(StringRef
+     .StartsWith("ios", Triple::IOS)
+     .StartsWith("kfreebsd", Triple::KFreeBSD)
+     .StartsWith("linux", Triple::Linux)
++    .StartsWith("onyx", Triple::Onyx)
+     .StartsWith("lv2", Triple::Lv2)
+     .StartsWith("macos", Triple::MacOSX)
+     .StartsWith("managarm", Triple::Managarm)
+--- a/llvm/lib/Transforms/Instrumentation/AddressSanitizer.cpp
++++ b/llvm/lib/Transforms/Instrumentation/AddressSanitizer.cpp
+@@ -499,6 +499,7 @@ static ShadowMapping getShadowMapping(co
+   bool IsRISCV64 = TargetTriple.getArch() == Triple::riscv64;
+   bool IsWindows = TargetTriple.isOSWindows();
+   bool IsFuchsia = TargetTriple.isOSFuchsia();
++  bool IsOnyx = TargetTriple.isOSOnyx();
+   bool IsAMDGPU = TargetTriple.isAMDGPU();
+   bool IsHaiku = TargetTriple.isOSHaiku();
+   bool IsWasm = TargetTriple.isWasm();
+@@ -552,7 +553,7 @@ static ShadowMapping getShadowMapping(co
+         Mapping.Offset = kNetBSD_ShadowOffset64;
+     } else if (IsPS)
+       Mapping.Offset = kPS_ShadowOffset64;
+-    else if (IsLinux && IsX86_64) {
++    else if ((IsLinux || IsOnyx) && IsX86_64) {
+       if (IsKasan)
+         Mapping.Offset = kLinuxKasan_ShadowOffset64;
+       else
